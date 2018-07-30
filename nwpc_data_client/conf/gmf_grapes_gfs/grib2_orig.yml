@@ -1,0 +1,10 @@
+# gmf grapes gfs
+#   grib2 orig
+
+default: NOTFOUND
+
+file_name: gmf.gra.{YYYY}{MM}{DD}{HH}{FFF}.grb2
+
+paths:
+  - /g2/nwp_pd/NWP_PST_DATA/GMF_GRAPES_GFS_V2.2_POST/togrib2/output_togrib2/{YYYY}{MM}{DD}{HH}
+  - /g2/nwp/OPER_ARCH_TEST/nwp/GMFS_GRIB2_GRAPES/ORIG/GRAPES_GFS_ORIG_{YYYY}{MM}{DD}{HH}

@@ -1,0 +1,10 @@
+# gmf grapes gfs
+#   grib2 ne
+
+default: NOTFOUND
+
+file_name: ne_gmf.gra.{YYYY}{MM}{DD}{HH}{FFF}.grb2
+
+paths:
+  - /g2/nwp_pd/NWP_PST_DATA/GMF_GRAPES_GFS_V2.2_POST/togrib2/output_ne/{YYYY}{MM}{DD}{HH}
+  - /g2/nwp/OPER_ARCH_TEST/nwp/GMFS_GRIB2_GRAPES/CMACAST/GRAPES_GFS_forCAST_{YYYY}{MM}{DD}{HH}
