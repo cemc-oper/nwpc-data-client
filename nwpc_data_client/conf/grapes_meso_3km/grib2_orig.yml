@@ -1,0 +1,9 @@
+# gda grapes gfs
+#   orig grib2
+
+default: NOTFOUND
+
+file_name: rmf.hgra.{YYYY}{MM}{DD}{HH}{FFF}.grb2
+
+paths:
+  - /g2/nwp_pd/TESTDATA/GRAPES_MESO_3kM/{YYYY}{MM}{DD}{HH}

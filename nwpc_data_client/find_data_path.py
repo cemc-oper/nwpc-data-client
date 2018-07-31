@@ -6,8 +6,8 @@ import click
 import yaml
 
 
-def find_config(config_dir, model_name, data_type):
-    config_file_path = Path(config_dir, model_name, data_type+".yml")
+def find_config(config_dir, data_type):
+    config_file_path = Path(config_dir, data_type+".yml")
     if config_file_path.is_file():
         return config_file_path
     else:
@@ -59,15 +59,14 @@ def find_file(config, start_time, forecast_time):
 
 @click.command()
 @click.option("--config-dir", help="config dir")
-@click.option("--model-name", help="model name", required=True)
 @click.option("--data-type", help="data type", required=True)
 @click.argument("start-time")
 @click.argument("forecast-time")
-def cli(model_name, data_type, config_dir, start_time, forecast_time):
+def cli(data_type, config_dir, start_time, forecast_time):
     if config_dir is None:
         config_dir = Path(Path(__file__).parent, "conf")
 
-    config_file_path = find_config(config_dir, model_name, data_type)
+    config_file_path = find_config(config_dir, data_type)
     if config_file_path is None:
         click.echo('model data type config not found.', err=True)
         click.get_current_context().exit(10)
