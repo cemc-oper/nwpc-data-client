@@ -103,7 +103,7 @@ def show_find_local_file_types(ctx, param, value):
     else:
         config_dir = get_default_local_config_path()
     click.echo("config dir:{config_dir}".format(config_dir=str(config_dir)))
-    click.echo("file types:")
+    click.echo("data types:")
     for a_config_file in sorted(config_dir.rglob("*.yml")):
         click.echo(a_config_file.relative_to(config_dir).with_suffix(''))
     ctx.exit(0)
