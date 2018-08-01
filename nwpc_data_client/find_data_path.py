@@ -83,18 +83,46 @@ class ForecastTimeParamType(click.ParamType):
             self.fail("{value} is not a valid forecast_time".format(value=value))
 
 
-@click.command()
-@click.option("--config-dir", help="config dir, default: {file_path}/conf".format(file_path=str(Path(__file__).parent)))
-@click.option("--data-type", help="data type used to locate config file path in config dir.", required=True)
-@click.argument("start-time", metavar='<start_time>', type=StartTimeParamType())
-@click.argument("forecast-time", metavar='<forecast_time>', type=ForecastTimeParamType())
-def cli(data_type, config_dir, start_time, forecast_time):
-    """Find data path using config files in config dir.
+@click.group(invoke_without_command=True)
+@click.pass_context
+def cli(ctx):
+    if ctx.invoked_subcommand is None:
+        click.echo(ctx.get_help())
+
+
+def show_find_local_file_types(ctx, param, value):
+    if not value:
+        return
+    if 'config_dir' in ctx.params:
+        config_dir = ctx.params['config_dir']
+        config_dir = Path(config_dir).absolute()
+    else:
+        config_dir = Path(Path(__file__).parent, "conf").absolute()
+    click.echo("config dir:{config_dir}".format(config_dir=str(config_dir)))
+    click.echo("file types:")
+    for a_config_file in sorted(config_dir.rglob("*.yml")):
+        click.echo(a_config_file.relative_to(config_dir).with_suffix(''))
+    ctx.exit(0)
+
+
+@cli.command('local', short_help="Find local data path.")
+@click.option("--config-dir", is_eager=True,
+              help="config dir, default: {file_path}/conf".format(file_path=str(Path(__file__).parent)))
+@click.option("--data-type", required=True,
+              help="data type used to locate config file path in config dir.")
+@click.option("--show-types", is_flag=True, default=False,
+              is_eager=True, callback=show_find_local_file_types,
+              help="show supported data types defined in config dir.")
+@click.argument("start_time", metavar='<start_time>', type=StartTimeParamType())
+@click.argument("forecast_time", metavar='<forecast_time>', type=ForecastTimeParamType())
+def find_local_file(config_dir, show_types, data_type, start_time, forecast_time):
+    """Find local data path using config files in config dir.
 
     start_time: YYYYMMDDHH, such as 2018080100
-
+    
     forecast_time: FFF, such as 000
     """
+
     if config_dir is None:
         config_dir = Path(Path(__file__).parent, "conf")
 
