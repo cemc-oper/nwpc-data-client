@@ -20,8 +20,7 @@ def load_config(config_file_path):
         return config
 
 
-def generate_template_parser(start_time, forecast_time):
-    start_date_time = datetime.datetime.strptime(start_time, "%Y%m%d%H")
+def generate_template_parser(start_date_time, forecast_time):
     YYYY = start_date_time.strftime("%Y")
     MM = start_date_time.strftime("%m")
     DD = start_date_time.strftime("%d")
@@ -57,12 +56,45 @@ def find_file(config, start_time, forecast_time):
     return file_path
 
 
+class StartTimeParamType(click.ParamType):
+    name = "start_time"
+
+    def convert(self, value, param, ctx):
+        try:
+            if len(value) != 10:
+                self.fail("length of start_time must be 10".format(value=value))
+            start_date_time = datetime.datetime.strptime(value, "%Y%m%d%H")
+            return start_date_time
+        except ValueError:
+            self.fail("{value} is not a valid start_time".format(value=value))
+
+
+class ForecastTimeParamType(click.ParamType):
+    name = "forecast_time"
+
+    def convert(self, value, param, ctx):
+        try:
+            if len(value) > 3:
+                self.fail("length of forecast time must less or equal to 3")
+            else:
+                int_value = int(value)
+                return "{value:03}".format(value=int_value)
+        except ValueError:
+            self.fail("{value} is not a valid forecast_time".format(value=value))
+
+
 @click.command()
-@click.option("--config-dir", help="config dir")
-@click.option("--data-type", help="data type", required=True)
-@click.argument("start-time")
-@click.argument("forecast-time")
+@click.option("--config-dir", help="config dir, default: {file_path}/conf".format(file_path=str(Path(__file__).parent)))
+@click.option("--data-type", help="data type used to locate config file path in config dir.", required=True)
+@click.argument("start-time", metavar='<start_time>', type=StartTimeParamType())
+@click.argument("forecast-time", metavar='<forecast_time>', type=ForecastTimeParamType())
 def cli(data_type, config_dir, start_time, forecast_time):
+    """Find data path using config files in config dir.
+
+    start_time: YYYYMMDDHH, such as 2018080100
+
+    forecast_time: FFF, such as 000
+    """
     if config_dir is None:
         config_dir = Path(Path(__file__).parent, "conf")
 
