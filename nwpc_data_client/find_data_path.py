@@ -90,6 +90,10 @@ def cli(ctx):
         click.echo(ctx.get_help())
 
 
+def get_default_local_config_path():
+    return Path(Path(__file__).parent, "conf").absolute()
+
+
 def show_find_local_file_types(ctx, param, value):
     if not value:
         return
@@ -97,7 +101,7 @@ def show_find_local_file_types(ctx, param, value):
         config_dir = ctx.params['config_dir']
         config_dir = Path(config_dir).absolute()
     else:
-        config_dir = Path(Path(__file__).parent, "conf").absolute()
+        config_dir = get_default_local_config_path()
     click.echo("config dir:{config_dir}".format(config_dir=str(config_dir)))
     click.echo("file types:")
     for a_config_file in sorted(config_dir.rglob("*.yml")):
@@ -107,12 +111,12 @@ def show_find_local_file_types(ctx, param, value):
 
 @cli.command('local', short_help="Find local data path.")
 @click.option("--config-dir", is_eager=True,
-              help="config dir, default: {file_path}/conf".format(file_path=str(Path(__file__).parent)))
+              help="Config dir, default: {file_path}".format(file_path=str(get_default_local_config_path())))
 @click.option("--data-type", required=True,
-              help="data type used to locate config file path in config dir.")
+              help="Data type used to locate config file path in config dir.")
 @click.option("--show-types", is_flag=True, default=False,
               is_eager=True, callback=show_find_local_file_types,
-              help="show supported data types defined in config dir.")
+              help="Show supported data types defined in config dir and exit.")
 @click.argument("start_time", metavar='<start_time>', type=StartTimeParamType())
 @click.argument("forecast_time", metavar='<forecast_time>', type=ForecastTimeParamType())
 def find_local_file(config_dir, show_types, data_type, start_time, forecast_time):
@@ -124,7 +128,7 @@ def find_local_file(config_dir, show_types, data_type, start_time, forecast_time
     """
 
     if config_dir is None:
-        config_dir = Path(Path(__file__).parent, "conf")
+        config_dir = get_default_local_config_path()
 
     config_file_path = find_config(config_dir, data_type)
     if config_file_path is None:
