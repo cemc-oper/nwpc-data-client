@@ -29,7 +29,7 @@ setup(
         'Programming Language :: Python :: 3.6'
     ],
 
-    keywords='nwpc slurm client',
+    keywords='nwpc data',
 
     packages=find_packages(exclude=['contrib', 'docs', 'tests']),
 
