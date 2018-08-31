@@ -2,6 +2,10 @@
 
 A cli client for data files in NWPC.
 
+## Features
+
+- Find operation system data in HPC PI.
+
 ## Installing
 
 Download the lastest release and install.
