@@ -39,6 +39,6 @@ Use `--config-dir` to set config file direcotry.
 For example, use the command below to find GMF GRAPES GFS GRIB2 data of 24 forecast hour in start hour 00 on 2018/09/03.
 
 ```
-$nwpc_find_data_path local --data-type=gmf_grapes_gfs/grib2_orig 2018090300 24
+$nwpc_find_data_path local --data-type=gmf_grapes_gfs/grib2/orig 2018090300 24
 /g2/nwp_pd/NWP_PST_DATA/GMF_GRAPES_GFS_V2.2_POST/togrib2/output_togrib2/2018090300/gmf.gra.2018090300024.grb2
 ```
