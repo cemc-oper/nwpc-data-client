@@ -1,0 +1,10 @@
+# grapes meso 3km
+#   yun grib2
+
+default: NOTFOUND
+
+file_name: Z_NAFP_C_BABJ_{YYYY}{MM}{DD}{HH}0000_P_NWPC-GRAPES-3KM-CN-{FFF}00.grb2
+
+paths:
+  - /g2/nwp_pd/NWP_PST_DATA/3KM_POST/3KM_TOGRIB2/output_yun/{YYYY}{MM}{DD}{HH}
+  - /g2/nwp/OPER_ARCH_TEST/nwp_qu/RMFS_GRAPES_3KM/Prod-grib/{YYYY}{MM}{DD}{HH}/YUN

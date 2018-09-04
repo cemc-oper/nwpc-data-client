@@ -1,0 +1,10 @@
+# grapes meso 3km
+#   modelvar
+
+default: NOTFOUND
+
+file_name: modelvar{YYYY}{MM}{DD}{HH}{FFF}00
+
+paths:
+  - /g2/nwp_qu/NWP_RMFS_DATA/grapes_meso_3km/cold/{HH}/fcst/grapes_model/run
+  - /g2/nwp/OPER_ARCH_TEST/nwp_qu/RMFS_GRAPES_3KM/Fcst-main/{YYYY}{MM}{DD}{HH}
