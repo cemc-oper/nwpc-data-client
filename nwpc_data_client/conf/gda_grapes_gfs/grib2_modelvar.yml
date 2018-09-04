@@ -7,4 +7,5 @@ file_name: modelvar{YYYY}{MM}{DD}{HH}{FFF}.grb2
 
 paths:
   - /g2/nwp_pd/NWP_PST_DATA/GDA_GRAPES_GFS_V2.2_POST/gfs_togrib2/output_togrib2/{YYYY}{MM}{DD}{HH}
+  - /g2/nwp/OPER_ARCH_TEST/nwp/GRAPES_GFS/GDA_GRAPES_GFS/Prod-grib/{YYYY_4DV}{MM_4DV}{DD_4DV}{HH_4DV}/MODELVAR
   - /g2/nwp/OPER_ARCH_TEST/nwp/GDAS_GRIB2_GRAPES/MODELVAR/GRAPES_GFS_MODELVAR_{YYYY}{MM}{DD}{HH}

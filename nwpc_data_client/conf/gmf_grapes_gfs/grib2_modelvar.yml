@@ -6,5 +6,11 @@ default: NOTFOUND
 file_name: modelvar{YYYY}{MM}{DD}{HH}{FFF}.grb2
 
 paths:
+  # run time dir
   - /g2/nwp_pd/NWP_PST_DATA/GMF_GRAPES_GFS_V2.2_POST/togrib2/output_togrib2/{YYYY}{MM}{DD}{HH}
+
+  # archive dir
+  - /g2/nwp/OPER_ARCH_TEST/nwp/GRAPES_GFS/GMF_GRAPES_GFS/Prod-grib/{YYYY_4DV}{MM_4DV}{DD_4DV}{HH_4DV}/MODELVAR
+
+  # alternative archive dir
   - /g2/nwp/OPER_ARCH_TEST/nwp/GMFS_GRIB2_GRAPES/MODELVAR/GRAPES_GFS_MODELVAR_{YYYY}{MM}{DD}{HH}

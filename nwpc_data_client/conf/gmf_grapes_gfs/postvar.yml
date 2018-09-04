@@ -8,4 +8,5 @@ file_name: postvar{YYYY}{MM}{DD}{HH}_{FFF}
 paths:
   - /g2/nwp/GRAPES_GFS/MODEL/data/NWP_GMFS/{HH_4DV}/output
   - /g2/nwp/GRAPES_GFS/DATA/DATABAK/NWP_GMFS/FCST_results
+  - /g2/nwp/OPER_ARCH_TEST/nwp/GRAPES_GFS/GMF_GRAPES_GFS/Fcst-long/{YYYY_4DV}{MM_4DV}{DD_4DV}{HH_4DV}
   - /g2/nwp/OPER_ARCH_TEST/nwp/GRAPES_GFS/grapes_gfs_v2-1-2-2/{YYYY}{MM}/NWP_GMFS_grapes_global_{YYYY}{MM}{DD}
