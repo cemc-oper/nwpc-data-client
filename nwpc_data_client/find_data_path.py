@@ -21,22 +21,21 @@ def load_config(config_file_path):
 
 
 def generate_template_parser(start_date_time, forecast_time):
-    YYYY = start_date_time.strftime("%Y")
-    MM = start_date_time.strftime("%m")
-    DD = start_date_time.strftime("%d")
-    HH = start_date_time.strftime("%H")
-    FFF = forecast_time
+    variables = dict()
+    variables['YYYY'] = start_date_time.strftime("%Y")
+    variables['MM'] = start_date_time.strftime("%m")
+    variables['DD'] = start_date_time.strftime("%d")
+    variables['HH'] = start_date_time.strftime("%H")
+    variables['FFF'] = forecast_time
 
     start_date_time_4dvar = start_date_time - datetime.timedelta(hours=3)
-    YYYY_4DV = start_date_time_4dvar.strftime("%Y")
-    MM_4DV = start_date_time_4dvar.strftime("%m")
-    DD_4DV = start_date_time_4dvar.strftime("%d")
-    HH_4DV = start_date_time_4dvar.strftime("%H")
-
-    local_vars = locals()
+    variables['YYYY_4DV'] = start_date_time_4dvar.strftime("%Y")
+    variables['MM_4DV'] = start_date_time_4dvar.strftime("%m")
+    variables['DD_4DV'] = start_date_time_4dvar.strftime("%d")
+    variables['HH_4DV'] = start_date_time_4dvar.strftime("%H")
 
     def parse_template(template):
-        return template.format(**local_vars)
+        return template.format(**variables)
 
     return parse_template
 

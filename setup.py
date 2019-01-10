@@ -10,7 +10,7 @@ with codecs.open(path.join(here, 'README.md'), encoding='utf-8') as f:
 setup(
     name='nwpc-data-client',
 
-    version='0.1.0',
+    version='0.1.1',
 
     description='NWPC data Client',
     long_description=long_description,
