@@ -16,7 +16,7 @@ def find_config(config_dir, data_type):
 
 def load_config(config_file_path):
     with open(config_file_path) as config_file:
-        config = yaml.load(config_file)
+        config = yaml.safe_load(config_file)
         return config
 
 
