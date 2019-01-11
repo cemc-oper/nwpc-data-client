@@ -122,7 +122,6 @@ def find_local_file(config_dir, show_types, data_type, start_time, forecast_time
     """Find local data path using config files in config dir.
 
     start_time: YYYYMMDDHH, such as 2018080100
-    
     forecast_time: FFF, such as 000
     """
 
