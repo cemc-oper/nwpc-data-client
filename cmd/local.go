@@ -4,51 +4,29 @@ import (
 	"errors"
 	"fmt"
 	"github.com/spf13/cobra"
+	"os"
+	"path/filepath"
 	"strconv"
 	"time"
 )
 
 var (
 	ConfigDir = ""
-	DateType  = ""
+	DataType  = ""
 	//ShowTypes = false
 	startTime    time.Time
 	forecastTime = ""
 )
 
-func checkStartTime(value string) (time.Time, error) {
-	if len(value) != 10 {
-		return time.Time{}, fmt.Errorf("length of start_time must be 10")
-	}
-	s, err := time.Parse("2006010215", value)
-	if err != nil {
-		return s, err
-	}
-	return s, nil
-}
-
-func checkForecastTime(value string) (string, error) {
-	if len(value) > 3 {
-		return "", fmt.Errorf("length of forecast time must less or equal to 3")
-	}
-
-	intValue, err := strconv.Atoi(value)
-	if err != nil {
-		return "", err
-	}
-
-	return fmt.Sprintf("%03d", intValue), nil
-}
-
 func init() {
 	rootCmd.AddCommand(localCmd)
 	localCmd.Flags().StringVar(&ConfigDir, "config-dir", "",
 		"Config dir")
-	localCmd.Flags().StringVar(&DateType, "date-type", "",
+	localCmd.Flags().StringVar(&DataType, "data-type", "",
 		"Data type used to locate config file path in config dir.")
 	//localCmd.Flags().BoolVar(&ShowTypes, "show-types", false,
 	//	"Show supported data types defined in config dir and exit.")
-	localCmd.MarkFlagRequired("date-type")
+	localCmd.MarkFlagRequired("data-type")
 }
 
 var localCmd = &cobra.Command{
@@ -76,5 +54,47 @@ var localCmd = &cobra.Command{
 	},
 	Run: func(cmd *cobra.Command, args []string) {
 		fmt.Printf("%s, %s\n", startTime, forecastTime)
+		configFilePath, err := findConfig(ConfigDir, DataType)
+		if err != nil {
+			fmt.Printf("model data type config is not found.")
+			return
+		}
+		loadConfig(configFilePath)
 	},
+}
+
+func checkStartTime(value string) (time.Time, error) {
+	if len(value) != 10 {
+		return time.Time{}, fmt.Errorf("length of start_time must be 10")
+	}
+	s, err := time.Parse("2006010215", value)
+	if err != nil {
+		return s, err
+	}
+	return s, nil
+}
+
+func checkForecastTime(value string) (string, error) {
+	if len(value) > 3 {
+		return "", fmt.Errorf("length of forecast time must less or equal to 3")
+	}
+
+	intValue, err := strconv.Atoi(value)
+	if err != nil {
+		return "", err
+	}
+
+	return fmt.Sprintf("%03d", intValue), nil
+}
+
+func findConfig(configDir string, dataType string) (string, error) {
+	configFilePath := filepath.Join(configDir, dataType+".yml")
+	if _, err := os.Stat(configFilePath); os.IsNotExist(err) {
+		return configFilePath, fmt.Errorf("file is not exist")
+	}
+	return configFilePath, nil
+}
+
+func loadConfig(configFilePath string) {
+
 }
