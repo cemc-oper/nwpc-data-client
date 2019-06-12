@@ -51,7 +51,7 @@ setup(
 
     entry_points={
         'console_scripts': [
-            'nwpc_find_data_path=nwpc_data_client.find_data_path:cli'
+            'nwpc_find_data_path=nwpc_data_client.find_data_path:cmd'
         ]
     }
 )
