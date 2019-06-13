@@ -15,11 +15,11 @@ import (
 )
 
 var (
-	ConfigDir = ""
-	DataType  = ""
-	//ShowTypes = false
-	startTime    time.Time
-	forecastTime = ""
+	ConfigDir    = ""
+	DataType     = ""
+	ShowTypes    = false
+	StartTime    time.Time
+	ForecastTime = ""
 )
 
 func init() {
@@ -28,9 +28,8 @@ func init() {
 		"Config dir")
 	localCmd.Flags().StringVar(&DataType, "data-type", "",
 		"Data type used to locate config file path in config dir.")
-	//localCmd.Flags().BoolVar(&ShowTypes, "show-types", false,
-	//	"Show supported data types defined in config dir and exit.")
-	localCmd.MarkFlagRequired("data-type")
+	localCmd.Flags().BoolVar(&ShowTypes, "show-types", false,
+		"Show supported data types defined in config dir and exit.")
 }
 
 var localCmd = &cobra.Command{
@@ -41,22 +40,34 @@ var localCmd = &cobra.Command{
     start_time: YYYYMMDDHH, such as 2018080100
     forecast_time: FFF, such as 000`,
 	Args: func(cmd *cobra.Command, args []string) error {
+		if ShowTypes {
+			return nil
+		}
+
+		cmd.MarkFlagRequired("data-type")
+
 		if len(args) != 2 {
 			return errors.New("requires two arguments")
 		}
 		var err error
-		startTime, err = checkStartTime(args[0])
+		StartTime, err = checkStartTime(args[0])
 		if err != nil {
-			return fmt.Errorf("check startTime failed: %e", err)
+			return fmt.Errorf("check StartTime failed: %s", err)
 		}
 
-		forecastTime, err = checkForecastTime(args[1])
+		ForecastTime, err = checkForecastTime(args[1])
 		if err != nil {
-			return fmt.Errorf("check forecastTime failed: %e", err)
+			return fmt.Errorf("check ForecastTime failed: %s", err)
 		}
 		return nil
 	},
-	Run: findLocalFile,
+	Run: func(cmd *cobra.Command, args []string) {
+		if ShowTypes {
+			showDataTypes(cmd, args)
+		} else {
+			findLocalFile(cmd, args)
+		}
+	},
 }
 
 func findLocalFile(cmd *cobra.Command, args []string) {
@@ -67,10 +78,10 @@ func findLocalFile(cmd *cobra.Command, args []string) {
 	}
 	localDataConfig, err2 := loadConfig(configFilePath)
 	if err2 != nil {
-		fmt.Printf("load config failed.%e", err2)
+		fmt.Printf("load config failed: %s", err2)
 		return
 	}
-	filePath := findFile(localDataConfig, startTime, forecastTime)
+	filePath := findFile(localDataConfig, StartTime, ForecastTime)
 	fmt.Printf("%s\n", filePath)
 }
 
@@ -99,7 +110,7 @@ func checkForecastTime(value string) (string, error) {
 }
 
 func findConfig(configDir string, dataType string) (string, error) {
-	configFilePath := filepath.Join(configDir, dataType+".yml")
+	configFilePath := filepath.Join(configDir, dataType+".yaml")
 	if _, err := os.Stat(configFilePath); os.IsNotExist(err) {
 		return configFilePath, fmt.Errorf("file is not exist")
 	}
@@ -135,7 +146,7 @@ func findFile(config LocalDataConfig, startTime time.Time, forecastTime string) 
 	var fileNameBuilder strings.Builder
 	err := fileNameTemplate.Execute(&fileNameBuilder, tpVar)
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "file name template execute has error: %e", err)
+		fmt.Fprintf(os.Stderr, "file name template execute has error: %s", err)
 		return config.Default
 	}
 	fileName := fileNameBuilder.String()
@@ -145,7 +156,7 @@ func findFile(config LocalDataConfig, startTime time.Time, forecastTime string) 
 		var dirPathBuilder strings.Builder
 		err := dirPathTemplate.Execute(&dirPathBuilder, tpVar)
 		if err != nil {
-			fmt.Fprintf(os.Stderr, "dir path template execute has error: %e", err)
+			fmt.Fprintf(os.Stderr, "dir path template execute has error: %s", err)
 			continue
 		}
 		dirPath := dirPathBuilder.String()
@@ -186,4 +197,31 @@ func generateTemplateObject(startTime time.Time, forecastTime string) templateVa
 		Hour4DV:  startTime4DV.Format("15"),
 	}
 	return tpVariable
+}
+
+func showDataTypes(cmd *cobra.Command, args []string) {
+	var configFilePaths []string
+	walkConfigDirectory := func(path string, info os.FileInfo, err error) error {
+		if err != nil {
+			return err
+		}
+		if (!info.IsDir()) && (filepath.Ext(path) == ".yaml") {
+			configFilePaths = append(configFilePaths, path)
+		}
+		return nil
+	}
+
+	err := filepath.Walk(ConfigDir, walkConfigDirectory)
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "Walk config directory has error: %s", err)
+		return
+	}
+	for _, configPath := range configFilePaths {
+		relConfigPath, err2 := filepath.Rel(ConfigDir, configPath)
+		if err2 != nil {
+			fmt.Fprintf(os.Stderr, "Get rel path failed: %s", err2)
+			continue
+		}
+		fmt.Printf("%s\n", relConfigPath[:len(relConfigPath)-5])
+	}
 }
