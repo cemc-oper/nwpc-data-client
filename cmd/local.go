@@ -4,9 +4,13 @@ import (
 	"errors"
 	"fmt"
 	"github.com/spf13/cobra"
+	"gopkg.in/yaml.v2"
+	"io/ioutil"
 	"os"
 	"path/filepath"
 	"strconv"
+	"strings"
+	"text/template"
 	"time"
 )
 
@@ -52,15 +56,22 @@ var localCmd = &cobra.Command{
 		}
 		return nil
 	},
-	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Printf("%s, %s\n", startTime, forecastTime)
-		configFilePath, err := findConfig(ConfigDir, DataType)
-		if err != nil {
-			fmt.Printf("model data type config is not found.")
-			return
-		}
-		loadConfig(configFilePath)
-	},
+	Run: findLocalFile,
+}
+
+func findLocalFile(cmd *cobra.Command, args []string) {
+	configFilePath, err := findConfig(ConfigDir, DataType)
+	if err != nil {
+		fmt.Printf("model data type config is not found.")
+		return
+	}
+	localDataConfig, err2 := loadConfig(configFilePath)
+	if err2 != nil {
+		fmt.Printf("load config failed.%e", err2)
+		return
+	}
+	filePath := findFile(localDataConfig, startTime, forecastTime)
+	fmt.Printf("%s\n", filePath)
 }
 
 func checkStartTime(value string) (time.Time, error) {
@@ -95,6 +106,84 @@ func findConfig(configDir string, dataType string) (string, error) {
 	return configFilePath, nil
 }
 
-func loadConfig(configFilePath string) {
+type LocalDataConfig struct {
+	Default  string   `yaml:"default"`
+	FileName string   `yaml:"file_name"`
+	Paths    []string `yaml:"paths"`
+}
 
+func loadConfig(configFilePath string) (LocalDataConfig, error) {
+	localDataConfig := LocalDataConfig{}
+
+	data, err := ioutil.ReadFile(configFilePath)
+	if err != nil {
+		return localDataConfig, err
+	}
+
+	err = yaml.Unmarshal(data, &localDataConfig)
+	if err != nil {
+		return localDataConfig, err
+	}
+
+	return localDataConfig, nil
+}
+
+func findFile(config LocalDataConfig, startTime time.Time, forecastTime string) string {
+	tpVar := generateTemplateObject(startTime, forecastTime)
+
+	fileNameTemplate := template.Must(template.New("fileName").Parse(config.FileName))
+	var fileNameBuilder strings.Builder
+	err := fileNameTemplate.Execute(&fileNameBuilder, tpVar)
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "file name template execute has error: %e", err)
+		return config.Default
+	}
+	fileName := fileNameBuilder.String()
+
+	for _, path := range config.Paths {
+		dirPathTemplate := template.Must(template.New("dirPath").Parse(path))
+		var dirPathBuilder strings.Builder
+		err := dirPathTemplate.Execute(&dirPathBuilder, tpVar)
+		if err != nil {
+			fmt.Fprintf(os.Stderr, "dir path template execute has error: %e", err)
+			continue
+		}
+		dirPath := dirPathBuilder.String()
+		filePath := filepath.Join(dirPath, fileName)
+		//fmt.Printf("%s\n", filePath)
+		if _, err := os.Stat(filePath); os.IsNotExist(err) {
+			continue
+		}
+		return filePath
+	}
+
+	return config.Default
+}
+
+type templateVariable struct {
+	Year     string
+	Month    string
+	Day      string
+	Hour     string
+	Forecast string
+	Year4DV  string
+	Month4DV string
+	Day4DV   string
+	Hour4DV  string
+}
+
+func generateTemplateObject(startTime time.Time, forecastTime string) templateVariable {
+	startTime4DV := startTime.Add(time.Hour * -3)
+	tpVariable := templateVariable{
+		Year:     startTime.Format("2006"),
+		Month:    startTime.Format("01"),
+		Day:      startTime.Format("02"),
+		Hour:     startTime.Format("15"),
+		Forecast: forecastTime,
+		Year4DV:  startTime4DV.Format("2006"),
+		Month4DV: startTime4DV.Format("01"),
+		Day4DV:   startTime4DV.Format("02"),
+		Hour4DV:  startTime4DV.Format("15"),
+	}
+	return tpVariable
 }
