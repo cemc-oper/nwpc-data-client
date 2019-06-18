@@ -142,7 +142,9 @@ func loadConfig(configFilePath string) (LocalDataConfig, error) {
 func findFile(config LocalDataConfig, startTime time.Time, forecastTime string) string {
 	tpVar := generateTemplateObject(startTime, forecastTime)
 
-	fileNameTemplate := template.Must(template.New("fileName").Parse(config.FileName))
+	fileNameTemplate := template.Must(template.New("fileName").
+		Delims("{", "}").Parse(config.FileName))
+
 	var fileNameBuilder strings.Builder
 	err := fileNameTemplate.Execute(&fileNameBuilder, tpVar)
 	if err != nil {
@@ -152,9 +154,10 @@ func findFile(config LocalDataConfig, startTime time.Time, forecastTime string) 
 	fileName := fileNameBuilder.String()
 
 	for _, path := range config.Paths {
-		dirPathTemplate := template.Must(template.New("dirPath").Parse(path))
+		dirPathTemplate := template.Must(template.New("dirPath").Delims("{", "}").Parse(path))
+
 		var dirPathBuilder strings.Builder
-		err := dirPathTemplate.Execute(&dirPathBuilder, tpVar)
+		err = dirPathTemplate.Execute(&dirPathBuilder, tpVar)
 		if err != nil {
 			fmt.Fprintf(os.Stderr, "dir path template execute has error: %s", err)
 			continue
