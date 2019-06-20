@@ -73,12 +73,12 @@ var localCmd = &cobra.Command{
 func findLocalFile(cmd *cobra.Command, args []string) {
 	configFilePath, err := findConfig(ConfigDir, DataType)
 	if err != nil {
-		fmt.Printf("model data type config is not found.")
+		fmt.Fprintf(os.Stderr, "model data type config is not found.\n")
 		return
 	}
 	localDataConfig, err2 := loadConfig(configFilePath)
 	if err2 != nil {
-		fmt.Printf("load config failed: %s", err2)
+		fmt.Fprintf(os.Stderr, "load config failed: %s\n", err2)
 		return
 	}
 	filePath := findFile(localDataConfig, StartTime, ForecastTime)
@@ -148,7 +148,7 @@ func findFile(config LocalDataConfig, startTime time.Time, forecastTime string) 
 	var fileNameBuilder strings.Builder
 	err := fileNameTemplate.Execute(&fileNameBuilder, tpVar)
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "file name template execute has error: %s", err)
+		fmt.Fprintf(os.Stderr, "file name template execute has error: %s\n", err)
 		return config.Default
 	}
 	fileName := fileNameBuilder.String()
@@ -159,7 +159,7 @@ func findFile(config LocalDataConfig, startTime time.Time, forecastTime string) 
 		var dirPathBuilder strings.Builder
 		err = dirPathTemplate.Execute(&dirPathBuilder, tpVar)
 		if err != nil {
-			fmt.Fprintf(os.Stderr, "dir path template execute has error: %s", err)
+			fmt.Fprintf(os.Stderr, "dir path template execute has error: %s\n", err)
 			continue
 		}
 		dirPath := dirPathBuilder.String()
@@ -216,13 +216,13 @@ func showDataTypes(cmd *cobra.Command, args []string) {
 
 	err := filepath.Walk(ConfigDir, walkConfigDirectory)
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "Walk config directory has error: %s", err)
+		fmt.Fprintf(os.Stderr, "Walk config directory has error: %s\n", err)
 		return
 	}
 	for _, configPath := range configFilePaths {
 		relConfigPath, err2 := filepath.Rel(ConfigDir, configPath)
 		if err2 != nil {
-			fmt.Fprintf(os.Stderr, "Get rel path failed: %s", err2)
+			fmt.Fprintf(os.Stderr, "Get rel path failed: %s\n", err2)
 			continue
 		}
 		fmt.Printf("%s\n", relConfigPath[:len(relConfigPath)-5])
