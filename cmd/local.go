@@ -3,12 +3,12 @@ package cmd
 import (
 	"errors"
 	"fmt"
+	"github.com/nwpc-oper/nwpc-data-client/data_client"
 	"github.com/spf13/cobra"
 	"gopkg.in/yaml.v2"
 	"io/ioutil"
 	"os"
 	"path/filepath"
-	"strconv"
 	"strings"
 	"text/template"
 	"time"
@@ -50,12 +50,12 @@ var localCmd = &cobra.Command{
 			return errors.New("requires two arguments")
 		}
 		var err error
-		StartTime, err = checkStartTime(args[0])
+		StartTime, err = data_client.CheckStartTime(args[0])
 		if err != nil {
 			return fmt.Errorf("check StartTime failed: %s", err)
 		}
 
-		ForecastTime, err = checkForecastTime(args[1])
+		ForecastTime, err = data_client.CheckForecastTime(args[1])
 		if err != nil {
 			return fmt.Errorf("check ForecastTime failed: %s", err)
 		}
@@ -83,30 +83,6 @@ func findLocalFile(cmd *cobra.Command, args []string) {
 	}
 	filePath := findFile(localDataConfig, StartTime, ForecastTime)
 	fmt.Printf("%s\n", filePath)
-}
-
-func checkStartTime(value string) (time.Time, error) {
-	if len(value) != 10 {
-		return time.Time{}, fmt.Errorf("length of start_time must be 10")
-	}
-	s, err := time.Parse("2006010215", value)
-	if err != nil {
-		return s, err
-	}
-	return s, nil
-}
-
-func checkForecastTime(value string) (string, error) {
-	if len(value) > 3 {
-		return "", fmt.Errorf("length of forecast time must less or equal to 3")
-	}
-
-	intValue, err := strconv.Atoi(value)
-	if err != nil {
-		return "", err
-	}
-
-	return fmt.Sprintf("%03d", intValue), nil
 }
 
 func findConfig(configDir string, dataType string) (string, error) {
@@ -140,7 +116,7 @@ func loadConfig(configFilePath string) (LocalDataConfig, error) {
 }
 
 func findFile(config LocalDataConfig, startTime time.Time, forecastTime string) string {
-	tpVar := generateTemplateObject(startTime, forecastTime)
+	tpVar := data_client.GenerateTemplateVariable(startTime, forecastTime)
 
 	fileNameTemplate := template.Must(template.New("fileName").
 		Delims("{", "}").Parse(config.FileName))
@@ -172,34 +148,6 @@ func findFile(config LocalDataConfig, startTime time.Time, forecastTime string) 
 	}
 
 	return config.Default
-}
-
-type templateVariable struct {
-	Year     string
-	Month    string
-	Day      string
-	Hour     string
-	Forecast string
-	Year4DV  string
-	Month4DV string
-	Day4DV   string
-	Hour4DV  string
-}
-
-func generateTemplateObject(startTime time.Time, forecastTime string) templateVariable {
-	startTime4DV := startTime.Add(time.Hour * -3)
-	tpVariable := templateVariable{
-		Year:     startTime.Format("2006"),
-		Month:    startTime.Format("01"),
-		Day:      startTime.Format("02"),
-		Hour:     startTime.Format("15"),
-		Forecast: forecastTime,
-		Year4DV:  startTime4DV.Format("2006"),
-		Month4DV: startTime4DV.Format("01"),
-		Day4DV:   startTime4DV.Format("02"),
-		Hour4DV:  startTime4DV.Format("15"),
-	}
-	return tpVariable
 }
 
 func showDataTypes(cmd *cobra.Command, args []string) {

@@ -1,4 +1,4 @@
-module nwpc-data-client
+module github.com/nwpc-oper/nwpc-data-client
 
 go 1.12
 
@@ -12,10 +12,12 @@ require (
 	github.com/google/pprof v0.0.0-20190515194954-54271f7e092f // indirect
 	github.com/kisielk/errcheck v1.2.0 // indirect
 	github.com/konsorten/go-windows-terminal-sequences v1.0.2 // indirect
+	github.com/kr/fs v0.1.0 // indirect
 	github.com/kr/pty v1.1.4 // indirect
 	github.com/magiconair/properties v1.8.1 // indirect
 	github.com/pelletier/go-toml v1.4.0 // indirect
 	github.com/pkg/errors v0.8.1 // indirect
+	github.com/pkg/sftp v1.10.0 // indirect
 	github.com/prometheus/common v0.4.1 // indirect
 	github.com/prometheus/procfs v0.0.2 // indirect
 	github.com/prometheus/tsdb v0.8.0 // indirect
