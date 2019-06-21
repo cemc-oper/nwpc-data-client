@@ -3,7 +3,7 @@
 
 default: NOTFOUND
 
-file_name: modelvar{.Year4DV}{.Month4DV}{.Day4DV}{.Hour4DV}_{Forecast}
+file_name: modelvar{.Year4DV}{.Month4DV}{.Day4DV}{.Hour4DV}_{.Forecast}
 
 paths:
   - /g2/nwp/GRAPES_GFS/MODEL/data/NWP_GDAS/{.Hour4DV}/output
