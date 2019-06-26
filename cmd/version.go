@@ -6,8 +6,9 @@ import (
 )
 
 var (
-	Version = "Unknown Version"
-	Date    = "Unknown Date"
+	Version   = "Unknown version"
+	BuildTime = "Unknown build time"
+	GitCommit = "Unknown GitCommit"
 )
 
 func init() {
@@ -19,7 +20,7 @@ var versionCmd = &cobra.Command{
 	Short: "Print version information",
 	Long:  "Print version information",
 	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Printf("Version %s\n", Version)
-		fmt.Printf("Build at %s\n", Date)
+		fmt.Printf("Version %s (%s)\n", Version, GitCommit)
+		fmt.Printf("Build at %s\n", BuildTime)
 	},
 }
