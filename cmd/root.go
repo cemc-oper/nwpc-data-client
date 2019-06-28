@@ -11,7 +11,7 @@ var rootCmd = &cobra.Command{
 	Short: "Data client for NWPC.",
 	Long:  "A data client for GRAPES models in NWPC.",
 	Run: func(cmd *cobra.Command, args []string) {
-
+		cmd.Help()
 	},
 }
 

@@ -5,11 +5,8 @@ import (
 	"fmt"
 	"github.com/nwpc-oper/nwpc-data-client/data_client"
 	"github.com/spf13/cobra"
-	"golang.org/x/crypto/ssh"
-	"golang.org/x/crypto/ssh/knownhosts"
 	"gopkg.in/yaml.v2"
 	"io/ioutil"
-	"log"
 	"os"
 	"path/filepath"
 	"strings"
@@ -37,27 +34,30 @@ func init() {
 	hpcCmd.Flags().StringVar(&DataType, "data-type", "",
 		"Data type used to locate config file path in config dir.")
 
-	hpcCmd.Flags().BoolVar(&ShowTypes, "show-types", false,
-		"Show supported data types defined in config dir and exit.")
-
 	hpcCmd.Flags().StringVar(&StorageUser, "storage-user", user, "user name for storage.")
 	hpcCmd.Flags().StringVar(&StorageHost, "storage-host", "10.40.140.44:22", "host for storage")
 	hpcCmd.Flags().StringVar(&PrivateKeyFilePath, "private-key", fmt.Sprintf("%s/.ssh/id_rsa", home),
 		"private key file path")
 	hpcCmd.Flags().StringVar(&HostKeyFilePath, "host-key", fmt.Sprintf("%s/.ssh/known_hosts", home),
 		"host key file path")
+
+	hpcCmd.Flags().BoolVar(&ShowTypes, "show-types", false,
+		"Show supported data types defined in config dir and exit.")
 }
 
-var hpcCmd = &cobra.Command{
-	Use:   "hpc",
-	Short: "Find data path on hpc.",
-	Long: `Find data path on hpc using config files in config dir.
+const hpcCommandDocString = `nwpc_data_client hpc
+Find data path on hpc using config files in config dir.
 
 Support both to find local files and to find files on storage nodes.
 
 Args:
     start_time: YYYYMMDDHH, such as 2018080100
-    forecast_time: FFF, such as 000`,
+    forecast_time: FFF, such as 000`
+
+var hpcCmd = &cobra.Command{
+	Use:   "hpc",
+	Short: "Find data path on hpc.",
+	Long:  hpcCommandDocString,
 	Args: func(cmd *cobra.Command, args []string) error {
 		if ShowTypes {
 			return nil
@@ -165,7 +165,7 @@ func findHpcFile(config HpcDataConfig, startTime time.Time, forecastTime string)
 		//fmt.Printf("%s\n", filePath)
 
 		if pathType == "storage" {
-			if checkFileOverSSH(filePath) {
+			if data_client.CheckFileOverSSH(filePath, StorageUser, StorageHost, PrivateKeyFilePath, HostKeyFilePath) {
 				return HpcPathItem{
 					Path:     filePath,
 					PathType: pathType,
@@ -173,12 +173,11 @@ func findHpcFile(config HpcDataConfig, startTime time.Time, forecastTime string)
 			}
 		} else if pathType == "local" {
 			// check if file exists
-			if _, err := os.Stat(filePath); os.IsNotExist(err) {
-				continue
-			}
-			return HpcPathItem{
-				Path:     filePath,
-				PathType: pathType,
+			if data_client.CheckLocalFile(filePath) {
+				return HpcPathItem{
+					Path:     filePath,
+					PathType: pathType,
+				}
 			}
 		} else {
 			fmt.Fprintf(os.Stderr, "path type is not supported: %s", pathType)
@@ -189,53 +188,4 @@ func findHpcFile(config HpcDataConfig, startTime time.Time, forecastTime string)
 		Path:     config.Default,
 		PathType: config.Default,
 	}
-}
-
-func checkFileOverSSH(filePath string) bool {
-	key, err := ioutil.ReadFile(PrivateKeyFilePath)
-	if err != nil {
-		log.Fatalf("unable to read private key: %v", err)
-	}
-
-	signer, err := ssh.ParsePrivateKey(key)
-	if err != nil {
-		log.Fatalf("unable to parse private key: %v", err)
-	}
-
-	hostKeyCallback, err := knownhosts.New(HostKeyFilePath)
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	config := &ssh.ClientConfig{
-		User: StorageUser,
-		Auth: []ssh.AuthMethod{
-			ssh.PublicKeys(signer),
-		},
-		HostKeyCallback: hostKeyCallback,
-	}
-
-	client, err := ssh.Dial("tcp", StorageHost, config)
-	if err != nil {
-		log.Fatalf("unable to connect: %v", err)
-	}
-	defer client.Close()
-
-	session, err := client.NewSession()
-	if err != nil {
-		log.Fatalf("unable to create session: %s", err)
-	}
-	defer session.Close()
-
-	b, err := session.Output(
-		fmt.Sprintf("[[ -f %s ]] && echo \"File exists\" || echo \"File does not exist\"", filePath))
-	if err != nil {
-		log.Fatalf("failed to execute: %s", err)
-	}
-	outputString := strings.TrimSuffix(string(b), "\n")
-
-	if outputString == "File exists" {
-		return true
-	}
-	return false
 }

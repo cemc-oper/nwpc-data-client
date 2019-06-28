@@ -16,21 +16,30 @@ import (
 
 func init() {
 	rootCmd.AddCommand(localCmd)
+
+	localCmd.Flags().SortFlags = false
+
 	localCmd.Flags().StringVar(&ConfigDir, "config-dir", "",
 		"Config dir")
+
 	localCmd.Flags().StringVar(&DataType, "data-type", "",
 		"Data type used to locate config file path in config dir.")
+
 	localCmd.Flags().BoolVar(&ShowTypes, "show-types", false,
 		"Show supported data types defined in config dir and exit.")
 }
 
+const localCommandDocString = `nwpc_data_client local
+Find local data path using config files in config dir.
+
+Args:
+    start_time: YYYYMMDDHH, such as 2018080100
+    forecast_time: FFF, such as 000`
+
 var localCmd = &cobra.Command{
 	Use:   "local",
 	Short: "Find local data path.",
-	Long: `Find local data path using config files in config dir.
-
-    start_time: YYYYMMDDHH, such as 2018080100
-    forecast_time: FFF, such as 000`,
+	Long:  localCommandDocString,
 	Args: func(cmd *cobra.Command, args []string) error {
 		if ShowTypes {
 			return nil
@@ -133,10 +142,10 @@ func findFile(config LocalDataConfig, startTime time.Time, forecastTime string) 
 		dirPath := dirPathBuilder.String()
 		filePath := filepath.Join(dirPath, fileName)
 		//fmt.Printf("%s\n", filePath)
-		if _, err := os.Stat(filePath); os.IsNotExist(err) {
-			continue
+
+		if data_client.CheckLocalFile(filePath) {
+			return filePath
 		}
-		return filePath
 	}
 
 	return config.Default
