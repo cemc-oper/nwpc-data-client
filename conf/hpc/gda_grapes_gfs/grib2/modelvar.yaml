@@ -1,0 +1,16 @@
+# gda grapes gfs
+#   grib2 modelvar
+
+default: NOTFOUND
+
+file_name: modelvar{.Year}{.Month}{.Day}{.Hour}{.Forecast}.grb2
+
+paths:
+  - type: local
+    path: /g2/nwp_pd/NWP_PST_DATA/GDA_GRAPES_GFS_V2.2_POST/gfs_togrib2/output_togrib2/{.Year}{.Month}{.Day}{.Hour}
+  - type: local
+    path: /g2/nwp/OPER_ARCH_TEST/nwp/GRAPES_GFS/GDA_GRAPES_GFS/Prod-grib/{.Year4DV}{.Month4DV}{.Day4DV}{.Hour4DV}/MODELVAR
+  - type: local
+    path: /g2/nwp/OPER_ARCH_TEST/nwp/GDAS_GRIB2_GRAPES/MODELVAR/GRAPES_GFS_MODELVAR_{.Year}{.Month}{.Day}{.Hour}
+  - type: storage
+    path: /sstorage1/COMMONDATA/OPER/nwp/GRAPES_GFS/GDA_GRAPES_GFS/Prod-grib/{.Year4DV}{.Month4DV}{.Day4DV}{.Hour4DV}/MODELVAR

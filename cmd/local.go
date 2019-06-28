@@ -14,14 +14,6 @@ import (
 	"time"
 )
 
-var (
-	ConfigDir    = ""
-	DataType     = ""
-	ShowTypes    = false
-	StartTime    time.Time
-	ForecastTime = ""
-)
-
 func init() {
 	rootCmd.AddCommand(localCmd)
 	localCmd.Flags().StringVar(&ConfigDir, "config-dir", "",

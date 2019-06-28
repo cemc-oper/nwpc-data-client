@@ -1,0 +1,16 @@
+# gmf grapes gfs
+#   modelvar
+
+default: NOTFOUND
+
+file_name: modelvar{.Year}{.Month}{.Day}{.Hour}_{.Forecast}
+
+paths:
+  - type: local
+    path: /g2/nwp/GRAPES_GFS/MODEL/data/NWP_GMFS/{.Hour4DV}/output
+  - type: local
+    path: /g2/nwp/GRAPES_GFS/DATA/DATABAK/NWP_GMFS/FCST_results
+  - type: local
+    path: /g2/nwp/OPER_ARCH_TEST/nwp/GRAPES_GFS/GMF_GRAPES_GFS/Fcst-long/{.Year4DV}{.Month4DV}{.Day4DV}{.Hour4DV}
+  - type: storage
+    path: /sstorage1/COMMONDATA/OPER/nwp/GRAPES_GFS/GMF_GRAPES_GFS/Fcst-long/{.Year4DV}{.Month4DV}{.Day4DV}{.Hour4DV}

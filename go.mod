@@ -32,7 +32,7 @@ require (
 	github.com/stretchr/objx v0.2.0 // indirect
 	github.com/ugorji/go v1.1.5-pre // indirect
 	go.opencensus.io v0.22.0 // indirect
-	golang.org/x/crypto v0.0.0-20190605123033-f99c8df09eb5 // indirect
+	golang.org/x/crypto v0.0.0-20190605123033-f99c8df09eb5
 	golang.org/x/exp v0.0.0-20190510132918-efd6b22b2522 // indirect
 	golang.org/x/image v0.0.0-20190523035834-f03afa92d3ff // indirect
 	golang.org/x/lint v0.0.0-20190409202823-959b441ac422 // indirect
