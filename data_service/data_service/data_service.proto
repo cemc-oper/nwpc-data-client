@@ -1,0 +1,16 @@
+syntax = "proto3";
+
+message DataRequest{
+    string data_type = 1;
+    string start_time = 2;
+    string forecast_hour = 3;
+}
+
+message DataPathResponse{
+    string location_type = 1;
+    string location = 2;
+}
+
+service NWPCDataService{
+    rpc FindDataPath(DataRequest) returns (DataPathResponse){}
+}
