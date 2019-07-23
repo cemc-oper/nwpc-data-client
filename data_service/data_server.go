@@ -3,7 +3,7 @@ package data_service
 import (
 	"context"
 	"fmt"
-	"github.com/nwpc-oper/nwpc-data-client/data_client"
+	"github.com/nwpc-oper/nwpc-data-client/common"
 	"os"
 	"path/filepath"
 	"strings"
@@ -22,24 +22,24 @@ func (s *NWPCDataServer) FindDataPath(ctx context.Context, req *DataRequest) (*D
 
 	emptyResponse := DataPathResponse{LocationType: "unknown", Location: "unknown"}
 
-	configFilePath, err := data_client.FindConfig(s.ConfigDir, dataType)
+	configFilePath, err := common.FindConfig(s.ConfigDir, dataType)
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "model data type config is not found.\n")
 		return &emptyResponse, fmt.Errorf("model data type config is not found")
 	}
 
-	hpcDataConfig, err := data_client.LoadHpcConfig(configFilePath)
+	hpcDataConfig, err := common.LoadHpcConfig(configFilePath)
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "load config failed: %s\n", err)
 		return &emptyResponse, fmt.Errorf("load config failed: %v", err)
 	}
 
-	startTime, err := data_client.CheckStartTime(req.GetStartTime())
+	startTime, err := common.CheckStartTime(req.GetStartTime())
 	if err != nil {
 		return &emptyResponse, fmt.Errorf("check StartTime failed: %s", err)
 	}
 
-	forecastTime, err := data_client.CheckForecastTime(req.GetForecastTime())
+	forecastTime, err := common.CheckForecastTime(req.GetForecastTime())
 	if err != nil {
 		return &emptyResponse, fmt.Errorf("check ForecastTime failed: %s", err)
 	}
@@ -54,8 +54,8 @@ func (s *NWPCDataServer) FindDataPath(ctx context.Context, req *DataRequest) (*D
 	}, nil
 }
 
-func findFile(config data_client.HpcDataConfig, startTime time.Time, forecastTime time.Duration) data_client.HpcPathItem {
-	tpVar := data_client.GenerateTemplateVariable(startTime, forecastTime)
+func findFile(config common.HpcDataConfig, startTime time.Time, forecastTime time.Duration) common.HpcPathItem {
+	tpVar := common.GenerateTemplateVariable(startTime, forecastTime)
 
 	fileNameTemplate := template.Must(template.New("fileName").
 		Delims("{", "}").Parse(config.FileName))
@@ -64,7 +64,7 @@ func findFile(config data_client.HpcDataConfig, startTime time.Time, forecastTim
 	err := fileNameTemplate.Execute(&fileNameBuilder, tpVar)
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "file name template execute has error: %s\n", err)
-		return data_client.HpcPathItem{
+		return common.HpcPathItem{
 			Path:     config.Default,
 			PathType: config.Default,
 		}
@@ -86,15 +86,15 @@ func findFile(config data_client.HpcDataConfig, startTime time.Time, forecastTim
 		filePath := filepath.Join(dirPath, fileName)
 		//fmt.Printf("%s\n", filePath)
 
-		if data_client.CheckLocalFile(filePath) {
-			return data_client.HpcPathItem{
+		if common.CheckLocalFile(filePath) {
+			return common.HpcPathItem{
 				Path:     filePath,
 				PathType: pathType,
 			}
 		}
 	}
 
-	return data_client.HpcPathItem{
+	return common.HpcPathItem{
 		Path:     config.Default,
 		PathType: config.Default,
 	}

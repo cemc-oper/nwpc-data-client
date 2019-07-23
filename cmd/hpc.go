@@ -3,7 +3,7 @@ package cmd
 import (
 	"errors"
 	"fmt"
-	"github.com/nwpc-oper/nwpc-data-client/data_client"
+	"github.com/nwpc-oper/nwpc-data-client/common"
 	"github.com/spf13/cobra"
 	"os"
 	"path/filepath"
@@ -67,12 +67,12 @@ var hpcCmd = &cobra.Command{
 			return errors.New("requires two arguments")
 		}
 		var err error
-		StartTime, err = data_client.CheckStartTime(args[0])
+		StartTime, err = common.CheckStartTime(args[0])
 		if err != nil {
 			return fmt.Errorf("check StartTime failed: %s", err)
 		}
 
-		ForecastTime, err = data_client.CheckForecastHour(args[1])
+		ForecastTime, err = common.CheckForecastHour(args[1])
 		if err != nil {
 			return fmt.Errorf("check ForecastTime failed: %s", err)
 		}
@@ -88,12 +88,12 @@ var hpcCmd = &cobra.Command{
 }
 
 func runHpcCommand(cmd *cobra.Command, args []string) {
-	configFilePath, err := data_client.FindConfig(ConfigDir, DataType)
+	configFilePath, err := common.FindConfig(ConfigDir, DataType)
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "model data type config is not found.\n")
 		return
 	}
-	hpcDataConfig, err2 := data_client.LoadHpcConfig(configFilePath)
+	hpcDataConfig, err2 := common.LoadHpcConfig(configFilePath)
 	if err2 != nil {
 		fmt.Fprintf(os.Stderr, "load config failed: %s\n", err2)
 		return
@@ -103,8 +103,8 @@ func runHpcCommand(cmd *cobra.Command, args []string) {
 	fmt.Printf("%s\n", filePath.Path)
 }
 
-func findHpcFile(config data_client.HpcDataConfig, startTime time.Time, forecastTime time.Duration) data_client.HpcPathItem {
-	tpVar := data_client.GenerateTemplateVariable(startTime, forecastTime)
+func findHpcFile(config common.HpcDataConfig, startTime time.Time, forecastTime time.Duration) common.HpcPathItem {
+	tpVar := common.GenerateTemplateVariable(startTime, forecastTime)
 
 	fileNameTemplate := template.Must(template.New("fileName").
 		Delims("{", "}").Parse(config.FileName))
@@ -113,7 +113,7 @@ func findHpcFile(config data_client.HpcDataConfig, startTime time.Time, forecast
 	err := fileNameTemplate.Execute(&fileNameBuilder, tpVar)
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "file name template execute has error: %s\n", err)
-		return data_client.HpcPathItem{
+		return common.HpcPathItem{
 			Path:     config.Default,
 			PathType: config.Default,
 		}
@@ -136,16 +136,16 @@ func findHpcFile(config data_client.HpcDataConfig, startTime time.Time, forecast
 		//fmt.Printf("%s\n", filePath)
 
 		if pathType == "storage" {
-			if data_client.CheckFileOverSSH(filePath, StorageUser, StorageHost, PrivateKeyFilePath, HostKeyFilePath) {
-				return data_client.HpcPathItem{
+			if common.CheckFileOverSSH(filePath, StorageUser, StorageHost, PrivateKeyFilePath, HostKeyFilePath) {
+				return common.HpcPathItem{
 					Path:     filePath,
 					PathType: pathType,
 				}
 			}
 		} else if pathType == "local" {
 			// check if file exists
-			if data_client.CheckLocalFile(filePath) {
-				return data_client.HpcPathItem{
+			if common.CheckLocalFile(filePath) {
+				return common.HpcPathItem{
 					Path:     filePath,
 					PathType: pathType,
 				}
@@ -155,7 +155,7 @@ func findHpcFile(config data_client.HpcDataConfig, startTime time.Time, forecast
 		}
 	}
 
-	return data_client.HpcPathItem{
+	return common.HpcPathItem{
 		Path:     config.Default,
 		PathType: config.Default,
 	}

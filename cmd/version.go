@@ -2,13 +2,8 @@ package cmd
 
 import (
 	"fmt"
+	"github.com/nwpc-oper/nwpc-data-client/common"
 	"github.com/spf13/cobra"
-)
-
-var (
-	Version   = "Unknown version"
-	BuildTime = "Unknown build time"
-	GitCommit = "Unknown GitCommit"
 )
 
 func init() {
@@ -20,7 +15,7 @@ var versionCmd = &cobra.Command{
 	Short: "Print version information",
 	Long:  "Print version information",
 	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Printf("Version %s (%s)\n", Version, GitCommit)
-		fmt.Printf("Build at %s\n", BuildTime)
+		fmt.Printf("Version %s (%s)\n", common.Version, common.GitCommit)
+		fmt.Printf("Build at %s\n", common.BuildTime)
 	},
 }

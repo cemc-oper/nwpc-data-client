@@ -1,4 +1,4 @@
-package data_client
+package common
 
 import (
 	"gopkg.in/yaml.v2"

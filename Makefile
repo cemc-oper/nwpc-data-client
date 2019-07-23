@@ -8,14 +8,18 @@ GIT_COMMIT := $(shell git rev-parse --short HEAD 2> /dev/null || true)
 
 nwpc_data_client:
 	go build \
-		-ldflags "-X \"github.com/nwpc-oper/nwpc-data-client/cmd.Version=${VERSION}\" \
-		-X \"github.com/nwpc-oper/nwpc-data-client/cmd.BuildTime=${BUILD_TIME}\" \
-		-X \"github.com/nwpc-oper/nwpc-data-client/cmd.GitCommit=${GIT_COMMIT}\" " \
+		-ldflags "-X \"github.com/nwpc-oper/nwpc-data-client/common.Version=${VERSION}\" \
+		-X \"github.com/nwpc-oper/nwpc-data-client/common.BuildTime=${BUILD_TIME}\" \
+		-X \"github.com/nwpc-oper/nwpc-data-client/common.GitCommit=${GIT_COMMIT}\" " \
 		-gcflags "all=-N -l" \
 		-o bin/nwpc_data_client \
 		main.go
 
 nwpc_data_server:
 	go build \
+		-ldflags "-X \"github.com/nwpc-oper/nwpc-data-client/common.Version=${VERSION}\" \
+		-X \"github.com/nwpc-oper/nwpc-data-client/common.BuildTime=${BUILD_TIME}\" \
+		-X \"github.com/nwpc-oper/nwpc-data-client/common.GitCommit=${GIT_COMMIT}\" " \
+		-gcflags "all=-N -l" \
 		-o bin/nwpc_data_server \
 		data_service/data_server/main.go

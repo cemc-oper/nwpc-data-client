@@ -3,7 +3,7 @@ package cmd
 import (
 	"errors"
 	"fmt"
-	"github.com/nwpc-oper/nwpc-data-client/data_client"
+	"github.com/nwpc-oper/nwpc-data-client/common"
 	"github.com/spf13/cobra"
 	"gopkg.in/yaml.v2"
 	"io/ioutil"
@@ -51,12 +51,12 @@ var localCmd = &cobra.Command{
 			return errors.New("requires two arguments")
 		}
 		var err error
-		StartTime, err = data_client.CheckStartTime(args[0])
+		StartTime, err = common.CheckStartTime(args[0])
 		if err != nil {
 			return fmt.Errorf("check StartTime failed: %s", err)
 		}
 
-		ForecastTime, err = data_client.CheckForecastHour(args[1])
+		ForecastTime, err = common.CheckForecastHour(args[1])
 		if err != nil {
 			return fmt.Errorf("check ForecastTime failed: %s", err)
 		}
@@ -72,7 +72,7 @@ var localCmd = &cobra.Command{
 }
 
 func findLocalFile(cmd *cobra.Command, args []string) {
-	configFilePath, err := data_client.FindConfig(ConfigDir, DataType)
+	configFilePath, err := common.FindConfig(ConfigDir, DataType)
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "model data type config is not found.\n")
 		return
@@ -109,7 +109,7 @@ func loadConfig(configFilePath string) (LocalDataConfig, error) {
 }
 
 func findFile(config LocalDataConfig, startTime time.Time, forecastTime time.Duration) string {
-	tpVar := data_client.GenerateTemplateVariable(startTime, forecastTime)
+	tpVar := common.GenerateTemplateVariable(startTime, forecastTime)
 
 	fileNameTemplate := template.Must(template.New("fileName").
 		Delims("{", "}").Parse(config.FileName))
@@ -135,7 +135,7 @@ func findFile(config LocalDataConfig, startTime time.Time, forecastTime time.Dur
 		filePath := filepath.Join(dirPath, fileName)
 		//fmt.Printf("%s\n", filePath)
 
-		if data_client.CheckLocalFile(filePath) {
+		if common.CheckLocalFile(filePath) {
 			return filePath
 		}
 	}
