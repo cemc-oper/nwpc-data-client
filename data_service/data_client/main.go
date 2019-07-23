@@ -23,8 +23,8 @@ func main() {
 
 	r, err := c.FindDataPath(ctx, &data_service.DataRequest{
 		DataType:     "gmf_grapes_gfs/bin/modelvar",
-		StartTime:    "2019072200",
-		ForecastTime: "0h",
+		StartTime:    "2019072100",
+		ForecastTime: "120h",
 	})
 	if err != nil {
 		log.Fatalf("could not greet: %v", err)

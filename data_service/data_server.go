@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"github.com/nwpc-oper/nwpc-data-client/common"
+	"log"
 	"os"
 	"path/filepath"
 	"strings"
@@ -17,10 +18,12 @@ type NWPCDataServer struct {
 
 func (s *NWPCDataServer) FindDataPath(ctx context.Context, req *DataRequest) (*DataPathResponse, error) {
 	dataType := req.GetDataType()
+	startTimeString := req.GetStartTime()
+	forecastTimeString := req.GetForecastTime()
 
-	fmt.Printf("find data path for: %s\n", dataType)
+	log.Printf("find data path for type %s: %s %s\n", dataType, startTimeString, forecastTimeString)
 
-	emptyResponse := DataPathResponse{LocationType: "unknown", Location: "unknown"}
+	emptyResponse := DataPathResponse{LocationType: "NOTFOUND", Location: "NOTFOUND"}
 
 	configFilePath, err := common.FindConfig(s.ConfigDir, dataType)
 	if err != nil {
@@ -34,12 +37,12 @@ func (s *NWPCDataServer) FindDataPath(ctx context.Context, req *DataRequest) (*D
 		return &emptyResponse, fmt.Errorf("load config failed: %v", err)
 	}
 
-	startTime, err := common.CheckStartTime(req.GetStartTime())
+	startTime, err := common.CheckStartTime(startTimeString)
 	if err != nil {
 		return &emptyResponse, fmt.Errorf("check StartTime failed: %s", err)
 	}
 
-	forecastTime, err := common.CheckForecastTime(req.GetForecastTime())
+	forecastTime, err := common.CheckForecastTime(forecastTimeString)
 	if err != nil {
 		return &emptyResponse, fmt.Errorf("check ForecastTime failed: %s", err)
 	}
