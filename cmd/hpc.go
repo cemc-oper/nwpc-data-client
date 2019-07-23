@@ -5,8 +5,6 @@ import (
 	"fmt"
 	"github.com/nwpc-oper/nwpc-data-client/data_client"
 	"github.com/spf13/cobra"
-	"gopkg.in/yaml.v2"
-	"io/ioutil"
 	"os"
 	"path/filepath"
 	"strings"
@@ -95,7 +93,7 @@ func runHpcCommand(cmd *cobra.Command, args []string) {
 		fmt.Fprintf(os.Stderr, "model data type config is not found.\n")
 		return
 	}
-	hpcDataConfig, err2 := loadHpcConfig(configFilePath)
+	hpcDataConfig, err2 := data_client.LoadHpcConfig(configFilePath)
 	if err2 != nil {
 		fmt.Fprintf(os.Stderr, "load config failed: %s\n", err2)
 		return
@@ -105,34 +103,7 @@ func runHpcCommand(cmd *cobra.Command, args []string) {
 	fmt.Printf("%s\n", filePath.Path)
 }
 
-type HpcPathItem struct {
-	PathType string `yaml:"type"`
-	Path     string `yaml:"path"`
-}
-
-type HpcDataConfig struct {
-	Default  string        `yaml:"default"`
-	FileName string        `yaml:"file_name"`
-	Paths    []HpcPathItem `yaml:"paths"`
-}
-
-func loadHpcConfig(configFilePath string) (HpcDataConfig, error) {
-	dataConfig := HpcDataConfig{}
-
-	data, err := ioutil.ReadFile(configFilePath)
-	if err != nil {
-		return dataConfig, err
-	}
-
-	err = yaml.Unmarshal(data, &dataConfig)
-	if err != nil {
-		return dataConfig, err
-	}
-
-	return dataConfig, nil
-}
-
-func findHpcFile(config HpcDataConfig, startTime time.Time, forecastTime string) HpcPathItem {
+func findHpcFile(config data_client.HpcDataConfig, startTime time.Time, forecastTime string) data_client.HpcPathItem {
 	tpVar := data_client.GenerateTemplateVariable(startTime, forecastTime)
 
 	fileNameTemplate := template.Must(template.New("fileName").
@@ -142,7 +113,7 @@ func findHpcFile(config HpcDataConfig, startTime time.Time, forecastTime string)
 	err := fileNameTemplate.Execute(&fileNameBuilder, tpVar)
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "file name template execute has error: %s\n", err)
-		return HpcPathItem{
+		return data_client.HpcPathItem{
 			Path:     config.Default,
 			PathType: config.Default,
 		}
@@ -166,7 +137,7 @@ func findHpcFile(config HpcDataConfig, startTime time.Time, forecastTime string)
 
 		if pathType == "storage" {
 			if data_client.CheckFileOverSSH(filePath, StorageUser, StorageHost, PrivateKeyFilePath, HostKeyFilePath) {
-				return HpcPathItem{
+				return data_client.HpcPathItem{
 					Path:     filePath,
 					PathType: pathType,
 				}
@@ -174,7 +145,7 @@ func findHpcFile(config HpcDataConfig, startTime time.Time, forecastTime string)
 		} else if pathType == "local" {
 			// check if file exists
 			if data_client.CheckLocalFile(filePath) {
-				return HpcPathItem{
+				return data_client.HpcPathItem{
 					Path:     filePath,
 					PathType: pathType,
 				}
@@ -184,7 +155,7 @@ func findHpcFile(config HpcDataConfig, startTime time.Time, forecastTime string)
 		}
 	}
 
-	return HpcPathItem{
+	return data_client.HpcPathItem{
 		Path:     config.Default,
 		PathType: config.Default,
 	}
