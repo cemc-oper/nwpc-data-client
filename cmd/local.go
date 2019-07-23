@@ -56,7 +56,7 @@ var localCmd = &cobra.Command{
 			return fmt.Errorf("check StartTime failed: %s", err)
 		}
 
-		ForecastTime, err = data_client.CheckForecastTime(args[1])
+		ForecastTime, err = data_client.CheckForecastHour(args[1])
 		if err != nil {
 			return fmt.Errorf("check ForecastTime failed: %s", err)
 		}
@@ -72,7 +72,7 @@ var localCmd = &cobra.Command{
 }
 
 func findLocalFile(cmd *cobra.Command, args []string) {
-	configFilePath, err := findConfig(ConfigDir, DataType)
+	configFilePath, err := data_client.FindConfig(ConfigDir, DataType)
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "model data type config is not found.\n")
 		return
@@ -84,14 +84,6 @@ func findLocalFile(cmd *cobra.Command, args []string) {
 	}
 	filePath := findFile(localDataConfig, StartTime, ForecastTime)
 	fmt.Printf("%s\n", filePath)
-}
-
-func findConfig(configDir string, dataType string) (string, error) {
-	configFilePath := filepath.Join(configDir, dataType+".yaml")
-	if _, err := os.Stat(configFilePath); os.IsNotExist(err) {
-		return configFilePath, fmt.Errorf("file is not exist")
-	}
-	return configFilePath, nil
 }
 
 type LocalDataConfig struct {
@@ -116,7 +108,7 @@ func loadConfig(configFilePath string) (LocalDataConfig, error) {
 	return localDataConfig, nil
 }
 
-func findFile(config LocalDataConfig, startTime time.Time, forecastTime string) string {
+func findFile(config LocalDataConfig, startTime time.Time, forecastTime time.Duration) string {
 	tpVar := data_client.GenerateTemplateVariable(startTime, forecastTime)
 
 	fileNameTemplate := template.Must(template.New("fileName").

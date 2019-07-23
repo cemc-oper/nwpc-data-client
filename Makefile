@@ -1,4 +1,5 @@
-.PHONY: nwpc_data_client
+all: nwpc_data_client nwpc_data_server
+.PHONY: nwpc_data_client nwpc_data_server
 
 VERSION := $(shell cat VERSION)
 BUILD_TIME := $(shell date --utc --rfc-3339 ns 2> /dev/null | sed -e 's/ /T/')
@@ -13,3 +14,8 @@ nwpc_data_client:
 		-gcflags "all=-N -l" \
 		-o bin/nwpc_data_client \
 		main.go
+
+nwpc_data_server:
+	go build \
+		-o bin/nwpc_data_server \
+		data_service/data_server/main.go

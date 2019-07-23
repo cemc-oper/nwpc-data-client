@@ -7,5 +7,5 @@ var (
 	DataType     = ""
 	ShowTypes    = false
 	StartTime    time.Time
-	ForecastTime = ""
+	ForecastTime time.Duration
 )

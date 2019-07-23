@@ -72,7 +72,7 @@ var hpcCmd = &cobra.Command{
 			return fmt.Errorf("check StartTime failed: %s", err)
 		}
 
-		ForecastTime, err = data_client.CheckForecastTime(args[1])
+		ForecastTime, err = data_client.CheckForecastHour(args[1])
 		if err != nil {
 			return fmt.Errorf("check ForecastTime failed: %s", err)
 		}
@@ -88,7 +88,7 @@ var hpcCmd = &cobra.Command{
 }
 
 func runHpcCommand(cmd *cobra.Command, args []string) {
-	configFilePath, err := findConfig(ConfigDir, DataType)
+	configFilePath, err := data_client.FindConfig(ConfigDir, DataType)
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "model data type config is not found.\n")
 		return
@@ -103,7 +103,7 @@ func runHpcCommand(cmd *cobra.Command, args []string) {
 	fmt.Printf("%s\n", filePath.Path)
 }
 
-func findHpcFile(config data_client.HpcDataConfig, startTime time.Time, forecastTime string) data_client.HpcPathItem {
+func findHpcFile(config data_client.HpcDataConfig, startTime time.Time, forecastTime time.Duration) data_client.HpcPathItem {
 	tpVar := data_client.GenerateTemplateVariable(startTime, forecastTime)
 
 	fileNameTemplate := template.Must(template.New("fileName").

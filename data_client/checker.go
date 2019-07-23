@@ -2,7 +2,6 @@ package data_client
 
 import (
 	"fmt"
-	"strconv"
 	"time"
 )
 
@@ -17,15 +16,15 @@ func CheckStartTime(value string) (time.Time, error) {
 	return s, nil
 }
 
-func CheckForecastTime(value string) (string, error) {
-	if len(value) > 3 {
-		return "", fmt.Errorf("length of forecast time must less or equal to 3")
-	}
+func CheckForecastHour(value string) (time.Duration, error) {
+	return CheckForecastTime(fmt.Sprintf("%sh", value))
+}
 
-	intValue, err := strconv.Atoi(value)
+func CheckForecastTime(value string) (time.Duration, error) {
+	d, err := time.ParseDuration(value)
 	if err != nil {
-		return "", err
+		return 0, fmt.Errorf("parse duration error: %v", err)
 	}
 
-	return fmt.Sprintf("%03d", intValue), nil
+	return d, nil
 }

@@ -9,7 +9,7 @@ import (
 )
 
 func main() {
-	conn, err := grpc.Dial("localhost:30105", grpc.WithInsecure())
+	conn, err := grpc.Dial("10.40.142.44:33083", grpc.WithInsecure())
 	if err != nil {
 		log.Fatalf("did not connect: %v", err)
 	}
@@ -24,7 +24,7 @@ func main() {
 	r, err := c.FindDataPath(ctx, &data_service.DataRequest{
 		DataType:     "gmf_grapes_gfs/bin/modelvar",
 		StartTime:    "2019072200",
-		ForecastTime: "000h",
+		ForecastTime: "0h",
 	})
 	if err != nil {
 		log.Fatalf("could not greet: %v", err)
