@@ -13,7 +13,7 @@ nwpc_data_client:
 		-X \"github.com/nwpc-oper/nwpc-data-client/common.GitCommit=${GIT_COMMIT}\" " \
 		-gcflags "all=-N -l" \
 		-o bin/nwpc_data_client \
-		main.go
+		data_client/main.go
 
 nwpc_data_server:
 	go build \

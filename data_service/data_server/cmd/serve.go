@@ -25,7 +25,7 @@ var serveCommand = &cobra.Command{
 func init() {
 	rootCmd.AddCommand(serveCommand)
 	serveCommand.Flags().StringVar(&ConfigDir, "config-dir", "", "Config dir")
-	serveCommand.Flags().StringVar(&Address, "address", ":33083", "server address")
+	serveCommand.Flags().StringVar(&Address, "address", ":33383", "server address")
 
 	_ = serveCommand.MarkFlagRequired("config-dir")
 }
