@@ -70,6 +70,17 @@ func (s *NWPCDataServer) GetDataFileInfo(ctx context.Context, req *DataFileReque
 		}, nil
 	}
 
+	fileUnixPermission := fileInfo.Mode().Perm()
+
+	if fileUnixPermission&004 == 0 {
+		return &DataFileResponse{
+			Status:       StatusCode_Failed,
+			ErrorMessage: "don't have read permission",
+			FilePath:     "",
+			FileSize:     -1,
+		}, nil
+	}
+
 	return &DataFileResponse{
 		Status:       StatusCode_Success,
 		ErrorMessage: "",
@@ -81,10 +92,21 @@ func (s *NWPCDataServer) GetDataFileInfo(ctx context.Context, req *DataFileReque
 func (*NWPCDataServer) DownloadFile(req *FileContentRequest, stream NWPCDataService_DownloadFileServer) error {
 	filePath := req.FilePath
 
+	fileInfo, err := os.Stat(filePath)
+
+	if err != nil {
+		return fmt.Errorf("file error: %v", err)
+	}
+
+	fileUnixPermission := fileInfo.Mode().Perm()
+
+	if fileUnixPermission&004 == 0 {
+		return fmt.Errorf("don't have read permission")
+	}
+
 	const chunkSize = 64 * 1024
 
 	file, err := os.Open(filePath)
-
 	if err != nil {
 		return err
 	}

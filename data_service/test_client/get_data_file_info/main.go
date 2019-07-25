@@ -23,7 +23,8 @@ func main() {
 	defer cancel()
 
 	stream, err := c.DownloadFile(ctx, &data_service.FileContentRequest{
-		FilePath: "/sstorage1/COMMONDATA/OPER/old/nwp/GMFS_GRIB2_GRAPES/CMACAST/GRAPES_GFS_forCAST_2019061418/ne_gmf.gra.2019061418000.grb2",
+		// FilePath: "/sstorage1/COMMONDATA/OPER/old/nwp/GMFS_GRIB2_GRAPES/CMACAST/GRAPES_GFS_forCAST_2019061418/ne_gmf.gra.2019061418000.grb2",
+		FilePath: "/g1/u/nwp/.ssh/config",
 	})
 
 	for {
