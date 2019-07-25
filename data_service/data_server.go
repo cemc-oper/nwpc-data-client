@@ -57,6 +57,56 @@ func (s *NWPCDataServer) FindDataPath(ctx context.Context, req *DataRequest) (*D
 	}, nil
 }
 
+func (s *NWPCDataServer) GetDataFileInfo(ctx context.Context, req *DataFileRequest) (*DataFileResponse, error) {
+	filePath := req.FilePath
+	fileInfo, err := os.Stat(filePath)
+
+	if err != nil {
+		return &DataFileResponse{
+			Status:       StatusCode_Failed,
+			ErrorMessage: fmt.Sprintf("check file error: %v", err),
+			FilePath:     "",
+			FileSize:     -1,
+		}, nil
+	}
+
+	return &DataFileResponse{
+		Status:       StatusCode_Success,
+		ErrorMessage: "",
+		FilePath:     filePath,
+		FileSize:     fileInfo.Size(),
+	}, nil
+}
+
+func (*NWPCDataServer) DownloadFile(req *FileContentRequest, stream NWPCDataService_DownloadFileServer) error {
+	filePath := req.FilePath
+
+	const chunkSize = 64 * 1024
+
+	file, err := os.Open(filePath)
+
+	if err != nil {
+		return err
+	}
+
+	buffer := make([]byte, chunkSize)
+
+	for {
+		n, err := file.Read(buffer)
+
+		if err != nil {
+			break
+		}
+
+		_ = stream.Send(&FileContentResponse{
+			ChunkLength: int64(n),
+			Chunk:       buffer[:n],
+		})
+	}
+
+	return nil
+}
+
 func findFile(config common.HpcDataConfig, startTime time.Time, forecastTime time.Duration) common.HpcPathItem {
 	tpVar := common.GenerateTemplateVariable(startTime, forecastTime)
 

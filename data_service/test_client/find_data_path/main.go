@@ -1,4 +1,4 @@
-package main
+package find_data_path
 
 import (
 	"context"

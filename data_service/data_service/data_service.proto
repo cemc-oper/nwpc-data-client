@@ -1,5 +1,11 @@
 syntax = "proto3";
 
+enum StatusCode {
+    Unknown = 0;
+    Success = 1;
+    Failed = 2;
+}
+
 message DataRequest{
     string data_type = 1;
     string start_time = 2;
@@ -11,6 +17,30 @@ message DataPathResponse{
     string location = 2;
 }
 
+message DataFileRequest{
+    string file_path = 1;
+}
+
+message DataFileResponse{
+    StatusCode status = 1;
+    string error_message = 2;
+    string file_path = 3;
+    int64 file_size = 4;
+}
+
+message FileContentRequest{
+    string file_path = 1;
+}
+
+message FileContentResponse{
+    int64 chunk_length = 3;
+    bytes chunk = 4;
+}
+
 service NWPCDataService{
     rpc FindDataPath(DataRequest) returns (DataPathResponse){}
+
+    rpc GetDataFileInfo(DataFileRequest) returns (DataFileResponse){}
+
+    rpc DownloadFile(FileContentRequest) returns (stream FileContentResponse){}
 }
