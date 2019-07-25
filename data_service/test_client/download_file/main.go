@@ -6,11 +6,22 @@ import (
 	"google.golang.org/grpc"
 	"io"
 	"log"
+	"os"
+	"path/filepath"
 	"time"
 )
 
 func main() {
-	conn, err := grpc.Dial("10.40.140.43:33383", grpc.WithInsecure())
+	const address = "10.40.140.43:33383"
+	const remoteFilePath = "/sstorage1/COMMONDATA/OPER/old/nwp/" +
+		"GMFS_GRIB2_GRAPES/CMACAST/GRAPES_GFS_forCAST_2019061418/" +
+		"ne_gmf.gra.2019061418000.grb2"
+
+	localFilePath := "./dist/ne_gmf.gra.2019061418000.grb2"
+
+	prepareLocalDir(localFilePath)
+
+	conn, err := grpc.Dial(address, grpc.WithInsecure())
 	if err != nil {
 		log.Fatalf("did not connect: %v", err)
 	}
@@ -23,9 +34,11 @@ func main() {
 	defer cancel()
 
 	stream, err := c.DownloadFile(ctx, &data_service.FileContentRequest{
-		// FilePath: "/sstorage1/COMMONDATA/OPER/old/nwp/GMFS_GRIB2_GRAPES/CMACAST/GRAPES_GFS_forCAST_2019061418/ne_gmf.gra.2019061418000.grb2",
-		FilePath: "/g1/u/nwp/.ssh/config",
+		FilePath: remoteFilePath,
 	})
+
+	f, err := os.OpenFile(localFilePath, os.O_CREATE|os.O_WRONLY, 0644)
+	defer f.Close()
 
 	for {
 		chunk, err := stream.Recv()
@@ -35,6 +48,13 @@ func main() {
 		if err != nil {
 			log.Fatalf("%v.DownloadFile(_) = _, %v", c, err)
 		}
+		f.Write(chunk.Chunk)
 		log.Println(chunk.ChunkLength)
 	}
+
+}
+
+func prepareLocalDir(filePath string) {
+	localFileDir := filepath.Dir(filePath)
+	_ = os.MkdirAll(localFileDir, os.ModeDir)
 }
