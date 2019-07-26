@@ -6,6 +6,9 @@ default: NOTFOUND
 file_name: ne_gmf.gra.{.Year}{.Month}{.Day}{.Hour}{.Forecast}.grb2
 
 paths:
-  - /g2/nwp_pd/NWP_PST_DATA/GMF_GRAPES_GFS_V2.2_POST/togrib2/output_ne/{.Year}{.Month}{.Day}{.Hour}
-  - /g2/nwp/OPER_ARCH_TEST/nwp/GRAPES_GFS/GMF_GRAPES_GFS/Prod-grib/{.Year4DV}{.Month4DV}{.Day4DV}{.Hour4DV}/CMACAST
-  - /g2/nwp/OPER_ARCH_TEST/nwp/GMFS_GRIB2_GRAPES/CMACAST/GRAPES_GFS_forCAST_{.Year}{.Month}{.Day}{.Hour}
+  - type: local
+    path: /g2/nwp_pd/NWP_PST_DATA/GMF_GRAPES_GFS_V2.2_POST/togrib2/output_ne/{.Year}{.Month}{.Day}{.Hour}
+  - type: local
+    path: /g2/nwp/OPER_ARCH_TEST/nwp/GRAPES_GFS/GMF_GRAPES_GFS/Prod-grib/{.Year4DV}{.Month4DV}{.Day4DV}{.Hour4DV}/CMACAST
+  - type: local
+    path: /g2/nwp/OPER_ARCH_TEST/nwp/GMFS_GRIB2_GRAPES/CMACAST/GRAPES_GFS_forCAST_{.Year}{.Month}{.Day}{.Hour}

@@ -5,8 +5,6 @@ import (
 	"fmt"
 	"github.com/nwpc-oper/nwpc-data-client/common"
 	"github.com/spf13/cobra"
-	"gopkg.in/yaml.v2"
-	"io/ioutil"
 	"os"
 	"path/filepath"
 	"strings"
@@ -77,38 +75,16 @@ func findLocalFile(cmd *cobra.Command, args []string) {
 		fmt.Fprintf(os.Stderr, "model data type config is not found.\n")
 		return
 	}
-	localDataConfig, err2 := loadConfig(configFilePath)
+	config, err2 := common.LoadHpcConfig(configFilePath)
 	if err2 != nil {
 		fmt.Fprintf(os.Stderr, "load config failed: %s\n", err2)
 		return
 	}
-	filePath := findFile(localDataConfig, StartTime, ForecastTime)
+	filePath := findFile(config, StartTime, ForecastTime)
 	fmt.Printf("%s\n", filePath)
 }
 
-type LocalDataConfig struct {
-	Default  string   `yaml:"default"`
-	FileName string   `yaml:"file_name"`
-	Paths    []string `yaml:"paths"`
-}
-
-func loadConfig(configFilePath string) (LocalDataConfig, error) {
-	localDataConfig := LocalDataConfig{}
-
-	data, err := ioutil.ReadFile(configFilePath)
-	if err != nil {
-		return localDataConfig, err
-	}
-
-	err = yaml.Unmarshal(data, &localDataConfig)
-	if err != nil {
-		return localDataConfig, err
-	}
-
-	return localDataConfig, nil
-}
-
-func findFile(config LocalDataConfig, startTime time.Time, forecastTime time.Duration) string {
+func findFile(config common.HpcDataConfig, startTime time.Time, forecastTime time.Duration) string {
 	tpVar := common.GenerateTemplateVariable(startTime, forecastTime)
 
 	fileNameTemplate := template.Must(template.New("fileName").
@@ -122,7 +98,8 @@ func findFile(config LocalDataConfig, startTime time.Time, forecastTime time.Dur
 	}
 	fileName := fileNameBuilder.String()
 
-	for _, path := range config.Paths {
+	for _, item := range config.Paths {
+		path := item.Path
 		dirPathTemplate := template.Must(template.New("dirPath").Delims("{", "}").Parse(path))
 
 		var dirPathBuilder strings.Builder
