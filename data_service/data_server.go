@@ -31,7 +31,7 @@ func (s *NWPCDataServer) FindDataPath(ctx context.Context, req *DataRequest) (*D
 		return &emptyResponse, fmt.Errorf("model data type config is not found")
 	}
 
-	hpcDataConfig, err := common.LoadHpcConfig(configFilePath)
+	hpcDataConfig, err := common.LoadConfig(configFilePath)
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "load config failed: %s\n", err)
 		return &emptyResponse, fmt.Errorf("load config failed: %v", err)
@@ -129,7 +129,7 @@ func (*NWPCDataServer) DownloadFile(req *FileContentRequest, stream NWPCDataServ
 	return nil
 }
 
-func findFile(config common.HpcDataConfig, startTime time.Time, forecastTime time.Duration) common.HpcPathItem {
+func findFile(config common.DataConfig, startTime time.Time, forecastTime time.Duration) common.PathItem {
 	tpVar := common.GenerateTemplateVariable(startTime, forecastTime)
 
 	fileNameTemplate := template.Must(template.New("fileName").
@@ -139,7 +139,7 @@ func findFile(config common.HpcDataConfig, startTime time.Time, forecastTime tim
 	err := fileNameTemplate.Execute(&fileNameBuilder, tpVar)
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "file name template execute has error: %s\n", err)
-		return common.HpcPathItem{
+		return common.PathItem{
 			Path:     config.Default,
 			PathType: config.Default,
 		}
@@ -162,14 +162,14 @@ func findFile(config common.HpcDataConfig, startTime time.Time, forecastTime tim
 		//fmt.Printf("%s\n", filePath)
 
 		if common.CheckLocalFile(filePath) {
-			return common.HpcPathItem{
+			return common.PathItem{
 				Path:     filePath,
 				PathType: pathType,
 			}
 		}
 	}
 
-	return common.HpcPathItem{
+	return common.PathItem{
 		Path:     config.Default,
 		PathType: config.Default,
 	}

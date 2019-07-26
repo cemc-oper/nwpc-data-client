@@ -93,7 +93,7 @@ func runHpcCommand(cmd *cobra.Command, args []string) {
 		fmt.Fprintf(os.Stderr, "model data type config is not found.\n")
 		return
 	}
-	hpcDataConfig, err2 := common.LoadHpcConfig(configFilePath)
+	hpcDataConfig, err2 := common.LoadConfig(configFilePath)
 	if err2 != nil {
 		fmt.Fprintf(os.Stderr, "load config failed: %s\n", err2)
 		return
@@ -103,7 +103,7 @@ func runHpcCommand(cmd *cobra.Command, args []string) {
 	fmt.Printf("%s\n", filePath.Path)
 }
 
-func findHpcFile(config common.HpcDataConfig, startTime time.Time, forecastTime time.Duration) common.HpcPathItem {
+func findHpcFile(config common.DataConfig, startTime time.Time, forecastTime time.Duration) common.PathItem {
 	tpVar := common.GenerateTemplateVariable(startTime, forecastTime)
 
 	fileNameTemplate := template.Must(template.New("fileName").
@@ -113,7 +113,7 @@ func findHpcFile(config common.HpcDataConfig, startTime time.Time, forecastTime 
 	err := fileNameTemplate.Execute(&fileNameBuilder, tpVar)
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "file name template execute has error: %s\n", err)
-		return common.HpcPathItem{
+		return common.PathItem{
 			Path:     config.Default,
 			PathType: config.Default,
 		}
@@ -137,7 +137,7 @@ func findHpcFile(config common.HpcDataConfig, startTime time.Time, forecastTime 
 
 		if pathType == "storage" {
 			if common.CheckFileOverSSH(filePath, StorageUser, StorageHost, PrivateKeyFilePath, HostKeyFilePath) {
-				return common.HpcPathItem{
+				return common.PathItem{
 					Path:     filePath,
 					PathType: pathType,
 				}
@@ -145,7 +145,7 @@ func findHpcFile(config common.HpcDataConfig, startTime time.Time, forecastTime 
 		} else if pathType == "local" {
 			// check if file exists
 			if common.CheckLocalFile(filePath) {
-				return common.HpcPathItem{
+				return common.PathItem{
 					Path:     filePath,
 					PathType: pathType,
 				}
@@ -155,7 +155,7 @@ func findHpcFile(config common.HpcDataConfig, startTime time.Time, forecastTime 
 		}
 	}
 
-	return common.HpcPathItem{
+	return common.PathItem{
 		Path:     config.Default,
 		PathType: config.Default,
 	}

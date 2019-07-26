@@ -75,7 +75,7 @@ func findLocalFile(cmd *cobra.Command, args []string) {
 		fmt.Fprintf(os.Stderr, "model data type config is not found.\n")
 		return
 	}
-	config, err2 := common.LoadHpcConfig(configFilePath)
+	config, err2 := common.LoadConfig(configFilePath)
 	if err2 != nil {
 		fmt.Fprintf(os.Stderr, "load config failed: %s\n", err2)
 		return
@@ -84,7 +84,7 @@ func findLocalFile(cmd *cobra.Command, args []string) {
 	fmt.Printf("%s\n", filePath)
 }
 
-func findFile(config common.HpcDataConfig, startTime time.Time, forecastTime time.Duration) string {
+func findFile(config common.DataConfig, startTime time.Time, forecastTime time.Duration) string {
 	tpVar := common.GenerateTemplateVariable(startTime, forecastTime)
 
 	fileNameTemplate := template.Must(template.New("fileName").

@@ -16,19 +16,19 @@ func FindConfig(configDir string, dataType string) (string, error) {
 	return configFilePath, nil
 }
 
-type HpcPathItem struct {
+type PathItem struct {
 	PathType string `yaml:"type"`
 	Path     string `yaml:"path"`
 }
 
-type HpcDataConfig struct {
-	Default  string        `yaml:"default"`
-	FileName string        `yaml:"file_name"`
-	Paths    []HpcPathItem `yaml:"paths"`
+type DataConfig struct {
+	Default  string     `yaml:"default"`
+	FileName string     `yaml:"file_name"`
+	Paths    []PathItem `yaml:"paths"`
 }
 
-func LoadHpcConfig(configFilePath string) (HpcDataConfig, error) {
-	dataConfig := HpcDataConfig{}
+func LoadConfig(configFilePath string) (DataConfig, error) {
+	dataConfig := DataConfig{}
 
 	data, err := ioutil.ReadFile(configFilePath)
 	if err != nil {
