@@ -43,8 +43,8 @@ func runGRPCServer(configDir string, address string) {
 	data_service.RegisterNWPCDataServiceServer(s, &data_service.NWPCDataServer{
 		ConfigDir: configDir,
 	})
-	log.Printf("begin to serve...\n")
+	log.Printf("nwpc_data_server begin to serve at %s ...\n", address)
 	if err := s.Serve(lis); err != nil {
-		log.Fatalf("failed to serve: %v", err)
+		log.Fatalf("nwpc_data_server failed to serve: %v", err)
 	}
 }

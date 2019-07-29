@@ -17,5 +17,6 @@ var versionCmd = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 		fmt.Printf("Version %s (%s)\n", common.Version, common.GitCommit)
 		fmt.Printf("Build at %s\n", common.BuildTime)
+		fmt.Printf("Please visit https://github.com/nwpc-oper/nwpc-data-client for more information.\n")
 	},
 }

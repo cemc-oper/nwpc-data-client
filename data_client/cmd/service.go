@@ -21,6 +21,7 @@ func init() {
 
 	serviceCommand.Flags().StringVar(&DataType, "data-type", "",
 		"Data type used to locate config file path in config dir.")
+
 	serviceCommand.Flags().StringVar(&ServiceAddress, "address", "",
 		"ServiceAddress of nwpc_data_server.")
 
@@ -32,10 +33,17 @@ func init() {
 	serviceCommand.MarkFlagRequired("action")
 }
 
+const serviceCommandDocString = `nwpc_data_client service
+Find or get data from nwpc_data_server.
+
+Args:
+    start_time: YYYYMMDDHH, such as 2018080100
+    forecast_time: time duration, such as 0h, 120h`
+
 var serviceCommand = &cobra.Command{
 	Use:   "service",
 	Short: "Find data path using nwpc_data_server on HPC.",
-	Long:  "Find data path using nwpc_data_server on HPC.",
+	Long:  serviceCommandDocString,
 	Args: func(cmd *cobra.Command, args []string) error {
 		if len(args) != 2 {
 			return errors.New("requires two arguments")

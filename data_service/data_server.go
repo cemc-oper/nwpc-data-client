@@ -6,10 +6,6 @@ import (
 	"github.com/nwpc-oper/nwpc-data-client/common"
 	"log"
 	"os"
-	"path/filepath"
-	"strings"
-	"text/template"
-	"time"
 )
 
 type NWPCDataServer struct {
@@ -47,9 +43,9 @@ func (s *NWPCDataServer) FindDataPath(ctx context.Context, req *DataRequest) (*D
 		return &emptyResponse, fmt.Errorf("check ForecastTime failed: %s", err)
 	}
 
-	filePath := findFile(hpcDataConfig, startTime, forecastTime)
-	fmt.Printf("%s\n", filePath.PathType)
-	fmt.Printf("%s\n", filePath.Path)
+	filePath := common.FindLocalFile(hpcDataConfig, startTime, forecastTime)
+	log.Printf("Find data path type: %s\n", filePath.PathType)
+	log.Printf("Find data path: %s\n", filePath.Path)
 
 	return &DataPathResponse{
 		LocationType: filePath.PathType,
@@ -127,50 +123,4 @@ func (*NWPCDataServer) DownloadFile(req *FileContentRequest, stream NWPCDataServ
 	}
 
 	return nil
-}
-
-func findFile(config common.DataConfig, startTime time.Time, forecastTime time.Duration) common.PathItem {
-	tpVar := common.GenerateTemplateVariable(startTime, forecastTime)
-
-	fileNameTemplate := template.Must(template.New("fileName").
-		Delims("{", "}").Parse(config.FileName))
-
-	var fileNameBuilder strings.Builder
-	err := fileNameTemplate.Execute(&fileNameBuilder, tpVar)
-	if err != nil {
-		fmt.Fprintf(os.Stderr, "file name template execute has error: %s\n", err)
-		return common.PathItem{
-			Path:     config.Default,
-			PathType: config.Default,
-		}
-	}
-	fileName := fileNameBuilder.String()
-
-	for _, pathItem := range config.Paths {
-		path := pathItem.Path
-		pathType := pathItem.PathType
-		dirPathTemplate := template.Must(template.New("dirPath").Delims("{", "}").Parse(path))
-
-		var dirPathBuilder strings.Builder
-		err = dirPathTemplate.Execute(&dirPathBuilder, tpVar)
-		if err != nil {
-			fmt.Fprintf(os.Stderr, "dir path template execute has error: %s\n", err)
-			continue
-		}
-		dirPath := dirPathBuilder.String()
-		filePath := filepath.Join(dirPath, fileName)
-		//fmt.Printf("%s\n", filePath)
-
-		if common.CheckLocalFile(filePath) {
-			return common.PathItem{
-				Path:     filePath,
-				PathType: pathType,
-			}
-		}
-	}
-
-	return common.PathItem{
-		Path:     config.Default,
-		PathType: config.Default,
-	}
 }
