@@ -17,7 +17,7 @@ func (s *NWPCDataServer) FindDataPath(ctx context.Context, req *DataRequest) (*D
 	startTimeString := req.GetStartTime()
 	forecastTimeString := req.GetForecastTime()
 
-	log.Printf("find data path for type %s: %s %s\n", dataType, startTimeString, forecastTimeString)
+	log.Printf("FindDataPath for type %s: %s %s\n", dataType, startTimeString, forecastTimeString)
 
 	emptyResponse := DataPathResponse{LocationType: "NOTFOUND", Location: "NOTFOUND"}
 
@@ -55,8 +55,9 @@ func (s *NWPCDataServer) FindDataPath(ctx context.Context, req *DataRequest) (*D
 
 func (s *NWPCDataServer) GetDataFileInfo(ctx context.Context, req *DataFileRequest) (*DataFileResponse, error) {
 	filePath := req.FilePath
-	fileInfo, err := os.Stat(filePath)
+	log.Printf("GetDataFileInfo for %s", filePath)
 
+	fileInfo, err := os.Stat(filePath)
 	if err != nil {
 		return &DataFileResponse{
 			Status:       StatusCode_Failed,
@@ -67,7 +68,6 @@ func (s *NWPCDataServer) GetDataFileInfo(ctx context.Context, req *DataFileReque
 	}
 
 	fileUnixPermission := fileInfo.Mode().Perm()
-
 	if fileUnixPermission&004 == 0 {
 		return &DataFileResponse{
 			Status:       StatusCode_Failed,
@@ -88,14 +88,14 @@ func (s *NWPCDataServer) GetDataFileInfo(ctx context.Context, req *DataFileReque
 func (*NWPCDataServer) DownloadFile(req *FileContentRequest, stream NWPCDataService_DownloadFileServer) error {
 	filePath := req.FilePath
 
-	fileInfo, err := os.Stat(filePath)
+	log.Printf("DownloadFile for %s", filePath)
 
+	fileInfo, err := os.Stat(filePath)
 	if err != nil {
 		return fmt.Errorf("file error: %v", err)
 	}
 
 	fileUnixPermission := fileInfo.Mode().Perm()
-
 	if fileUnixPermission&004 == 0 {
 		return fmt.Errorf("don't have read permission")
 	}
@@ -106,6 +106,7 @@ func (*NWPCDataServer) DownloadFile(req *FileContentRequest, stream NWPCDataServ
 	if err != nil {
 		return err
 	}
+	defer file.Close()
 
 	buffer := make([]byte, chunkSize)
 
