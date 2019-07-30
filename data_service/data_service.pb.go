@@ -154,45 +154,6 @@ func (m *DataPathResponse) GetLocation() string {
 	return ""
 }
 
-type DataFileRequest struct {
-	FilePath             string   `protobuf:"bytes,1,opt,name=file_path,json=filePath,proto3" json:"file_path,omitempty"`
-	XXX_NoUnkeyedLiteral struct{} `json:"-"`
-	XXX_unrecognized     []byte   `json:"-"`
-	XXX_sizecache        int32    `json:"-"`
-}
-
-func (m *DataFileRequest) Reset()         { *m = DataFileRequest{} }
-func (m *DataFileRequest) String() string { return proto.CompactTextString(m) }
-func (*DataFileRequest) ProtoMessage()    {}
-func (*DataFileRequest) Descriptor() ([]byte, []int) {
-	return fileDescriptor_3385cd32ad6cfe64, []int{2}
-}
-
-func (m *DataFileRequest) XXX_Unmarshal(b []byte) error {
-	return xxx_messageInfo_DataFileRequest.Unmarshal(m, b)
-}
-func (m *DataFileRequest) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
-	return xxx_messageInfo_DataFileRequest.Marshal(b, m, deterministic)
-}
-func (m *DataFileRequest) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_DataFileRequest.Merge(m, src)
-}
-func (m *DataFileRequest) XXX_Size() int {
-	return xxx_messageInfo_DataFileRequest.Size(m)
-}
-func (m *DataFileRequest) XXX_DiscardUnknown() {
-	xxx_messageInfo_DataFileRequest.DiscardUnknown(m)
-}
-
-var xxx_messageInfo_DataFileRequest proto.InternalMessageInfo
-
-func (m *DataFileRequest) GetFilePath() string {
-	if m != nil {
-		return m.FilePath
-	}
-	return ""
-}
-
 type DataFileResponse struct {
 	Status               StatusCode `protobuf:"varint,1,opt,name=status,proto3,enum=StatusCode" json:"status,omitempty"`
 	ErrorMessage         string     `protobuf:"bytes,2,opt,name=error_message,json=errorMessage,proto3" json:"error_message,omitempty"`
@@ -207,7 +168,7 @@ func (m *DataFileResponse) Reset()         { *m = DataFileResponse{} }
 func (m *DataFileResponse) String() string { return proto.CompactTextString(m) }
 func (*DataFileResponse) ProtoMessage()    {}
 func (*DataFileResponse) Descriptor() ([]byte, []int) {
-	return fileDescriptor_3385cd32ad6cfe64, []int{3}
+	return fileDescriptor_3385cd32ad6cfe64, []int{2}
 }
 
 func (m *DataFileResponse) XXX_Unmarshal(b []byte) error {
@@ -256,45 +217,6 @@ func (m *DataFileResponse) GetFileSize() int64 {
 	return 0
 }
 
-type FileContentRequest struct {
-	FilePath             string   `protobuf:"bytes,1,opt,name=file_path,json=filePath,proto3" json:"file_path,omitempty"`
-	XXX_NoUnkeyedLiteral struct{} `json:"-"`
-	XXX_unrecognized     []byte   `json:"-"`
-	XXX_sizecache        int32    `json:"-"`
-}
-
-func (m *FileContentRequest) Reset()         { *m = FileContentRequest{} }
-func (m *FileContentRequest) String() string { return proto.CompactTextString(m) }
-func (*FileContentRequest) ProtoMessage()    {}
-func (*FileContentRequest) Descriptor() ([]byte, []int) {
-	return fileDescriptor_3385cd32ad6cfe64, []int{4}
-}
-
-func (m *FileContentRequest) XXX_Unmarshal(b []byte) error {
-	return xxx_messageInfo_FileContentRequest.Unmarshal(m, b)
-}
-func (m *FileContentRequest) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
-	return xxx_messageInfo_FileContentRequest.Marshal(b, m, deterministic)
-}
-func (m *FileContentRequest) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_FileContentRequest.Merge(m, src)
-}
-func (m *FileContentRequest) XXX_Size() int {
-	return xxx_messageInfo_FileContentRequest.Size(m)
-}
-func (m *FileContentRequest) XXX_DiscardUnknown() {
-	xxx_messageInfo_FileContentRequest.DiscardUnknown(m)
-}
-
-var xxx_messageInfo_FileContentRequest proto.InternalMessageInfo
-
-func (m *FileContentRequest) GetFilePath() string {
-	if m != nil {
-		return m.FilePath
-	}
-	return ""
-}
-
 type FileContentResponse struct {
 	ChunkLength          int64    `protobuf:"varint,3,opt,name=chunk_length,json=chunkLength,proto3" json:"chunk_length,omitempty"`
 	Chunk                []byte   `protobuf:"bytes,4,opt,name=chunk,proto3" json:"chunk,omitempty"`
@@ -307,7 +229,7 @@ func (m *FileContentResponse) Reset()         { *m = FileContentResponse{} }
 func (m *FileContentResponse) String() string { return proto.CompactTextString(m) }
 func (*FileContentResponse) ProtoMessage()    {}
 func (*FileContentResponse) Descriptor() ([]byte, []int) {
-	return fileDescriptor_3385cd32ad6cfe64, []int{5}
+	return fileDescriptor_3385cd32ad6cfe64, []int{3}
 }
 
 func (m *FileContentResponse) XXX_Unmarshal(b []byte) error {
@@ -346,44 +268,40 @@ func init() {
 	proto.RegisterEnum("StatusCode", StatusCode_name, StatusCode_value)
 	proto.RegisterType((*DataRequest)(nil), "DataRequest")
 	proto.RegisterType((*DataPathResponse)(nil), "DataPathResponse")
-	proto.RegisterType((*DataFileRequest)(nil), "DataFileRequest")
 	proto.RegisterType((*DataFileResponse)(nil), "DataFileResponse")
-	proto.RegisterType((*FileContentRequest)(nil), "FileContentRequest")
 	proto.RegisterType((*FileContentResponse)(nil), "FileContentResponse")
 }
 
 func init() { proto.RegisterFile("data_service.proto", fileDescriptor_3385cd32ad6cfe64) }
 
 var fileDescriptor_3385cd32ad6cfe64 = []byte{
-	// 438 bytes of a gzipped FileDescriptorProto
-	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0x8c, 0x53, 0xc1, 0x6e, 0xd3, 0x40,
-	0x10, 0x8d, 0x1b, 0x08, 0xcd, 0xc4, 0x10, 0xb3, 0xed, 0x21, 0x0a, 0x42, 0x2a, 0xcb, 0xa5, 0xe2,
-	0xb0, 0xa2, 0xe1, 0xc2, 0x85, 0x53, 0xaa, 0x20, 0x24, 0xa8, 0x2a, 0xbb, 0x88, 0xa3, 0xb5, 0xd8,
-	0x93, 0x66, 0x55, 0x67, 0xd7, 0x78, 0x27, 0x54, 0xed, 0x87, 0xf0, 0x37, 0xfc, 0x1b, 0xda, 0xb5,
-	0x1d, 0x9c, 0xc0, 0xa1, 0xc7, 0xf7, 0x66, 0xc6, 0xef, 0xbd, 0x99, 0x35, 0xb0, 0x5c, 0x92, 0x4c,
-	0x2d, 0x56, 0x3f, 0x55, 0x86, 0xa2, 0xac, 0x0c, 0x19, 0xae, 0x61, 0x74, 0x2e, 0x49, 0xc6, 0xf8,
-	0x63, 0x83, 0x96, 0xd8, 0x0b, 0x18, 0xfa, 0x26, 0xba, 0x2b, 0x71, 0x12, 0x9c, 0x04, 0xa7, 0xc3,
-	0xf8, 0xd0, 0x11, 0x57, 0x77, 0x25, 0xb2, 0x97, 0x00, 0x96, 0x64, 0x45, 0x29, 0xa9, 0x35, 0x4e,
-	0x0e, 0x7c, 0x75, 0xe8, 0x99, 0x2b, 0xb5, 0x46, 0xf6, 0x1a, 0x9e, 0x2e, 0x4d, 0x85, 0x99, 0xb4,
-	0x4d, 0x47, 0xdf, 0x77, 0x84, 0x2d, 0xe9, 0x9a, 0x78, 0x02, 0x91, 0xd3, 0xbb, 0x94, 0xb4, 0x8a,
-	0xd1, 0x96, 0x46, 0x5b, 0x3f, 0x58, 0x98, 0x4c, 0x92, 0x32, 0xba, 0x2b, 0x1c, 0xb6, 0xa4, 0x17,
-	0x9f, 0xc2, 0x61, 0x8b, 0x1b, 0xe9, 0x2d, 0xe6, 0x02, 0xc6, 0xee, 0xa3, 0x0b, 0x55, 0x60, 0x27,
-	0xc8, 0x52, 0x15, 0x98, 0x96, 0x92, 0x56, 0x6d, 0x10, 0x47, 0x38, 0x61, 0xfe, 0x2b, 0xa8, 0x5d,
-	0xd4, 0x03, 0x5b, 0x17, 0x03, 0x4b, 0x92, 0x36, 0xd6, 0xb7, 0x3f, 0x9b, 0x8d, 0x44, 0xe2, 0xe1,
-	0xdc, 0xe4, 0x18, 0x37, 0x25, 0x67, 0x15, 0xab, 0xca, 0x54, 0xe9, 0x1a, 0xad, 0x95, 0xd7, 0xed,
-	0x16, 0x42, 0x4f, 0x7e, 0xa9, 0xb9, 0x5d, 0xed, 0xfe, 0xae, 0xf6, 0xb6, 0x68, 0xd5, 0x3d, 0x4e,
-	0x1e, 0x9d, 0x04, 0xa7, 0xfd, 0xba, 0x98, 0xa8, 0x7b, 0xe4, 0x67, 0xc0, 0x9c, 0xa7, 0xb9, 0xd1,
-	0x84, 0x9a, 0x1e, 0x94, 0xe5, 0x02, 0x8e, 0x76, 0x46, 0x9a, 0x34, 0xaf, 0x20, 0xcc, 0x56, 0x1b,
-	0x7d, 0x93, 0x16, 0xa8, 0xaf, 0x1b, 0x1b, 0xfd, 0x78, 0xe4, 0xb9, 0xcf, 0x9e, 0x62, 0xc7, 0xf0,
-	0xd8, 0x43, 0xef, 0x22, 0x8c, 0x6b, 0xf0, 0x66, 0x06, 0xf0, 0x37, 0x37, 0x1b, 0xc1, 0x93, 0xaf,
-	0xfa, 0x46, 0x9b, 0x5b, 0x1d, 0xf5, 0x1c, 0x48, 0x36, 0x59, 0x86, 0xd6, 0x46, 0x01, 0x03, 0x18,
-	0x2c, 0xa4, 0x2a, 0x30, 0x8f, 0x0e, 0x66, 0xbf, 0x03, 0x18, 0x5f, 0x7c, 0xbb, 0x9c, 0xbb, 0x9d,
-	0x26, 0xf5, 0xf3, 0x62, 0x67, 0x10, 0x2e, 0x94, 0xce, 0xdb, 0x63, 0xb3, 0x50, 0x74, 0xde, 0xd9,
-	0xf4, 0xb9, 0xd8, 0x7f, 0x05, 0xbc, 0xc7, 0xde, 0xc3, 0xf8, 0x23, 0x52, 0x7b, 0x98, 0x4f, 0x7a,
-	0x69, 0x58, 0x24, 0xf6, 0x0e, 0xdb, 0x4c, 0x76, 0x2f, 0xc7, 0x7b, 0xec, 0x03, 0x84, 0xe7, 0xe6,
-	0x56, 0x17, 0x46, 0xe6, 0xae, 0xc2, 0x8e, 0xc4, 0xbf, 0x6b, 0x9c, 0x1e, 0x8b, 0xff, 0x2c, 0x8a,
-	0xf7, 0xde, 0x06, 0xdf, 0x07, 0xfe, 0x5f, 0x78, 0xf7, 0x27, 0x00, 0x00, 0xff, 0xff, 0x5d, 0x02,
-	0x9e, 0x48, 0x21, 0x03, 0x00, 0x00,
+	// 409 bytes of a gzipped FileDescriptorProto
+	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0x6c, 0x52, 0xc1, 0x8e, 0xd3, 0x30,
+	0x10, 0x4d, 0xb6, 0x50, 0xda, 0x49, 0x60, 0x83, 0xd9, 0x43, 0xb5, 0x08, 0x69, 0x09, 0x97, 0x15,
+	0x87, 0x08, 0x0a, 0x27, 0xae, 0x5d, 0x15, 0x21, 0xc1, 0x6a, 0x95, 0x14, 0x71, 0x8c, 0x4c, 0x32,
+	0x6d, 0xad, 0xa6, 0x76, 0x88, 0x27, 0x54, 0xed, 0x87, 0xf0, 0x29, 0x7c, 0x1f, 0xb2, 0x93, 0x94,
+	0xa8, 0xea, 0xf1, 0xbd, 0x37, 0xf3, 0x9e, 0x67, 0xc6, 0xc0, 0x72, 0x4e, 0x3c, 0xd5, 0x58, 0xfd,
+	0x16, 0x19, 0x46, 0x65, 0xa5, 0x48, 0x85, 0x12, 0xbc, 0x3b, 0x4e, 0x3c, 0xc6, 0x5f, 0x35, 0x6a,
+	0x62, 0x2f, 0x61, 0x6c, 0x8b, 0x68, 0x5f, 0xe2, 0xc4, 0xbd, 0x71, 0x6f, 0xc7, 0xf1, 0xc8, 0x10,
+	0x8b, 0x7d, 0x89, 0xec, 0x15, 0x80, 0x26, 0x5e, 0x51, 0x4a, 0x62, 0x8b, 0x93, 0x0b, 0xab, 0x8e,
+	0x2d, 0xb3, 0x10, 0x5b, 0x64, 0x6f, 0xe0, 0xe9, 0x52, 0x55, 0x98, 0x71, 0xdd, 0x56, 0x0c, 0x6c,
+	0x85, 0xdf, 0x91, 0xa6, 0x28, 0x4c, 0x20, 0x30, 0x79, 0x0f, 0x9c, 0xd6, 0x31, 0xea, 0x52, 0x49,
+	0x6d, 0x1b, 0x0b, 0x95, 0x71, 0x12, 0x4a, 0xf6, 0x83, 0xfd, 0x8e, 0xb4, 0xe1, 0xd7, 0x30, 0xea,
+	0x70, 0x1b, 0x7d, 0xc4, 0xe1, 0x1f, 0xb7, 0x71, 0x9d, 0x8b, 0x02, 0x7b, 0xae, 0x43, 0x4d, 0x9c,
+	0x6a, 0x6d, 0xed, 0x9e, 0x4d, 0xbd, 0x28, 0xb1, 0x70, 0xa6, 0x72, 0x8c, 0x5b, 0xc9, 0x44, 0x63,
+	0x55, 0xa9, 0x2a, 0xdd, 0xa2, 0xd6, 0x7c, 0xd5, 0x4d, 0xe5, 0x5b, 0xf2, 0x5b, 0xc3, 0x99, 0xa5,
+	0x2c, 0x45, 0x81, 0x69, 0xc9, 0x69, 0xdd, 0x0e, 0x35, 0x32, 0x84, 0x19, 0xe2, 0x28, 0x6a, 0x71,
+	0xc0, 0xc9, 0xa3, 0x1b, 0xf7, 0x76, 0xd0, 0x88, 0x89, 0x38, 0x60, 0x78, 0x0f, 0x2f, 0xcc, 0x9b,
+	0x66, 0x4a, 0x12, 0x4a, 0x3a, 0x3e, 0xed, 0x35, 0xf8, 0xd9, 0xba, 0x96, 0x9b, 0xb4, 0x40, 0xb9,
+	0x6a, 0x3d, 0x07, 0xb1, 0x67, 0xb9, 0xaf, 0x96, 0x62, 0x57, 0xf0, 0xd8, 0x42, 0x6b, 0xe9, 0xc7,
+	0x0d, 0x78, 0x3b, 0x05, 0xf8, 0x3f, 0x04, 0xf3, 0xe0, 0xc9, 0x77, 0xb9, 0x91, 0x6a, 0x27, 0x03,
+	0xc7, 0x80, 0xa4, 0xce, 0x32, 0xd4, 0x3a, 0x70, 0x19, 0xc0, 0x70, 0xce, 0x45, 0x81, 0x79, 0x70,
+	0x31, 0xfd, 0xeb, 0xc2, 0xe5, 0xfd, 0x8f, 0x87, 0x99, 0x59, 0x50, 0xd2, 0xdc, 0x9e, 0xbd, 0x07,
+	0x7f, 0x2e, 0x64, 0xde, 0x5d, 0x82, 0xf9, 0x51, 0xef, 0x13, 0x5c, 0x3f, 0x8f, 0x4e, 0x4f, 0x14,
+	0x3a, 0xec, 0x23, 0x5c, 0x7e, 0x46, 0xea, 0xb6, 0xfc, 0x45, 0x2e, 0xd5, 0xd9, 0xae, 0xfe, 0x09,
+	0x42, 0x87, 0x7d, 0x82, 0xe0, 0x4e, 0xed, 0x64, 0xa1, 0x78, 0xde, 0xa9, 0x27, 0x6d, 0x57, 0xd1,
+	0x99, 0x0d, 0x85, 0xce, 0x3b, 0xf7, 0xe7, 0xd0, 0xfe, 0xd0, 0x0f, 0xff, 0x02, 0x00, 0x00, 0xff,
+	0xff, 0xa9, 0x90, 0x79, 0xb6, 0xb7, 0x02, 0x00, 0x00,
 }
 
 // Reference imports to suppress errors if they are not otherwise used.
@@ -399,8 +317,8 @@ const _ = grpc.SupportPackageIsVersion4
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://godoc.org/google.golang.org/grpc#ClientConn.NewStream.
 type NWPCDataServiceClient interface {
 	FindDataPath(ctx context.Context, in *DataRequest, opts ...grpc.CallOption) (*DataPathResponse, error)
-	GetDataFileInfo(ctx context.Context, in *DataFileRequest, opts ...grpc.CallOption) (*DataFileResponse, error)
-	DownloadFile(ctx context.Context, in *FileContentRequest, opts ...grpc.CallOption) (NWPCDataService_DownloadFileClient, error)
+	GetDataFileInfo(ctx context.Context, in *DataRequest, opts ...grpc.CallOption) (*DataFileResponse, error)
+	DownloadDataFile(ctx context.Context, in *DataRequest, opts ...grpc.CallOption) (NWPCDataService_DownloadDataFileClient, error)
 }
 
 type nWPCDataServiceClient struct {
@@ -420,7 +338,7 @@ func (c *nWPCDataServiceClient) FindDataPath(ctx context.Context, in *DataReques
 	return out, nil
 }
 
-func (c *nWPCDataServiceClient) GetDataFileInfo(ctx context.Context, in *DataFileRequest, opts ...grpc.CallOption) (*DataFileResponse, error) {
+func (c *nWPCDataServiceClient) GetDataFileInfo(ctx context.Context, in *DataRequest, opts ...grpc.CallOption) (*DataFileResponse, error) {
 	out := new(DataFileResponse)
 	err := c.cc.Invoke(ctx, "/NWPCDataService/GetDataFileInfo", in, out, opts...)
 	if err != nil {
@@ -429,12 +347,12 @@ func (c *nWPCDataServiceClient) GetDataFileInfo(ctx context.Context, in *DataFil
 	return out, nil
 }
 
-func (c *nWPCDataServiceClient) DownloadFile(ctx context.Context, in *FileContentRequest, opts ...grpc.CallOption) (NWPCDataService_DownloadFileClient, error) {
-	stream, err := c.cc.NewStream(ctx, &_NWPCDataService_serviceDesc.Streams[0], "/NWPCDataService/DownloadFile", opts...)
+func (c *nWPCDataServiceClient) DownloadDataFile(ctx context.Context, in *DataRequest, opts ...grpc.CallOption) (NWPCDataService_DownloadDataFileClient, error) {
+	stream, err := c.cc.NewStream(ctx, &_NWPCDataService_serviceDesc.Streams[0], "/NWPCDataService/DownloadDataFile", opts...)
 	if err != nil {
 		return nil, err
 	}
-	x := &nWPCDataServiceDownloadFileClient{stream}
+	x := &nWPCDataServiceDownloadDataFileClient{stream}
 	if err := x.ClientStream.SendMsg(in); err != nil {
 		return nil, err
 	}
@@ -444,16 +362,16 @@ func (c *nWPCDataServiceClient) DownloadFile(ctx context.Context, in *FileConten
 	return x, nil
 }
 
-type NWPCDataService_DownloadFileClient interface {
+type NWPCDataService_DownloadDataFileClient interface {
 	Recv() (*FileContentResponse, error)
 	grpc.ClientStream
 }
 
-type nWPCDataServiceDownloadFileClient struct {
+type nWPCDataServiceDownloadDataFileClient struct {
 	grpc.ClientStream
 }
 
-func (x *nWPCDataServiceDownloadFileClient) Recv() (*FileContentResponse, error) {
+func (x *nWPCDataServiceDownloadDataFileClient) Recv() (*FileContentResponse, error) {
 	m := new(FileContentResponse)
 	if err := x.ClientStream.RecvMsg(m); err != nil {
 		return nil, err
@@ -464,8 +382,8 @@ func (x *nWPCDataServiceDownloadFileClient) Recv() (*FileContentResponse, error)
 // NWPCDataServiceServer is the server API for NWPCDataService service.
 type NWPCDataServiceServer interface {
 	FindDataPath(context.Context, *DataRequest) (*DataPathResponse, error)
-	GetDataFileInfo(context.Context, *DataFileRequest) (*DataFileResponse, error)
-	DownloadFile(*FileContentRequest, NWPCDataService_DownloadFileServer) error
+	GetDataFileInfo(context.Context, *DataRequest) (*DataFileResponse, error)
+	DownloadDataFile(*DataRequest, NWPCDataService_DownloadDataFileServer) error
 }
 
 // UnimplementedNWPCDataServiceServer can be embedded to have forward compatible implementations.
@@ -475,11 +393,11 @@ type UnimplementedNWPCDataServiceServer struct {
 func (*UnimplementedNWPCDataServiceServer) FindDataPath(ctx context.Context, req *DataRequest) (*DataPathResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method FindDataPath not implemented")
 }
-func (*UnimplementedNWPCDataServiceServer) GetDataFileInfo(ctx context.Context, req *DataFileRequest) (*DataFileResponse, error) {
+func (*UnimplementedNWPCDataServiceServer) GetDataFileInfo(ctx context.Context, req *DataRequest) (*DataFileResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetDataFileInfo not implemented")
 }
-func (*UnimplementedNWPCDataServiceServer) DownloadFile(req *FileContentRequest, srv NWPCDataService_DownloadFileServer) error {
-	return status.Errorf(codes.Unimplemented, "method DownloadFile not implemented")
+func (*UnimplementedNWPCDataServiceServer) DownloadDataFile(req *DataRequest, srv NWPCDataService_DownloadDataFileServer) error {
+	return status.Errorf(codes.Unimplemented, "method DownloadDataFile not implemented")
 }
 
 func RegisterNWPCDataServiceServer(s *grpc.Server, srv NWPCDataServiceServer) {
@@ -505,7 +423,7 @@ func _NWPCDataService_FindDataPath_Handler(srv interface{}, ctx context.Context,
 }
 
 func _NWPCDataService_GetDataFileInfo_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(DataFileRequest)
+	in := new(DataRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -517,29 +435,29 @@ func _NWPCDataService_GetDataFileInfo_Handler(srv interface{}, ctx context.Conte
 		FullMethod: "/NWPCDataService/GetDataFileInfo",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(NWPCDataServiceServer).GetDataFileInfo(ctx, req.(*DataFileRequest))
+		return srv.(NWPCDataServiceServer).GetDataFileInfo(ctx, req.(*DataRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
-func _NWPCDataService_DownloadFile_Handler(srv interface{}, stream grpc.ServerStream) error {
-	m := new(FileContentRequest)
+func _NWPCDataService_DownloadDataFile_Handler(srv interface{}, stream grpc.ServerStream) error {
+	m := new(DataRequest)
 	if err := stream.RecvMsg(m); err != nil {
 		return err
 	}
-	return srv.(NWPCDataServiceServer).DownloadFile(m, &nWPCDataServiceDownloadFileServer{stream})
+	return srv.(NWPCDataServiceServer).DownloadDataFile(m, &nWPCDataServiceDownloadDataFileServer{stream})
 }
 
-type NWPCDataService_DownloadFileServer interface {
+type NWPCDataService_DownloadDataFileServer interface {
 	Send(*FileContentResponse) error
 	grpc.ServerStream
 }
 
-type nWPCDataServiceDownloadFileServer struct {
+type nWPCDataServiceDownloadDataFileServer struct {
 	grpc.ServerStream
 }
 
-func (x *nWPCDataServiceDownloadFileServer) Send(m *FileContentResponse) error {
+func (x *nWPCDataServiceDownloadDataFileServer) Send(m *FileContentResponse) error {
 	return x.ServerStream.SendMsg(m)
 }
 
@@ -558,8 +476,8 @@ var _NWPCDataService_serviceDesc = grpc.ServiceDesc{
 	},
 	Streams: []grpc.StreamDesc{
 		{
-			StreamName:    "DownloadFile",
-			Handler:       _NWPCDataService_DownloadFile_Handler,
+			StreamName:    "DownloadDataFile",
+			Handler:       _NWPCDataService_DownloadDataFile_Handler,
 			ServerStreams: true,
 		},
 	},

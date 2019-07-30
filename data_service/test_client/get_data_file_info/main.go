@@ -9,7 +9,8 @@ import (
 )
 
 func main() {
-	conn, err := grpc.Dial("10.40.140.43:33383", grpc.WithInsecure())
+	const address = "10.40.140.44:33483"
+	conn, err := grpc.Dial(address, grpc.WithInsecure())
 	if err != nil {
 		log.Fatalf("did not connect: %v", err)
 	}
@@ -21,8 +22,10 @@ func main() {
 	ctx, cancel := context.WithTimeout(context.Background(), time.Minute*2)
 	defer cancel()
 
-	r, err := c.GetDataFileInfo(ctx, &data_service.DataFileRequest{
-		FilePath: "/g1/u/nwp/.bashrc",
+	r, err := c.GetDataFileInfo(ctx, &data_service.DataRequest{
+		DataType:     "gmf_grapes_gfs/grib2/orig",
+		StartTime:    "2019072900",
+		ForecastTime: "0h",
 	})
 	if err != nil {
 		log.Fatalf("could not greet: %v", err)

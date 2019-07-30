@@ -19,43 +19,28 @@ func (s *NWPCDataServer) FindDataPath(ctx context.Context, req *DataRequest) (*D
 
 	log.Printf("FindDataPath for type %s: %s %s\n", dataType, startTimeString, forecastTimeString)
 
-	emptyResponse := DataPathResponse{LocationType: "NOTFOUND", Location: "NOTFOUND"}
+	response, err := s.findDataPath(req)
 
-	configFilePath, err := common.FindConfig(s.ConfigDir, dataType)
-	if err != nil {
-		fmt.Fprintf(os.Stderr, "model data type config is not found.\n")
-		return &emptyResponse, fmt.Errorf("model data type config is not found")
-	}
+	log.Printf("Find data path type: %s\n", response.LocationType)
+	log.Printf("Find data path: %s\n", response.Location)
 
-	hpcDataConfig, err := common.LoadConfig(configFilePath)
-	if err != nil {
-		fmt.Fprintf(os.Stderr, "load config failed: %s\n", err)
-		return &emptyResponse, fmt.Errorf("load config failed: %v", err)
-	}
-
-	startTime, err := common.CheckStartTime(startTimeString)
-	if err != nil {
-		return &emptyResponse, fmt.Errorf("check StartTime failed: %s", err)
-	}
-
-	forecastTime, err := common.CheckForecastTime(forecastTimeString)
-	if err != nil {
-		return &emptyResponse, fmt.Errorf("check ForecastTime failed: %s", err)
-	}
-
-	filePath := common.FindLocalFile(hpcDataConfig, startTime, forecastTime)
-	log.Printf("Find data path type: %s\n", filePath.PathType)
-	log.Printf("Find data path: %s\n", filePath.Path)
-
-	return &DataPathResponse{
-		LocationType: filePath.PathType,
-		Location:     filePath.Path,
-	}, nil
+	return response, err
 }
 
-func (s *NWPCDataServer) GetDataFileInfo(ctx context.Context, req *DataFileRequest) (*DataFileResponse, error) {
-	filePath := req.FilePath
-	log.Printf("GetDataFileInfo for %s", filePath)
+func (s *NWPCDataServer) GetDataFileInfo(ctx context.Context, req *DataRequest) (*DataFileResponse, error) {
+	log.Printf("GetDataFileInfo for %s", req)
+
+	dataResponse, err := s.findDataPath(req)
+	if err != nil {
+		return &DataFileResponse{
+			Status:       StatusCode_Failed,
+			ErrorMessage: fmt.Sprintf("%v", err),
+			FilePath:     "",
+			FileSize:     -1,
+		}, nil
+	}
+
+	filePath := dataResponse.Location
 
 	fileInfo, err := os.Stat(filePath)
 	if err != nil {
@@ -85,11 +70,16 @@ func (s *NWPCDataServer) GetDataFileInfo(ctx context.Context, req *DataFileReque
 	}, nil
 }
 
-func (*NWPCDataServer) DownloadFile(req *FileContentRequest, stream NWPCDataService_DownloadFileServer) error {
-	filePath := req.FilePath
+func (s *NWPCDataServer) DownloadDataFile(req *DataRequest, stream NWPCDataService_DownloadDataFileServer) error {
 
-	log.Printf("DownloadFile for %s", filePath)
+	log.Printf("DownloadFile for %s", req)
 
+	dataResponse, err := s.findDataPath(req)
+	if err != nil {
+		return err
+	}
+
+	filePath := dataResponse.Location
 	fileInfo, err := os.Stat(filePath)
 	if err != nil {
 		return fmt.Errorf("file error: %v", err)
@@ -124,4 +114,41 @@ func (*NWPCDataServer) DownloadFile(req *FileContentRequest, stream NWPCDataServ
 	}
 
 	return nil
+}
+
+func (s *NWPCDataServer) findDataPath(req *DataRequest) (*DataPathResponse, error) {
+	dataType := req.GetDataType()
+	startTimeString := req.GetStartTime()
+	forecastTimeString := req.GetForecastTime()
+
+	emptyResponse := DataPathResponse{LocationType: "NOTFOUND", Location: "NOTFOUND"}
+
+	configFilePath, err := common.FindConfig(s.ConfigDir, dataType)
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "model data type config is not found.\n")
+		return &emptyResponse, fmt.Errorf("model data type config is not found")
+	}
+
+	hpcDataConfig, err := common.LoadConfig(configFilePath)
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "load config failed: %s\n", err)
+		return &emptyResponse, fmt.Errorf("load config failed: %v", err)
+	}
+
+	startTime, err := common.CheckStartTime(startTimeString)
+	if err != nil {
+		return &emptyResponse, fmt.Errorf("check StartTime failed: %s", err)
+	}
+
+	forecastTime, err := common.CheckForecastTime(forecastTimeString)
+	if err != nil {
+		return &emptyResponse, fmt.Errorf("check ForecastTime failed: %s", err)
+	}
+
+	filePath := common.FindLocalFile(hpcDataConfig, startTime, forecastTime)
+
+	return &DataPathResponse{
+		LocationType: filePath.PathType,
+		Location:     filePath.Path,
+	}, nil
 }

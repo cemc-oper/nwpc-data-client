@@ -12,12 +12,9 @@ import (
 )
 
 func main() {
-	const address = "10.40.140.43:33383"
-	const remoteFilePath = "/sstorage1/COMMONDATA/OPER/old/nwp/" +
-		"GMFS_GRIB2_GRAPES/CMACAST/GRAPES_GFS_forCAST_2019061418/" +
-		"ne_gmf.gra.2019061418000.grb2"
+	const address = "10.40.140.44:33483"
 
-	localFilePath := "./dist/ne_gmf.gra.2019061418000.grb2"
+	localFilePath := "./dist/gmf.gra.2019061418120.grb2"
 
 	prepareLocalDir(localFilePath)
 
@@ -33,8 +30,10 @@ func main() {
 	ctx, cancel := context.WithTimeout(context.Background(), time.Minute*2)
 	defer cancel()
 
-	stream, err := c.DownloadFile(ctx, &data_service.FileContentRequest{
-		FilePath: remoteFilePath,
+	stream, err := c.DownloadDataFile(ctx, &data_service.DataRequest{
+		DataType:     "gmf_grapes_gfs/grib2/orig",
+		StartTime:    "2019061418",
+		ForecastTime: "120h",
 	})
 
 	f, err := os.OpenFile(localFilePath, os.O_CREATE|os.O_WRONLY, 0644)
