@@ -69,12 +69,12 @@ var localCmd = &cobra.Command{
 func findLocalFile(cmd *cobra.Command, args []string) {
 	configFilePath, err := common.FindConfig(ConfigDir, DataType)
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "model data type config is not found.\n")
+		fmt.Fprintf(os.Stderr, "model data type config is not found: %v\n", err)
 		return
 	}
 	config, err2 := common.LoadConfig(configFilePath)
 	if err2 != nil {
-		fmt.Fprintf(os.Stderr, "load config failed: %s\n", err2)
+		fmt.Fprintf(os.Stderr, "load config failed: %v\n", err2)
 		return
 	}
 	pathItem := common.FindLocalFile(config, StartTime, ForecastTime)

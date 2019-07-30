@@ -8,8 +8,19 @@ import (
 	"path/filepath"
 )
 
+const ConfigFileBasename = ".yaml"
+
 func FindConfig(configDir string, dataType string) (string, error) {
-	configFilePath := filepath.Join(configDir, dataType+".yaml")
+	configDirPath, _ := filepath.Abs(configDir)
+	configFilePath := filepath.Join(configDirPath, dataType+ConfigFileBasename)
+	relPath, err := filepath.Rel(configDirPath, configFilePath)
+	if err != nil {
+		return "", fmt.Errorf("check directory match has error: %v", err)
+	}
+	if relPath[0:2] == ".." {
+		return "", fmt.Errorf("check directory failed: dataType (%s) should be under configDir (%s)",
+			dataType, configDirPath)
+	}
 	if _, err := os.Stat(configFilePath); os.IsNotExist(err) {
 		return configFilePath, fmt.Errorf("file is not exist")
 	}
