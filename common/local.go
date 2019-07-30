@@ -62,3 +62,8 @@ func CheckLocalFile(filePath string) bool {
 
 	return true
 }
+
+func PrepareLocalDir(filePath string) {
+	localFileDir := filepath.Dir(filePath)
+	_ = os.MkdirAll(localFileDir, os.ModeDir)
+}
