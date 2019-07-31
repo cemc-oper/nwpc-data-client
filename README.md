@@ -11,12 +11,7 @@ A cli client for data files in NWPC.
 
 Download the latest release and build source code. 
 
-Use `Makefile` to build project on Linux.
-
-```bash
-make
-```
-
+Use `Makefile` to build project on Linux and 
 `nwpc_data_client` command will be installed in `bin` directory.
 
 ## Getting Started
@@ -68,7 +63,9 @@ gmf_grapes_gfs/grib2/orig
 
 ### hpc
 
-`nwpc_data_client hpc` command find data on HPC-PI. Data files could be on HPC's local storage nodes (eg. /g2) or 
+`nwpc_data_client hpc` command find data on HPC-PI. 
+
+Data files could be on HPC's local storage nodes (eg. /g2) or 
 external storage nodes which are mount to special HPC login nodes.
 
 ```bash
@@ -111,6 +108,10 @@ The command return two lines:
 2. second line is file path.
 
 If no file is found, both lines will be value of `default` field in config file. 
+
+### service
+
+See [README.md](./data_service/README.md) under data_service.
 
 ## License
 
