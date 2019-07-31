@@ -1,4 +1,4 @@
-# NWPC Data Clinet
+# NWPC Data Client
 
 A cli client for data files in NWPC.
 
