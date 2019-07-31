@@ -111,3 +111,9 @@ The command return two lines:
 2. second line is file path.
 
 If no file is found, both lines will be value of `default` field in config file. 
+
+## License
+
+Copyright &copy; 2019 Perilla Roc at nwpc-oper.
+
+`nwpc-data-client` is licensed under [The MIT License](https://opensource.org/licenses/MIT).
