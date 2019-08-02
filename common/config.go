@@ -10,7 +10,38 @@ import (
 
 const ConfigFileBasename = ".yaml"
 
-func FindConfig(configDir string, dataType string) (string, error) {
+func LoadConfig(configDir string, dataType string) (DataConfig, error) {
+	dataConfig := DataConfig{}
+
+	configFilePath, err := findConfig(configDir, dataType)
+	if err != nil {
+		return dataConfig, fmt.Errorf("model data type config is not found: %v", err)
+	}
+	config, err := loadConfigFile(configFilePath)
+	if err != nil {
+
+		return dataConfig, fmt.Errorf("load config failed: %v", err)
+	}
+	return config, nil
+}
+
+func loadConfigFile(configFilePath string) (DataConfig, error) {
+	dataConfig := DataConfig{}
+
+	data, err := ioutil.ReadFile(configFilePath)
+	if err != nil {
+		return dataConfig, err
+	}
+
+	err = yaml.Unmarshal(data, &dataConfig)
+	if err != nil {
+		return dataConfig, err
+	}
+
+	return dataConfig, nil
+}
+
+func findConfig(configDir string, dataType string) (string, error) {
 	configDirPath, _ := filepath.Abs(configDir)
 	configFilePath := filepath.Join(configDirPath, dataType+ConfigFileBasename)
 	relPath, err := filepath.Rel(configDirPath, configFilePath)
@@ -36,20 +67,4 @@ type DataConfig struct {
 	Default  string     `yaml:"default"`
 	FileName string     `yaml:"file_name"`
 	Paths    []PathItem `yaml:"paths"`
-}
-
-func LoadConfig(configFilePath string) (DataConfig, error) {
-	dataConfig := DataConfig{}
-
-	data, err := ioutil.ReadFile(configFilePath)
-	if err != nil {
-		return dataConfig, err
-	}
-
-	err = yaml.Unmarshal(data, &dataConfig)
-	if err != nil {
-		return dataConfig, err
-	}
-
-	return dataConfig, nil
 }

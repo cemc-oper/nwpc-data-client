@@ -123,13 +123,7 @@ func (s *NWPCDataServer) findDataPath(req *DataRequest) (*DataPathResponse, erro
 
 	emptyResponse := DataPathResponse{LocationType: "NOTFOUND", Location: "NOTFOUND"}
 
-	configFilePath, err := common.FindConfig(s.ConfigDir, dataType)
-	if err != nil {
-		fmt.Fprintf(os.Stderr, "model data type config is not found.\n")
-		return &emptyResponse, fmt.Errorf("model data type config is not found")
-	}
-
-	hpcDataConfig, err := common.LoadConfig(configFilePath)
+	hpcDataConfig, err := common.LoadConfig(s.ConfigDir, dataType)
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "load config failed: %s\n", err)
 		return &emptyResponse, fmt.Errorf("load config failed: %v", err)

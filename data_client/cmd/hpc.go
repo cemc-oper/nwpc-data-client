@@ -88,12 +88,7 @@ var hpcCmd = &cobra.Command{
 }
 
 func runHpcCommand(cmd *cobra.Command, args []string) {
-	configFilePath, err := common.FindConfig(ConfigDir, DataType)
-	if err != nil {
-		fmt.Fprintf(os.Stderr, "model data type config is not found.\n")
-		return
-	}
-	hpcDataConfig, err2 := common.LoadConfig(configFilePath)
+	hpcDataConfig, err2 := common.LoadConfig(ConfigDir, DataType)
 	if err2 != nil {
 		fmt.Fprintf(os.Stderr, "load config failed: %s\n", err2)
 		return
