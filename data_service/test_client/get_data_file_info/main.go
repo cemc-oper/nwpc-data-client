@@ -23,7 +23,7 @@ func main() {
 	defer cancel()
 
 	r, err := c.GetDataFileInfo(ctx, &data_service.DataRequest{
-		DataType:     "gmf_grapes_gfs/grib2/orig",
+		DataType:     "grapes_gfs_gda/grib2/orig",
 		StartTime:    "2019072900",
 		ForecastTime: "0h",
 	})

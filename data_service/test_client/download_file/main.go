@@ -31,7 +31,7 @@ func main() {
 	defer cancel()
 
 	stream, err := c.DownloadDataFile(ctx, &data_service.DataRequest{
-		DataType:     "gmf_grapes_gfs/grib2/orig",
+		DataType:     "grapes_gfs_gda/grib2/orig",
 		StartTime:    "2019061418",
 		ForecastTime: "120h",
 	})

@@ -22,7 +22,7 @@ func main() {
 	defer cancel()
 
 	r, err := c.FindDataPath(ctx, &data_service.DataRequest{
-		DataType:     "gmf_grapes_gfs/bin/modelvar",
+		DataType:     "grapes_gfs_gda/bin/modelvar",
 		StartTime:    "2019072100",
 		ForecastTime: "120h",
 	})
