@@ -43,6 +43,8 @@ func init() {
 		"Show supported data types defined in config dir and exit.")
 }
 
+const hpcCommandName = "hpc"
+
 const hpcCommandDocString = `nwpc_data_client hpc
 Find data path on hpc using config files in config dir.
 
@@ -53,7 +55,7 @@ Args:
     forecast_time: FFF, such as 000`
 
 var hpcCmd = &cobra.Command{
-	Use:   "hpc",
+	Use:   hpcCommandName,
 	Short: "Find data path on hpc.",
 	Long:  hpcCommandDocString,
 	Args: func(cmd *cobra.Command, args []string) error {
@@ -88,7 +90,12 @@ var hpcCmd = &cobra.Command{
 }
 
 func runHpcCommand(cmd *cobra.Command, args []string) {
+	if len(ConfigDir) == 0 {
+		ConfigDir = hpcCommandName + "/" + ConfigDir
+	}
+
 	hpcDataConfig, err2 := common.LoadConfig(ConfigDir, DataType)
+
 	if err2 != nil {
 		fmt.Fprintf(os.Stderr, "load config failed: %s\n", err2)
 		return

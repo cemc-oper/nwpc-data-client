@@ -2,6 +2,7 @@ package common
 
 import (
 	"fmt"
+	"github.com/nwpc-oper/nwpc-data-client/common/config"
 	"gopkg.in/yaml.v2"
 	"io/ioutil"
 	"os"
@@ -13,20 +14,28 @@ const ConfigFileBasename = ".yaml"
 func LoadConfig(configDir string, dataType string) (DataConfig, error) {
 	dataConfig := DataConfig{}
 
-	configFilePath, err := findConfig(configDir, dataType)
+	var configObject DataConfig
+	var err error
+
+	if len(configDir) == 0 {
+		configObject, err = loadEmbeddedConfig(dataType)
+	} else {
+		configObject, err = loadLocalConfig(configDir, dataType)
+	}
+
+	if err != nil {
+		return dataConfig, fmt.Errorf("load config failed: %v", err)
+	}
+	return configObject, nil
+}
+
+func loadLocalConfig(configDir string, dataType string) (DataConfig, error) {
+	dataConfig := DataConfig{}
+
+	configFilePath, err := findLocalConfig(configDir, dataType)
 	if err != nil {
 		return dataConfig, fmt.Errorf("model data type config is not found: %v", err)
 	}
-	config, err := loadConfigFile(configFilePath)
-	if err != nil {
-
-		return dataConfig, fmt.Errorf("load config failed: %v", err)
-	}
-	return config, nil
-}
-
-func loadConfigFile(configFilePath string) (DataConfig, error) {
-	dataConfig := DataConfig{}
 
 	data, err := ioutil.ReadFile(configFilePath)
 	if err != nil {
@@ -41,7 +50,7 @@ func loadConfigFile(configFilePath string) (DataConfig, error) {
 	return dataConfig, nil
 }
 
-func findConfig(configDir string, dataType string) (string, error) {
+func findLocalConfig(configDir string, dataType string) (string, error) {
 	configDirPath, _ := filepath.Abs(configDir)
 	configFilePath := filepath.Join(configDirPath, dataType+ConfigFileBasename)
 	relPath, err := filepath.Rel(configDirPath, configFilePath)
@@ -56,6 +65,31 @@ func findConfig(configDir string, dataType string) (string, error) {
 		return configFilePath, fmt.Errorf("file is not exist")
 	}
 	return configFilePath, nil
+}
+
+func loadEmbeddedConfig(dataType string) (DataConfig, error) {
+	dataConfig := DataConfig{}
+
+	configContent, err := findEmbeddedConfig(dataType)
+	if err != nil {
+		return dataConfig, fmt.Errorf("model data type config is not found: %v", err)
+	}
+
+	err = yaml.Unmarshal([]byte(configContent), &dataConfig)
+	if err != nil {
+		return dataConfig, err
+	}
+
+	return dataConfig, nil
+}
+
+func findEmbeddedConfig(dataType string) (string, error) {
+	for _, configItem := range config.EmbeddedConfigs {
+		if configItem[0] == dataType {
+			return configItem[1], nil
+		}
+	}
+	return "", fmt.Errorf("can't find embedded config: %s", dataType)
 }
 
 type PathItem struct {

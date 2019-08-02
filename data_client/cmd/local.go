@@ -4,9 +4,11 @@ import (
 	"errors"
 	"fmt"
 	"github.com/nwpc-oper/nwpc-data-client/common"
+	"github.com/nwpc-oper/nwpc-data-client/common/config"
 	"github.com/spf13/cobra"
 	"os"
 	"path/filepath"
+	"strings"
 )
 
 func init() {
@@ -24,6 +26,8 @@ func init() {
 		"Show supported data types defined in config dir and exit.")
 }
 
+const localCommandName = "local"
+
 const localCommandDocString = `nwpc_data_client local
 Find local data path using config files in config dir.
 
@@ -32,7 +36,7 @@ Args:
     forecast_time: FFF, such as 000`
 
 var localCmd = &cobra.Command{
-	Use:   "local",
+	Use:   localCommandName,
 	Short: "Find local data path.",
 	Long:  localCommandDocString,
 	Args: func(cmd *cobra.Command, args []string) error {
@@ -67,6 +71,9 @@ var localCmd = &cobra.Command{
 }
 
 func findLocalFile(cmd *cobra.Command, args []string) {
+	if len(ConfigDir) == 0 {
+		DataType = localCommandName + "/" + DataType
+	}
 	config, err2 := common.LoadConfig(ConfigDir, DataType)
 	if err2 != nil {
 		fmt.Fprintf(os.Stderr, "load config failed: %v\n", err2)
@@ -77,6 +84,14 @@ func findLocalFile(cmd *cobra.Command, args []string) {
 }
 
 func showDataTypes(cmd *cobra.Command, args []string) {
+	if len(ConfigDir) == 0 {
+		showEmbeddedDataTypes()
+	} else {
+		showLocalDataTypes(ConfigDir)
+	}
+}
+
+func showLocalDataTypes(configDir string) {
 	var configFilePaths []string
 	walkConfigDirectory := func(path string, info os.FileInfo, err error) error {
 		if err != nil {
@@ -100,5 +115,14 @@ func showDataTypes(cmd *cobra.Command, args []string) {
 			continue
 		}
 		fmt.Printf("%s\n", relConfigPath[:len(relConfigPath)-5])
+	}
+}
+
+func showEmbeddedDataTypes() {
+	for _, item := range config.EmbeddedConfigs {
+		name := item[0]
+		if strings.HasPrefix(name, "local/") {
+			fmt.Printf("%s\n", name[6:])
+		}
 	}
 }

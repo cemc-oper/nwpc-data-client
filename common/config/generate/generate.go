@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"github.com/nwpc-oper/nwpc-data-client/common"
 	"io/ioutil"
 	"log"
 	"os"
@@ -10,7 +11,7 @@ import (
 
 //go:generate go run generate.go
 func main() {
-	fmt.Printf("This a generate tool to embend YAML config files into nwpc-data-client.\n")
+	fmt.Printf("This a generate tool to embed YAML config files into nwpc-data-client.\n")
 
 	configDir := filepath.Join("../../../", "conf")
 
@@ -31,7 +32,7 @@ func main() {
 		if info.IsDir() {
 			return nil
 		}
-		if filepath.Ext(path) != ".yaml" {
+		if filepath.Ext(path) != common.ConfigFileBasename {
 			return nil
 		}
 
