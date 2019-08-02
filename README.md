@@ -25,11 +25,11 @@ nwpc_data_client local --config-dir=config_dir --data-type some/data/type \
     start_time forecast_time
 ```
 
-Use `--config-dir` to set config file directory.
+Use `--config-dir` to set a custom config file directory.
 
 `--data-type` is some relative path under config directory. Such as
 
--   `gda_grapes_gfs/grib2/modelvar`
+-   `grapes_gfs_gda/grib2/modelvar`
 -   `gmf_graeps_gfs/bin/modelvar`
 
 `start_time` is `YYYYMMDDHH` and `forecast_time` is `FFF`.
@@ -37,28 +37,28 @@ Use `--config-dir` to set config file directory.
 For example, use the command below to find GMF GRAPES GFS GRIB2 data of 24 forecast hour in start hour 00 on 2018/09/03.
 
 ```text
-$nwpc_data_client local --data-type=gmf_grapes_gfs/grib2/orig 2018090300 24
+$nwpc_data_client local --data-type=grapes_gfs_gmf/grib2/orig 2018090300 24
 /g2/nwp_pd/NWP_PST_DATA/GMF_GRAPES_GFS_V2.2_POST/togrib2/output_togrib2/2018090300/gmf.gra.2018090300024.grb2
 ```
 
 To list all data types available in some configure directory, run following command
 
 ```bash
-nwpc_data_client local --config-dir=some/config/dir --show-types
+nwpc_data_client local --show-types
 ```
 
 Results may be like:
 
 ```text
-gda_grapes_gfs/bin/modelvar
-gda_grapes_gfs/bin/postvar
-gda_grapes_gfs/grib2/modelvar
-gda_grapes_gfs/grib2/orig
-gmf_grapes_gfs/bin/modelvar
-gmf_grapes_gfs/bin/postvar
-gmf_grapes_gfs/grib2/modelvar
-gmf_grapes_gfs/grib2/ne
-gmf_grapes_gfs/grib2/orig
+grapes_gfs_gda/bin/modelvar
+grapes_gfs_gda/bin/postvar
+grapes_gfs_gda/grib2/modelvar
+grapes_gfs_gda/grib2/orig
+grapes_gfs_gmf/bin/modelvar
+grapes_gfs_gmf/bin/postvar
+grapes_gfs_gmf/grib2/modelvar
+grapes_gfs_gmf/grib2/ne
+grapes_gfs_gmf/grib2/orig
 ```
 
 ### hpc
@@ -97,7 +97,7 @@ paths:
 For example, use the command below to find GDA GRAPES GFS modelvar data of 000 forecast hour in start hour 00 on 2019/05/20.
 
 ```text
-$nwpc_data_client hpc --config-dir=./conf/hpc --data-type=gda_grapes_gfs/bin/modelvar 2019050200 000
+$nwpc_data_client hpc --data-type=grapes_gfs_gda/bin/modelvar 2019050200 000
 storage
 /sstorage1/COMMONDATA/OPER/nwp/GRAPES_GFS/GDA_GRAPES_GFS/Fcst-9h/2019050121/modelvar2019050121_000
 ```
