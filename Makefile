@@ -23,3 +23,6 @@ nwpc_data_server:
 		-gcflags "all=-N -l" \
 		-o bin/nwpc_data_server \
 		data_service/data_server/main.go
+
+generate:
+	cd common/config/generate && go generate
