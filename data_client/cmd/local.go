@@ -33,7 +33,7 @@ Find local data path using config files in config dir.
 
 Args:
     start_time: YYYYMMDDHH, such as 2018080100
-    forecast_time: FFF, such as 000`
+    forecast_time: FFFh, such as 0h, 120h`
 
 var localCmd = &cobra.Command{
 	Use:   localCommandName,
@@ -55,7 +55,7 @@ var localCmd = &cobra.Command{
 			return fmt.Errorf("check StartTime failed: %s", err)
 		}
 
-		ForecastTime, err = common.CheckForecastHour(args[1])
+		ForecastTime, err = common.CheckForecastTime(args[1])
 		if err != nil {
 			return fmt.Errorf("check ForecastTime failed: %s", err)
 		}

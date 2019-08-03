@@ -52,7 +52,7 @@ Support both to find local files and to find files on storage nodes.
 
 Args:
     start_time: YYYYMMDDHH, such as 2018080100
-    forecast_time: FFF, such as 000`
+    forecast_time: FFFh, such as 120h`
 
 var hpcCmd = &cobra.Command{
 	Use:   hpcCommandName,
@@ -74,7 +74,7 @@ var hpcCmd = &cobra.Command{
 			return fmt.Errorf("check StartTime failed: %s", err)
 		}
 
-		ForecastTime, err = common.CheckForecastHour(args[1])
+		ForecastTime, err = common.CheckForecastTime(args[1])
 		if err != nil {
 			return fmt.Errorf("check ForecastTime failed: %s", err)
 		}

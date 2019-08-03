@@ -32,12 +32,12 @@ Use `--config-dir` to set a custom config file directory.
 -   `grapes_gfs_gda/grib2/modelvar`
 -   `gmf_graeps_gfs/bin/modelvar`
 
-`start_time` is `YYYYMMDDHH` and `forecast_time` is `FFF`.
+`start_time` is `YYYYMMDDHH` and `forecast_time` is `FFFh`.
 
 For example, use the command below to find GMF GRAPES GFS GRIB2 data of 24 forecast hour in start hour 00 on 2018/09/03.
 
 ```text
-$nwpc_data_client local --data-type=grapes_gfs_gmf/grib2/orig 2018090300 24
+$nwpc_data_client local --data-type=grapes_gfs_gmf/grib2/orig 2018090300 24h
 /g2/nwp_pd/NWP_PST_DATA/GMF_GRAPES_GFS_V2.2_POST/togrib2/output_togrib2/2018090300/gmf.gra.2018090300024.grb2
 ```
 
@@ -97,7 +97,7 @@ paths:
 For example, use the command below to find GDA GRAPES GFS modelvar data of 000 forecast hour in start hour 00 on 2019/05/20.
 
 ```text
-$nwpc_data_client hpc --data-type=grapes_gfs_gda/bin/modelvar 2019050200 000
+$nwpc_data_client hpc --data-type=grapes_gfs_gda/bin/modelvar 2019050200 0h
 storage
 /sstorage1/COMMONDATA/OPER/nwp/GRAPES_GFS/GDA_GRAPES_GFS/Fcst-9h/2019050121/modelvar2019050121_000
 ```

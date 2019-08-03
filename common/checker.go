@@ -16,7 +16,7 @@ func CheckStartTime(value string) (time.Time, error) {
 	return s, nil
 }
 
-func CheckForecastHour(value string) (time.Duration, error) {
+func checkForecastHour(value string) (time.Duration, error) {
 	return CheckForecastTime(fmt.Sprintf("%sh", value))
 }
 
