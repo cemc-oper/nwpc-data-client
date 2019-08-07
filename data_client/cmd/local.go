@@ -22,6 +22,9 @@ func init() {
 	localCmd.Flags().StringVar(&DataType, "data-type", "",
 		"Data type used to locate config file path in config dir.")
 
+	localCmd.Flags().StringVar(&LocationLevels, "location-level", "",
+		"Location levels, split by ',', such as 'runtime,archive'.")
+
 	localCmd.Flags().BoolVar(&ShowTypes, "show-types", false,
 		"Show supported data types defined in config dir and exit.")
 }
@@ -79,7 +82,10 @@ func findLocalFile(cmd *cobra.Command, args []string) {
 		fmt.Fprintf(os.Stderr, "load config failed: %v\n", err2)
 		return
 	}
-	pathItem := common.FindLocalFile(config, StartTime, ForecastTime)
+
+	levels := strings.Split(LocationLevels, ",")
+
+	pathItem := common.FindLocalFile(config, levels, StartTime, ForecastTime)
 	fmt.Printf("%s\n", pathItem.Path)
 }
 

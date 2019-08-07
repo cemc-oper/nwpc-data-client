@@ -9,7 +9,7 @@ import (
 	"time"
 )
 
-func FindLocalFile(config DataConfig, startTime time.Time, forecastTime time.Duration) PathItem {
+func FindLocalFile(config DataConfig, locationLevels []string, startTime time.Time, forecastTime time.Duration) PathItem {
 	tpVar := GenerateTemplateVariable(startTime, forecastTime)
 
 	fileNameTemplate := template.Must(template.New("fileName").
@@ -29,6 +29,12 @@ func FindLocalFile(config DataConfig, startTime time.Time, forecastTime time.Dur
 	for _, item := range config.Paths {
 		path := item.Path
 		pathType := item.PathType
+		locationLevelType := item.LevelType
+
+		if !inLocationLevelTypes(locationLevels, locationLevelType) {
+			continue
+		}
+
 		dirPathTemplate := template.Must(template.New("dirPath").Delims("{", "}").Parse(path))
 
 		var dirPathBuilder strings.Builder

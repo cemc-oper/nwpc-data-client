@@ -139,7 +139,8 @@ func (s *NWPCDataServer) findDataPath(req *DataRequest) (*DataPathResponse, erro
 		return &emptyResponse, fmt.Errorf("check ForecastTime failed: %s", err)
 	}
 
-	filePath := common.FindLocalFile(hpcDataConfig, startTime, forecastTime)
+	// TODO: add location levels
+	filePath := common.FindLocalFile(hpcDataConfig, []string{}, startTime, forecastTime)
 
 	return &DataPathResponse{
 		LocationType: filePath.PathType,

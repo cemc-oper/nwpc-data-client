@@ -92,9 +92,22 @@ func findEmbeddedConfig(dataType string) (string, error) {
 	return "", fmt.Errorf("can't find embedded config: %s", dataType)
 }
 
+func inLocationLevelTypes(locationLevelTypes []string, locationLevelType string) bool {
+	for _, item := range locationLevelTypes {
+		if item == "" || item == "all" {
+			return true
+		}
+		if item == locationLevelType {
+			return true
+		}
+	}
+	return false
+}
+
 type PathItem struct {
-	PathType string `yaml:"type"`
-	Path     string `yaml:"path"`
+	PathType  string `yaml:"type"`
+	LevelType string `yaml:"level"`
+	Path      string `yaml:"path"`
 }
 
 type DataConfig struct {

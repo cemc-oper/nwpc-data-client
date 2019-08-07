@@ -7,8 +7,13 @@ file_name: gmf.gra.{.Year}{.Month}{.Day}{.Hour}{.Forecast}.grb2
 
 paths:
   - type: local
+    level: runtime
     path: /g2/nwp_pd/NWP_PST_DATA/GMF_GRAPES_GFS_POST/togrib2/output_togrib2/{.Year}{.Month}{.Day}{.Hour}
+
   - type: local
+    level: archive
     path: /g1/COMMONDATA/OPER/NWPC/GRAPES_GFS_GMF/Prod-grib/{.Year4DV}{.Month4DV}{.Day4DV}{.Hour4DV}/ORIG
+
   - type: storage
+    level: storage
     path: /sstorage1/COMMONDATA/OPER/NWPC/GRAPES_GFS_GMF/Prod-grib/{.Year4DV}{.Month4DV}{.Day4DV}{.Hour4DV}/ORIG
