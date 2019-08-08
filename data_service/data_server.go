@@ -15,9 +15,11 @@ type NWPCDataServer struct {
 func (s *NWPCDataServer) FindDataPath(ctx context.Context, req *DataRequest) (*DataPathResponse, error) {
 	dataType := req.GetDataType()
 	startTimeString := req.GetStartTime()
+	locationLevels := req.GetLocationLevels()
 	forecastTimeString := req.GetForecastTime()
 
-	log.Printf("FindDataPath for type %s: %s %s\n", dataType, startTimeString, forecastTimeString)
+	log.Printf("FindDataPath for type %s at level %v: %s %s\n",
+		dataType, locationLevels, startTimeString, forecastTimeString)
 
 	response, err := s.findDataPath(req)
 
@@ -118,6 +120,7 @@ func (s *NWPCDataServer) DownloadDataFile(req *DataRequest, stream NWPCDataServi
 
 func (s *NWPCDataServer) findDataPath(req *DataRequest) (*DataPathResponse, error) {
 	dataType := req.GetDataType()
+	locationLevels := req.GetLocationLevels()
 	startTimeString := req.GetStartTime()
 	forecastTimeString := req.GetForecastTime()
 
@@ -140,7 +143,7 @@ func (s *NWPCDataServer) findDataPath(req *DataRequest) (*DataPathResponse, erro
 	}
 
 	// TODO: add location levels
-	filePath := common.FindLocalFile(hpcDataConfig, []string{}, startTime, forecastTime)
+	filePath := common.FindLocalFile(hpcDataConfig, locationLevels, startTime, forecastTime)
 
 	return &DataPathResponse{
 		LocationType: filePath.PathType,

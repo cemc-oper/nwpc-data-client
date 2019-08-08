@@ -1,4 +1,4 @@
-package find_data_path
+package main
 
 import (
 	"context"
@@ -9,7 +9,7 @@ import (
 )
 
 func main() {
-	conn, err := grpc.Dial("10.40.142.44:33383", grpc.WithInsecure())
+	conn, err := grpc.Dial("10.40.140.43:33383", grpc.WithInsecure())
 	if err != nil {
 		log.Fatalf("did not connect: %v", err)
 	}
@@ -22,9 +22,10 @@ func main() {
 	defer cancel()
 
 	r, err := c.FindDataPath(ctx, &data_service.DataRequest{
-		DataType:     "grapes_gfs_gda/bin/modelvar",
-		StartTime:    "2019072100",
-		ForecastTime: "120h",
+		DataType:       "grapes_gfs_gmf/grib2/orig",
+		LocationLevels: []string{"archive"},
+		StartTime:      "2019080700",
+		ForecastTime:   "120h",
 	})
 	if err != nil {
 		log.Fatalf("could not greet: %v", err)

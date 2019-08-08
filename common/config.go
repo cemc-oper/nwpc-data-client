@@ -93,6 +93,9 @@ func findEmbeddedConfig(dataType string) (string, error) {
 }
 
 func inLocationLevelTypes(locationLevelTypes []string, locationLevelType string) bool {
+	if len(locationLevelTypes) == 0 {
+		return true
+	}
 	for _, item := range locationLevelTypes {
 		if item == "" || item == "all" {
 			return true

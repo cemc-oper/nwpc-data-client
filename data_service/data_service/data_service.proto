@@ -8,8 +8,9 @@ enum StatusCode {
 
 message DataRequest{
     string data_type = 1;
-    string start_time = 2;
-    string forecast_time = 3;
+    repeated string location_levels = 2;
+    string start_time = 3;
+    string forecast_time = 4;
 }
 
 message DataPathResponse{

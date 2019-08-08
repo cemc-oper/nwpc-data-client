@@ -12,6 +12,7 @@ import (
 	"log"
 	"os"
 	"path/filepath"
+	"strings"
 	"time"
 )
 
@@ -26,6 +27,9 @@ func init() {
 
 	serviceCommand.Flags().StringVar(&DataType, "data-type", "",
 		"Data type used to locate config file path in config dir.")
+
+	serviceCommand.Flags().StringVar(&LocationLevels, "location-level", "",
+		"Location levels, split by ',', such as 'runtime,archive'.")
 
 	serviceCommand.Flags().StringVar(&ServiceAddress, "address", "",
 		"ServiceAddress of nwpc_data_server.")
@@ -76,11 +80,14 @@ var serviceCommand = &cobra.Command{
 		ctx, cancel := context.WithTimeout(context.Background(), time.Minute*2)
 		defer cancel()
 
+		locationLevels := strings.Split(LocationLevels, ",")
+
 		if ServiceAction == "findDataPath" {
 			r, err := c.FindDataPath(ctx, &data_service.DataRequest{
-				DataType:     DataType,
-				StartTime:    args[0],
-				ForecastTime: args[1],
+				DataType:       DataType,
+				LocationLevels: locationLevels,
+				StartTime:      args[0],
+				ForecastTime:   args[1],
 			})
 			if err != nil {
 				log.Fatalf("could not run FindDataPath: %v", err)
@@ -89,9 +96,10 @@ var serviceCommand = &cobra.Command{
 			fmt.Printf("%s\n%s\n", r.LocationType, r.Location)
 		} else if ServiceAction == "getDataFileInfo" {
 			r, err := c.GetDataFileInfo(ctx, &data_service.DataRequest{
-				DataType:     DataType,
-				StartTime:    args[0],
-				ForecastTime: args[1],
+				DataType:       DataType,
+				LocationLevels: locationLevels,
+				StartTime:      args[0],
+				ForecastTime:   args[1],
 			})
 			if err != nil {
 				log.Fatalf("could not run GetDataFileInfo: %v", err)
@@ -105,9 +113,10 @@ var serviceCommand = &cobra.Command{
 		} else if ServiceAction == "downloadDataFile" {
 
 			r, err := c.GetDataFileInfo(ctx, &data_service.DataRequest{
-				DataType:     DataType,
-				StartTime:    args[0],
-				ForecastTime: args[1],
+				DataType:       DataType,
+				LocationLevels: locationLevels,
+				StartTime:      args[0],
+				ForecastTime:   args[1],
 			})
 			if err != nil {
 				log.Fatalf("could not run GetDataFileInfo: %v", err)
@@ -125,9 +134,10 @@ var serviceCommand = &cobra.Command{
 			common.PrepareLocalDir(outputFilePath)
 
 			stream, err := c.DownloadDataFile(ctx, &data_service.DataRequest{
-				DataType:     DataType,
-				StartTime:    args[0],
-				ForecastTime: args[1],
+				DataType:       DataType,
+				LocationLevels: locationLevels,
+				StartTime:      args[0],
+				ForecastTime:   args[1],
 			})
 
 			f, err := os.OpenFile(outputFilePath, os.O_CREATE|os.O_WRONLY, 0644)

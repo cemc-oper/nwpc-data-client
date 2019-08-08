@@ -12,9 +12,9 @@ import (
 )
 
 func main() {
-	const address = "10.40.140.44:33483"
+	const address = "10.40.140.43:33383"
 
-	localFilePath := "./dist/gmf.gra.2019061418120.grb2"
+	localFilePath := "./dist/gmf.gra.2019080700120.grb2"
 
 	prepareLocalDir(localFilePath)
 
@@ -31,9 +31,10 @@ func main() {
 	defer cancel()
 
 	stream, err := c.DownloadDataFile(ctx, &data_service.DataRequest{
-		DataType:     "grapes_gfs_gda/grib2/orig",
-		StartTime:    "2019061418",
-		ForecastTime: "120h",
+		DataType:       "grapes_gfs_gmf/grib2/orig",
+		LocationLevels: []string{"archive"},
+		StartTime:      "2019080700",
+		ForecastTime:   "120h",
 	})
 
 	f, err := os.OpenFile(localFilePath, os.O_CREATE|os.O_WRONLY, 0644)
