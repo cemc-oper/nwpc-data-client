@@ -4,8 +4,8 @@ A cli client for data files in NWPC.
 
 ## Features
 
--   Find operation system data in HPC-PI.
--   Find operation system data in external storage nodes from HPC-PI.
+- Find file path for operation system data in HPC-PI or external storage nodes from HPC-PI.
+- Download data file through a data service.
 
 ## Installing
 
@@ -16,21 +16,21 @@ Use `Makefile` to build project on Linux and
 
 ## Getting Started
 
+`nwpc_data_client` has several sub-commands.
+
 ### local
 
-`nwpc_data_client local` command finds local files on HPC-PI using config files.
+`nwpc_data_client local` command finds local files on HPC-PI.
 
 ```bash
-nwpc_data_client local --config-dir=config_dir --data-type some/data/type \
+nwpc_data_client local --data-type some/data/type \
     start_time forecast_time
 ```
 
-Use `--config-dir` to set a custom config file directory.
+`data-type` is some relative path under config directory. Such as
 
-`--data-type` is some relative path under config directory. Such as
-
--   `grapes_gfs_gda/grib2/modelvar`
--   `gmf_graeps_gfs/bin/modelvar`
+- `grapes_gfs_gda/grib2/modelvar`
+- `gmf_graeps_gfs/bin/modelvar`
 
 `start_time` is `YYYYMMDDHH` and `forecast_time` is `FFFh`.
 
@@ -61,9 +61,11 @@ grapes_gfs_gmf/grib2/ne
 grapes_gfs_gmf/grib2/orig
 ```
 
+Use `--config-dir` to set a custom config file directory.
+
 ### hpc
 
-`nwpc_data_client hpc` command find data on HPC-PI. 
+`nwpc_data_client hpc` command find files on HPC-PI or external storage nodes from HPC-PI. 
 
 Data files could be on HPC's local storage nodes (eg. /g2) or 
 external storage nodes which are mount to special HPC login nodes.
@@ -84,15 +86,9 @@ Currently only no password private key is supported,
 and user should test to access remote host manually before using this command.
 
 `paths` field in `hpc`'s config file has two types: 
-`local` for local files and `storage` for files on external storage.
 
-```yaml
-paths:
-  - type: local
-    path: /g2/nwp/OPER_ARCH_TEST/nwp/GRAPES_GFS/GDA_GRAPES_GFS/Fcst-9h/{.Year4DV}{.Month4DV}{.Day4DV}{.Hour4DV}
-  - type: storage
-    path: /sstorage1/COMMONDATA/OPER/nwp/GRAPES_GFS/GDA_GRAPES_GFS/Fcst-9h/{.Year4DV}{.Month4DV}{.Day4DV}{.Hour4DV}
-```
+- `local` for local files
+- `storage` for files on external storage.
 
 For example, use the command below to find GDA GRAPES GFS modelvar data of 000 forecast hour in start hour 00 on 2019/05/20.
 
@@ -109,7 +105,19 @@ The command return two lines:
 
 If no file is found, both lines will be value of `default` field in config file. 
 
-### service
+`paths` section of a config file may like this:
+
+```yaml
+paths:
+  - type: local
+    level: archive
+    path: /g2/nwp/OPER_ARCH_TEST/nwp/GRAPES_GFS/GDA_GRAPES_GFS/Fcst-9h/{.Year4DV}{.Month4DV}{.Day4DV}{.Hour4DV}
+  - type: storage
+    level: storage
+    path: /sstorage1/COMMONDATA/OPER/nwp/GRAPES_GFS/GDA_GRAPES_GFS/Fcst-9h/{.Year4DV}{.Month4DV}{.Day4DV}{.Hour4DV}
+```
+
+## NWPC Data Service
 
 See [README.md](./data_service/README.md) under data_service.
 
