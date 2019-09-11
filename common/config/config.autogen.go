@@ -349,4 +349,57 @@ paths:
   - type: local
     level: archive
     path: /g1/COMMONDATA/OPER/NWPC/GRAPES_GFS_GMF/Prod-grib/{.Year4DV}{.Month4DV}{.Day4DV}{.Hour4DV}/ORIG`},
+	{`local/grapes_meso_3km/bin/modelvar`, `# gmf grapes gfs
+#   postvar
+
+default: NOTFOUND
+
+file_name: modelvar{.Year}{.Month}{.Day}{.Hour}{.Forecast}00
+
+paths:
+  - type: local
+    level: runtime
+    path: /g2/nwp_qu/NWP_RMFS_DATA/grapes_meso_3km/cold/{.Hour}/fcst/grapes_model/run
+
+  - type: local
+    level: runtime/archive
+    path: /g2/nwp_qu/NWP_RMFS_DATA/grapes_meso_3km/DATABAK/cold/{.Year}{.Month}{.Day}{.Hour}
+
+  - type: local
+    level: archive
+    path: /g1/COMMONDATA/OPER/NWPC/GRAPES_MESO_3KM/Fcst-long/{.Year}{.Month}{.Day}{.Hour}`},
+	{`local/grapes_meso_3km/bin/postvar`, `# gmf grapes gfs
+#   postvar
+
+default: NOTFOUND
+
+file_name: postvar{.Year}{.Month}{.Day}{.Hour}{.Forecast}00
+
+paths:
+  - type: local
+    level: runtime
+    path: /g2/nwp_qu/NWP_RMFS_DATA/grapes_meso_3km/cold/{.Hour}/fcst/grapes_model/run
+
+  - type: local
+    level: runtime/archive
+    path: /g2/nwp_qu/NWP_RMFS_DATA/grapes_meso_3km/DATABAK/cold/{.Year}{.Month}{.Day}{.Hour}
+
+  - type: local
+    level: archive
+    path: /g1/COMMONDATA/OPER/NWPC/GRAPES_MESO_3KM/Fcst-long/{.Year}{.Month}{.Day}{.Hour}`},
+	{`local/grapes_meso_3km/grib2/orig`, `# gmf grapes gfs
+#   grib2 orig
+
+default: NOTFOUND
+
+file_name: rmf.hgra.{.Year}{.Month}{.Day}{.Hour}{.Forecast}.grb2
+
+paths:
+  - type: local
+    level: runtime
+    path: /g2/nwp_pd/NWP_GRAPES_MESO_3KM_POST_DATA/{.Year}{.Month}{.Day}{.Hour}/togrib2/output
+
+  - type: local
+    level: archive
+    path: /g1/COMMONDATA/OPER/NWPC/GRAPES_MESO_3KM/Prod-grib/{.Year}{.Month}{.Day}{.Hour}/ORIG`},
 }
