@@ -367,7 +367,7 @@ paths:
 
   - type: local
     level: archive
-    path: /g1/COMMONDATA/OPER/NWPC/GRAPES_MESO_3KM/Fcst-long/{.Year}{.Month}{.Day}{.Hour}`},
+    path: /g1/COMMONDATA/OPER/NWPC/GRAPES_MESO_3KM/Fcst-main/{.Year}{.Month}{.Day}{.Hour}`},
 	{`local/grapes_meso_3km/bin/postvar`, `# gmf grapes gfs
 #   postvar
 
@@ -386,7 +386,7 @@ paths:
 
   - type: local
     level: archive
-    path: /g1/COMMONDATA/OPER/NWPC/GRAPES_MESO_3KM/Fcst-long/{.Year}{.Month}{.Day}{.Hour}`},
+    path: /g1/COMMONDATA/OPER/NWPC/GRAPES_MESO_3KM/Fcst-main/{.Year}{.Month}{.Day}{.Hour}`},
 	{`local/grapes_meso_3km/grib2/orig`, `# gmf grapes gfs
 #   grib2 orig
 

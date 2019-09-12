@@ -16,4 +16,4 @@ paths:
 
   - type: local
     level: archive
-    path: /g1/COMMONDATA/OPER/NWPC/GRAPES_MESO_3KM/Fcst-long/{.Year}{.Month}{.Day}{.Hour}
+    path: /g1/COMMONDATA/OPER/NWPC/GRAPES_MESO_3KM/Fcst-main/{.Year}{.Month}{.Day}{.Hour}
