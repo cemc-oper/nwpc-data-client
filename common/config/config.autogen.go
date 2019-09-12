@@ -402,4 +402,34 @@ paths:
   - type: local
     level: archive
     path: /g1/COMMONDATA/OPER/NWPC/GRAPES_MESO_3KM/Prod-grib/{.Year}{.Month}{.Day}{.Hour}/ORIG`},
+	{`local/grapes_tym/bin/modelvar`, `# grapes_tym
+#   modelvar
+
+default: NOTFOUND
+
+file_name: modelvar{.Year}{.Month}{.Day}{.Hour}{.Forecast}00
+
+paths:
+  - type: local
+    level: runtime
+    path: /g2/nwp_qu/NWP_RMFS_DATA/grapes_tym/grapes_d01/dat
+
+  - type: local
+    level: archive
+    path: /g1/COMMONDATA/OPER/NWPC/GRAPES_TYM/Fcst-main/{.Year}{.Month}{.Day}{.Hour}`},
+	{`local/grapes_tym/bin/postvar`, `# grapes_tym
+#   postvar
+
+default: NOTFOUND
+
+file_name: postvar{.Year}{.Month}{.Day}{.Hour}{.Forecast}00
+
+paths:
+  - type: local
+    level: runtime
+    path: /g2/nwp_qu/NWP_RMFS_DATA/grapes_tym/grapes_d01/dat
+
+  - type: local
+    level: archive
+    path: /g1/COMMONDATA/OPER/NWPC/GRAPES_TYM/Fcst-main/{.Year}{.Month}{.Day}{.Hour}`},
 }
