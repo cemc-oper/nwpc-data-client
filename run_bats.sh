@@ -10,4 +10,9 @@ function run_bats() {
     done
 }
 
-run_bats tests
+export NWPC_DATA_CLIENT_BIN_DIR=$(pwd)/bin
+export NWPC_DATA_CLIENT_PROGRAM="${NWPC_DATA_CLIENT_BIN_DIR}/nwpc_data_client"
+
+export TESTS_BASE_DIR=tests
+
+run_bats ${TESTS_BASE_DIR}

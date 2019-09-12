@@ -1,5 +1,5 @@
 all: nwpc_data_client nwpc_data_server
-.PHONY: nwpc_data_client nwpc_data_server
+.PHONY: nwpc_data_client nwpc_data_server test
 
 VERSION := $(shell cat VERSION)
 BUILD_TIME := $(shell date --utc --rfc-3339 ns 2> /dev/null | sed -e 's/ /T/')
@@ -26,3 +26,6 @@ nwpc_data_server:
 
 generate:
 	cd common/config/generate && go generate
+
+test:
+	./run_bats.sh
