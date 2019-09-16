@@ -121,6 +121,10 @@ paths:
 
 See [README.md](./data_service/README.md) under data_service.
 
+## Test
+
+Run `make test` to run all tests. [bats](https://github.com/neurodebian/bats) is required.
+
 ## License
 
 Copyright &copy; 2019 Perilla Roc at nwpc-oper.
