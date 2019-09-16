@@ -209,10 +209,6 @@ paths:
     path: /g2/nwp/GRAPES_GFS/MODEL/data/NWP_GDAS/{.Hour4DV}/output
 
   - type: local
-    level: runtime/archive
-    path: /g2/nwp/GRAPES_GFS/DATA/DATABAK/NWP_GDAS/FCST_results
-
-  - type: local
     level: archive
     path: /g1/COMMONDATA/OPER/NWPC/GRAPES_GFS_GDA/Fcst-9h/{.Year4DV}{.Month4DV}{.Day4DV}{.Hour4DV}`},
 	{`local/grapes_gfs_gda/bin/postvar`, `# gda grapes gfs
@@ -226,10 +222,6 @@ paths:
   - type: local
     level: runtime
     path: /g2/nwp/GRAPES_GFS/MODEL/data/NWP_GDAS/{.Hour4DV}/output
-
-  - type: local
-    level: runtime/archive
-    path: /g2/nwp/GRAPES_GFS/DATA/DATABAK/NWP_GDAS/FCST_results
 
   - type: local
     level: archive
