@@ -22,7 +22,7 @@ check_date_time=${check_date}${hour}
   fi
 
   today_check_date=$(date +%Y%m%d)
-  expected_result="/g2/nwp_qu/NWP_RMFS_DATA/grapes_meso_3km/cold/${hour}/fcst/grapes_model/run/modelvar${today_check_date}00300"
+  expected_result="/g2/nwp_qu/NWP_RMFS_DATA/grapes_meso_3km/cold/${hour}/fcst/grapes_model/run/modelvar${today_check_date}${hour}00300"
   if [ -f "${expected_result}" ]; then
     run "${NWPC_DATA_CLIENT_PROGRAM}" local \
         --location-level=runtime \
@@ -76,6 +76,18 @@ config="--config-dir=${NWPC_DATA_CLIENT_CONFIG_DIR}/local"
         --data-type=grapes_meso_3km/bin/modelvar \
         "${check_date_time}" 3h)
     [ "x${result}" = "x${expected_result}" ]
+    return
+  fi
+
+  today_check_date=$(date +%Y%m%d)
+  expected_result="/g2/nwp_qu/NWP_RMFS_DATA/grapes_meso_3km/cold/${hour}/fcst/grapes_model/run/modelvar${today_check_date}${hour}00300"
+  if [ -f "${expected_result}" ]; then
+    run "${NWPC_DATA_CLIENT_PROGRAM}" local \
+        --location-level=runtime \
+        "${config}" \
+        --data-type=grapes_meso_3km/bin/modelvar \
+        "${today_check_date}${hour}" 3h
+    [ "x${output}" = "x${expected_result}" ]
     return
   fi
 
