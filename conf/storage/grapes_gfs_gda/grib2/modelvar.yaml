@@ -1,0 +1,11 @@
+# gda grapes gfs
+#   grib2 modelvar
+
+default: NOTFOUND
+
+file_name: modelvar{.Year}{.Month}{.Day}{.Hour}{.Forecast}.grb2
+
+paths:
+  - type: storage
+    level: storage
+    path: /sstorage1/COMMONDATA/OPER/NWPC/GRAPES_GFS_GDA/Prod-grib/{.Year4DV}{.Month4DV}{.Day4DV}{.Hour4DV}/MODELVAR

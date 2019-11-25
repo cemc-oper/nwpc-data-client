@@ -1,0 +1,11 @@
+# gmf grapes gfs
+#   postvar
+
+default: NOTFOUND
+
+file_name: postvar{.Year}{.Month}{.Day}{.Hour}_{.Forecast}
+
+paths:
+  - type: storage
+    level: storage
+    path: /sstorage1/COMMONDATA/OPER/NWPC/GRAPES_GFS_GMF/Fcst-long/{.Year4DV}{.Month4DV}{.Day4DV}{.Hour4DV}

@@ -1,0 +1,11 @@
+# gda grapes gfs
+#   postvar
+
+default: NOTFOUND
+
+file_name: postvar{.Year4DV}{.Month4DV}{.Day4DV}{.Hour4DV}_{.Forecast}
+
+paths:
+  - type: storage
+    level: storage
+    path: /sstorage1/COMMONDATA/OPER/NWPC/GRAPES_GFS_GDA/Fcst-9h/{.Year4DV}{.Month4DV}{.Day4DV}{.Hour4DV}

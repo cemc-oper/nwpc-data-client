@@ -416,4 +416,108 @@ paths:
   - type: local
     level: archive
     path: /g1/COMMONDATA/OPER/NWPC/GRAPES_TYM/Fcst-main/{.Year}{.Month}{.Day}{.Hour}`},
+	{`storage/grapes_gfs_gda/bin/modelvar`, `# gda grapes gfs
+#   modelvar
+
+default: NOTFOUND
+
+file_name: modelvar{.Year4DV}{.Month4DV}{.Day4DV}{.Hour4DV}_{.Forecast}
+
+paths:
+  - type: storage
+    level: storage
+    path: /sstorage1/COMMONDATA/OPER/NWPC/GRAPES_GFS_GDA/Fcst-9h/{.Year4DV}{.Month4DV}{.Day4DV}{.Hour4DV}
+`},
+	{`storage/grapes_gfs_gda/bin/postvar`, `# gda grapes gfs
+#   postvar
+
+default: NOTFOUND
+
+file_name: postvar{.Year4DV}{.Month4DV}{.Day4DV}{.Hour4DV}_{.Forecast}
+
+paths:
+  - type: storage
+    level: storage
+    path: /sstorage1/COMMONDATA/OPER/NWPC/GRAPES_GFS_GDA/Fcst-9h/{.Year4DV}{.Month4DV}{.Day4DV}{.Hour4DV}`},
+	{`storage/grapes_gfs_gda/grib2/modelvar`, `# gda grapes gfs
+#   grib2 modelvar
+
+default: NOTFOUND
+
+file_name: modelvar{.Year}{.Month}{.Day}{.Hour}{.Forecast}.grb2
+
+paths:
+  - type: storage
+    level: storage
+    path: /sstorage1/COMMONDATA/OPER/NWPC/GRAPES_GFS_GDA/Prod-grib/{.Year4DV}{.Month4DV}{.Day4DV}{.Hour4DV}/MODELVAR`},
+	{`storage/grapes_gfs_gda/grib2/orig`, `# gda grapes gfs
+#   orig grib2
+
+default: NOTFOUND
+
+file_name: gda.gra.{.Year}{.Month}{.Day}{.Hour}{.Forecast}.grb2
+
+paths:
+  - type: storage
+    level: storage
+    path: /sstorage1/COMMONDATA/OPER/NWPC/GRAPES_GFS_GDA/Prod-grib/{.Year4DV}{.Month4DV}{.Day4DV}{.Hour4DV}/ORIG
+`},
+	{`storage/grapes_gfs_gmf/bin/modelvar`, `# gmf grapes gfs
+#   modelvar
+
+default: NOTFOUND
+
+file_name: modelvar{.Year}{.Month}{.Day}{.Hour}_{.Forecast}
+
+paths:
+  - type: storage
+    level: storage
+    path: /sstorage1/COMMONDATA/OPER/NWPC/GRAPES_GFS_GMF/Fcst-long/{.Year4DV}{.Month4DV}{.Day4DV}{.Hour4DV}`},
+	{`storage/grapes_gfs_gmf/bin/postvar`, `# gmf grapes gfs
+#   postvar
+
+default: NOTFOUND
+
+file_name: postvar{.Year}{.Month}{.Day}{.Hour}_{.Forecast}
+
+paths:
+  - type: storage
+    level: storage
+    path: /sstorage1/COMMONDATA/OPER/NWPC/GRAPES_GFS_GMF/Fcst-long/{.Year4DV}{.Month4DV}{.Day4DV}{.Hour4DV}`},
+	{`storage/grapes_gfs_gmf/grib2/modelvar`, `# gmf grapes gfs
+#   grib2 modelvar
+
+default: NOTFOUND
+
+file_name: modelvar{.Year}{.Month}{.Day}{.Hour}{.Forecast}.grb2
+
+paths:
+  - type: storage
+    level: storage
+    path: /sstorage1/COMMONDATA/OPER/NWPC/GRAPES_GFS_GMF/Prod-grib/{.Year4DV}{.Month4DV}{.Day4DV}{.Hour4DV}/MODELVAR
+`},
+	{`storage/grapes_gfs_gmf/grib2/ne`, `# gmf grapes gfs
+#   grib2 ne
+
+default: NOTFOUND
+
+file_name: ne_gmf.gra.{.Year}{.Month}{.Day}{.Hour}{.Forecast}.grb2
+
+paths:
+  - type: storage
+    level: storage
+    path: /sstorage1/COMMONDATA/OPER/NWPC/GRAPES_GFS_GMF/Prod-grib/{.Year4DV}{.Month4DV}{.Day4DV}{.Hour4DV}/CMACAST
+`},
+	{`storage/grapes_gfs_gmf/grib2/orig`, `# gmf grapes gfs
+#   grib2 orig
+
+default: NOTFOUND
+
+file_name: gmf.gra.{.Year}{.Month}{.Day}{.Hour}{.Forecast}.grb2
+
+paths:
+  - type: storage
+    level: storage
+    path: /sstorage1/COMMONDATA/OPER/NWPC/GRAPES_GFS_GMF/Prod-grib/{.Year4DV}{.Month4DV}{.Day4DV}{.Hour4DV}/ORIG
+`},
 }
