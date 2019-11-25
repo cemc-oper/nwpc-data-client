@@ -9,7 +9,8 @@ import (
 )
 
 func main() {
-	conn, err := grpc.Dial("10.40.140.43:33383", grpc.WithInsecure())
+	const address = "10.40.139.28:33483"
+	conn, err := grpc.Dial(address, grpc.WithInsecure())
 	if err != nil {
 		log.Fatalf("did not connect: %v", err)
 	}
