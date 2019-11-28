@@ -1,10 +1,11 @@
 # NWPC Data Client
 
-A cli client for data files in NWPC.
+A CLI client for operation system's files in NWPC.
 
 ## Features
 
-- Find file path for operation system data in HPC-PI or external storage nodes from HPC-PI.
+- Find file path for operation system data in HPC-PI.
+- Find file path in external storage nodes from HPC-PI.
 - Download data file through a data service.
 
 ## Installing
