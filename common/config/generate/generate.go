@@ -3,8 +3,8 @@ package main
 import (
 	"fmt"
 	"github.com/nwpc-oper/nwpc-data-client/common"
+	log "github.com/sirupsen/logrus"
 	"io/ioutil"
-	"log"
 	"os"
 	"path/filepath"
 )

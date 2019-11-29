@@ -4,7 +4,7 @@ import (
 	"context"
 	"fmt"
 	"github.com/nwpc-oper/nwpc-data-client/common"
-	"log"
+	log "github.com/sirupsen/logrus"
 	"os"
 )
 

@@ -3,8 +3,8 @@ package main
 import (
 	"context"
 	"github.com/nwpc-oper/nwpc-data-client/data_service"
+	log "github.com/sirupsen/logrus"
 	"google.golang.org/grpc"
-	"log"
 	"time"
 )
 

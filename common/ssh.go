@@ -2,10 +2,10 @@ package common
 
 import (
 	"fmt"
+	log "github.com/sirupsen/logrus"
 	"golang.org/x/crypto/ssh"
 	"golang.org/x/crypto/ssh/knownhosts"
 	"io/ioutil"
-	"log"
 	"strings"
 )
 
