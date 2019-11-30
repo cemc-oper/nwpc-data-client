@@ -37,14 +37,24 @@ func runServer(cmd *cobra.Command, args []string) {
 func runGRPCServer(configDir string, address string) {
 	lis, err := net.Listen("tcp", address)
 	if err != nil {
-		log.Fatalf("failed to listen: %v", err)
+		log.WithFields(log.Fields{
+			"component": "serve",
+			"event":     "connect",
+		}).Fatalf("failed to listen: %v", err)
 	}
 	s := grpc.NewServer()
 	data_service.RegisterNWPCDataServiceServer(s, &data_service.NWPCDataServer{
 		ConfigDir: configDir,
 	})
-	log.Printf("nwpc_data_server begin to serve at %s ...\n", address)
+
+	log.WithFields(log.Fields{
+		"component": "serve",
+		"event":     "connect",
+	}).Printf("nwpc_data_server begin to serve at %s ...\n", address)
 	if err := s.Serve(lis); err != nil {
-		log.Fatalf("nwpc_data_server failed to serve: %v", err)
+		log.WithFields(log.Fields{
+			"component": "serve",
+			"event":     "connect",
+		}).Fatalf("nwpc_data_server failed to serve: %v", err)
 	}
 }

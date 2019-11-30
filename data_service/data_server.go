@@ -18,19 +18,29 @@ func (s *NWPCDataServer) FindDataPath(ctx context.Context, req *DataRequest) (*D
 	locationLevels := req.GetLocationLevels()
 	forecastTimeString := req.GetForecastTime()
 
-	log.Printf("FindDataPath for type %s at level %v: %s %s\n",
+	log.WithFields(log.Fields{
+		"component": "data_server",
+		"action":    "FindDataPath",
+	}).Infof("find data path for type %s at level %v: %s %s\n",
 		dataType, locationLevels, startTimeString, forecastTimeString)
 
 	response, err := s.findDataPath(req)
 
-	log.Printf("Find data path type: %s\n", response.LocationType)
-	log.Printf("Find data path: %s\n", response.Location)
+	log.WithFields(log.Fields{
+		"component": "data_server",
+		"action":    "FindDataPath",
+	}).Infof("Find data path type: %s\n", response.LocationType)
+
+	log.WithFields(log.Fields{
+		"component": "data_server",
+		"action":    "FindDataPath",
+	}).Infof("Find data path: %s\n", response.Location)
 
 	return response, err
 }
 
 func (s *NWPCDataServer) GetDataFileInfo(ctx context.Context, req *DataRequest) (*DataFileResponse, error) {
-	log.Printf("GetDataFileInfo for %s", req)
+	log.Infof("GetDataFileInfo for %s", req)
 
 	dataResponse, err := s.findDataPath(req)
 	if err != nil {
@@ -73,8 +83,10 @@ func (s *NWPCDataServer) GetDataFileInfo(ctx context.Context, req *DataRequest) 
 }
 
 func (s *NWPCDataServer) DownloadDataFile(req *DataRequest, stream NWPCDataService_DownloadDataFileServer) error {
-
-	log.Printf("DownloadFile for %s", req)
+	log.WithFields(log.Fields{
+		"component": "data_server",
+		"action":    "DownloadDataFile",
+	}).Info("DownloadFile for %s", req)
 
 	dataResponse, err := s.findDataPath(req)
 	if err != nil {

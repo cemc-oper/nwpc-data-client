@@ -70,7 +70,10 @@ var serviceCommand = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 		conn, err := grpc.Dial(ServiceAddress, grpc.WithInsecure())
 		if err != nil {
-			log.Fatalf("did not connect: %v", err)
+			log.WithFields(log.Fields{
+				"component": "service",
+				"event":     "connect",
+			}).Fatalf("can't not connect to service: %v", err)
 		}
 
 		defer conn.Close()
@@ -90,7 +93,10 @@ var serviceCommand = &cobra.Command{
 				ForecastTime:   args[1],
 			})
 			if err != nil {
-				log.Fatalf("could not run FindDataPath: %v", err)
+				log.WithFields(log.Fields{
+					"component": "service",
+					"event":     "remote-run",
+				}).Fatalf("could not run FindDataPath: %v", err)
 			}
 
 			fmt.Printf("%s\n%s\n", r.LocationType, r.Location)
@@ -102,7 +108,10 @@ var serviceCommand = &cobra.Command{
 				ForecastTime:   args[1],
 			})
 			if err != nil {
-				log.Fatalf("could not run GetDataFileInfo: %v", err)
+				log.WithFields(log.Fields{
+					"component": "service",
+					"event":     "remote-run",
+				}).Fatalf("could not run GetDataFileInfo: %v", err)
 			}
 
 			if r.Status == data_service.StatusCode_Success {
@@ -119,7 +128,10 @@ var serviceCommand = &cobra.Command{
 				ForecastTime:   args[1],
 			})
 			if err != nil {
-				log.Fatalf("could not run GetDataFileInfo: %v", err)
+				log.WithFields(log.Fields{
+					"component": "service",
+					"event":     "remote-run",
+				}).Fatalf("could not run GetDataFileInfo: %v", err)
 			}
 
 			if r.Status != data_service.StatusCode_Success {
@@ -150,15 +162,24 @@ var serviceCommand = &cobra.Command{
 					break
 				}
 				if err != nil {
-					log.Fatalf("%v.DownloadFile(_) = _, %v", c, err)
+					log.WithFields(log.Fields{
+						"component": "service",
+						"event":     "download",
+					}).Fatalf("%v.DownloadFile(_) = _, %v", c, err)
 				}
 				f.Write(chunk.Chunk)
 				currentSize += float64(chunk.ChunkLength)
-				log.Printf("%0.2f%%", currentSize*100/totalLength)
+				log.WithFields(log.Fields{
+					"component": "service",
+					"event":     "download",
+				}).Printf("%0.2f%%", currentSize*100/totalLength)
 			}
 
 		} else {
-			log.Fatalf("service action is not supported: %s\n", ServiceAction)
+			log.WithFields(log.Fields{
+				"component": "service",
+				"event":     "remote-run",
+			}).Fatalf("service action is not supported: %s\n", ServiceAction)
 		}
 
 	},
