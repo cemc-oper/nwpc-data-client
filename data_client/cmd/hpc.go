@@ -9,37 +9,28 @@ import (
 	"strings"
 )
 
-var (
-	home               = os.Getenv("HOME")
-	user               = os.Getenv("USER")
-	StorageHost        = ""
-	StorageUser        = ""
-	HostKeyFilePath    = fmt.Sprintf("%s/.ssh/known_hosts", home)
-	PrivateKeyFilePath = fmt.Sprintf("%s/.ssh/id_rsa", home)
-)
-
 func init() {
 	rootCmd.AddCommand(hpcCmd)
 
 	hpcCmd.Flags().SortFlags = false
 
-	hpcCmd.Flags().StringVar(&ConfigDir, "config-dir", "",
+	hpcCmd.Flags().StringVar(&configDir, "config-dir", "",
 		"Config dir")
 
-	hpcCmd.Flags().StringVar(&DataType, "data-type", "",
+	hpcCmd.Flags().StringVar(&dataType, "data-type", "",
 		"Data type used to locate config file path in config dir.")
 
-	hpcCmd.Flags().StringVar(&LocationLevels, "location-level", "",
+	hpcCmd.Flags().StringVar(&locationLevels, "location-level", "",
 		"Location levels, split by ',', such as 'runtime,archive'.")
 
-	hpcCmd.Flags().StringVar(&StorageUser, "storage-user", user, "user name for storage.")
-	hpcCmd.Flags().StringVar(&StorageHost, "storage-host", "10.40.140.44:22", "host for storage")
-	hpcCmd.Flags().StringVar(&PrivateKeyFilePath, "private-key", fmt.Sprintf("%s/.ssh/id_rsa", home),
+	hpcCmd.Flags().StringVar(&storageUser, "storage-user", user, "user name for storage.")
+	hpcCmd.Flags().StringVar(&storageHost, "storage-host", "10.40.140.44:22", "host for storage")
+	hpcCmd.Flags().StringVar(&privateKeyFilePath, "private-key", fmt.Sprintf("%s/.ssh/id_rsa", home),
 		"private key file path")
-	hpcCmd.Flags().StringVar(&HostKeyFilePath, "host-key", fmt.Sprintf("%s/.ssh/known_hosts", home),
+	hpcCmd.Flags().StringVar(&hostKeyFilePath, "host-key", fmt.Sprintf("%s/.ssh/known_hosts", home),
 		"host key file path")
 
-	hpcCmd.Flags().BoolVar(&ShowTypes, "show-types", false,
+	hpcCmd.Flags().BoolVar(&showTypes, "show-types", false,
 		"Show supported data types defined in config dir and exit.")
 }
 
@@ -59,7 +50,7 @@ var hpcCmd = &cobra.Command{
 	Short: "Find data path on hpc.",
 	Long:  hpcCommandDocString,
 	Args: func(cmd *cobra.Command, args []string) error {
-		if ShowTypes {
+		if showTypes {
 			return nil
 		}
 
@@ -69,19 +60,19 @@ var hpcCmd = &cobra.Command{
 			return errors.New("requires two arguments: startTime and forecastTime")
 		}
 		var err error
-		StartTime, err = common.CheckStartTime(args[0])
+		startTime, err = common.CheckStartTime(args[0])
 		if err != nil {
-			return fmt.Errorf("check StartTime failed: %s", err)
+			return fmt.Errorf("check startTime failed: %s", err)
 		}
 
-		ForecastTime, err = common.CheckForecastTime(args[1])
+		forecastTime, err = common.CheckForecastTime(args[1])
 		if err != nil {
-			return fmt.Errorf("check ForecastTime failed: %s", err)
+			return fmt.Errorf("check forecastTime failed: %s", err)
 		}
 		return nil
 	},
 	Run: func(cmd *cobra.Command, args []string) {
-		if ShowTypes {
+		if showTypes {
 			showDataTypes(cmd, args)
 		} else {
 			runHpcCommand(cmd, args)
@@ -90,20 +81,20 @@ var hpcCmd = &cobra.Command{
 }
 
 func runHpcCommand(cmd *cobra.Command, args []string) {
-	if len(ConfigDir) == 0 {
-		DataType = hpcCommandName + "/" + DataType
+	if len(configDir) == 0 {
+		dataType = hpcCommandName + "/" + dataType
 	}
 
-	dataConfig, err2 := common.LoadConfig(ConfigDir, DataType)
+	dataConfig, err2 := common.LoadConfig(configDir, dataType)
 
 	if err2 != nil {
 		fmt.Fprintf(os.Stderr, "load config failed: %s\n", err2)
 		return
 	}
 
-	levels := strings.Split(LocationLevels, ",")
-	filePath := common.FindHpcFile(dataConfig, levels, StartTime, ForecastTime,
-		StorageUser, StorageHost, PrivateKeyFilePath, HostKeyFilePath)
+	levels := strings.Split(locationLevels, ",")
+	filePath := common.FindHpcFile(dataConfig, levels, startTime, forecastTime,
+		storageUser, storageHost, privateKeyFilePath, hostKeyFilePath)
 
 	fmt.Printf("%s\n", filePath.PathType)
 	fmt.Printf("%s\n", filePath.Path)

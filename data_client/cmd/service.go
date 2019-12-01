@@ -16,28 +16,22 @@ import (
 	"time"
 )
 
-var (
-	ServiceAddress  = ""
-	ServiceAction   = ""
-	OutputDirectory = "."
-)
-
 func init() {
 	rootCmd.AddCommand(serviceCommand)
 
-	serviceCommand.Flags().StringVar(&DataType, "data-type", "",
+	serviceCommand.Flags().StringVar(&dataType, "data-type", "",
 		"Data type used to locate config file path in config dir.")
 
-	serviceCommand.Flags().StringVar(&LocationLevels, "location-level", "",
+	serviceCommand.Flags().StringVar(&locationLevels, "location-level", "",
 		"Location levels, split by ',', such as 'runtime,archive'.")
 
-	serviceCommand.Flags().StringVar(&ServiceAddress, "address", "",
-		"ServiceAddress of nwpc_data_server.")
+	serviceCommand.Flags().StringVar(&serviceAddress, "address", "",
+		"serviceAddress of nwpc_data_server.")
 
-	serviceCommand.Flags().StringVar(&ServiceAction, "action", "",
+	serviceCommand.Flags().StringVar(&serviceAction, "action", "",
 		"service action, such as findDataPath, getDataFileInfo, downloadDataFile")
 
-	serviceCommand.Flags().StringVar(&OutputDirectory, "output-dir", "",
+	serviceCommand.Flags().StringVar(&outputDirectory, "output-dir", "",
 		"output file directory, default is work directory.")
 
 	serviceCommand.MarkFlagRequired("data-type")
@@ -61,14 +55,14 @@ var serviceCommand = &cobra.Command{
 			return errors.New("requires two arguments")
 		}
 
-		if ServiceAction == "downloadDataFile" {
+		if serviceAction == "downloadDataFile" {
 			cmd.MarkFlagRequired("output-dir")
 		}
 
 		return nil
 	},
 	Run: func(cmd *cobra.Command, args []string) {
-		conn, err := grpc.Dial(ServiceAddress, grpc.WithInsecure())
+		conn, err := grpc.Dial(serviceAddress, grpc.WithInsecure())
 		if err != nil {
 			log.WithFields(log.Fields{
 				"component": "service",
@@ -83,11 +77,11 @@ var serviceCommand = &cobra.Command{
 		ctx, cancel := context.WithTimeout(context.Background(), time.Minute*2)
 		defer cancel()
 
-		locationLevels := strings.Split(LocationLevels, ",")
+		locationLevels := strings.Split(locationLevels, ",")
 
-		if ServiceAction == "findDataPath" {
+		if serviceAction == "findDataPath" {
 			r, err := c.FindDataPath(ctx, &data_service.DataRequest{
-				DataType:       DataType,
+				DataType:       dataType,
 				LocationLevels: locationLevels,
 				StartTime:      args[0],
 				ForecastTime:   args[1],
@@ -100,9 +94,9 @@ var serviceCommand = &cobra.Command{
 			}
 
 			fmt.Printf("%s\n%s\n", r.LocationType, r.Location)
-		} else if ServiceAction == "getDataFileInfo" {
+		} else if serviceAction == "getDataFileInfo" {
 			r, err := c.GetDataFileInfo(ctx, &data_service.DataRequest{
-				DataType:       DataType,
+				DataType:       dataType,
 				LocationLevels: locationLevels,
 				StartTime:      args[0],
 				ForecastTime:   args[1],
@@ -119,10 +113,10 @@ var serviceCommand = &cobra.Command{
 			} else {
 				fmt.Fprintf(os.Stderr, "%s\n", r.GetErrorMessage())
 			}
-		} else if ServiceAction == "downloadDataFile" {
+		} else if serviceAction == "downloadDataFile" {
 
 			r, err := c.GetDataFileInfo(ctx, &data_service.DataRequest{
-				DataType:       DataType,
+				DataType:       dataType,
 				LocationLevels: locationLevels,
 				StartTime:      args[0],
 				ForecastTime:   args[1],
@@ -141,12 +135,12 @@ var serviceCommand = &cobra.Command{
 
 			_, remoteFileName := filepath.Split(r.GetFilePath())
 			totalLength := float64(r.GetFileSize())
-			outputFilePath := filepath.Join(OutputDirectory, remoteFileName)
+			outputFilePath := filepath.Join(outputDirectory, remoteFileName)
 
 			common.PrepareLocalDir(outputFilePath)
 
 			stream, err := c.DownloadDataFile(ctx, &data_service.DataRequest{
-				DataType:       DataType,
+				DataType:       dataType,
 				LocationLevels: locationLevels,
 				StartTime:      args[0],
 				ForecastTime:   args[1],
@@ -179,7 +173,7 @@ var serviceCommand = &cobra.Command{
 			log.WithFields(log.Fields{
 				"component": "service",
 				"event":     "remote-run",
-			}).Fatalf("service action is not supported: %s\n", ServiceAction)
+			}).Fatalf("service action is not supported: %s\n", serviceAction)
 		}
 
 	},

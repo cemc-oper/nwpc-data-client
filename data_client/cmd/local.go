@@ -16,16 +16,16 @@ func init() {
 
 	localCmd.Flags().SortFlags = false
 
-	localCmd.Flags().StringVar(&ConfigDir, "config-dir", "",
+	localCmd.Flags().StringVar(&configDir, "config-dir", "",
 		"Config dir.")
 
-	localCmd.Flags().StringVar(&DataType, "data-type", "",
+	localCmd.Flags().StringVar(&dataType, "data-type", "",
 		"Data type used to locate config file path in config dir.")
 
-	localCmd.Flags().StringVar(&LocationLevels, "location-level", "",
+	localCmd.Flags().StringVar(&locationLevels, "location-level", "",
 		"Location levels, split by ',', such as 'runtime,archive'.")
 
-	localCmd.Flags().BoolVar(&ShowTypes, "show-types", false,
+	localCmd.Flags().BoolVar(&showTypes, "show-types", false,
 		"Show supported data types defined in config dir and exit.")
 }
 
@@ -43,7 +43,7 @@ var localCmd = &cobra.Command{
 	Short: "Find local data path.",
 	Long:  localCommandDocString,
 	Args: func(cmd *cobra.Command, args []string) error {
-		if ShowTypes {
+		if showTypes {
 			return nil
 		}
 
@@ -53,19 +53,19 @@ var localCmd = &cobra.Command{
 			return errors.New("requires two arguments")
 		}
 		var err error
-		StartTime, err = common.CheckStartTime(args[0])
+		startTime, err = common.CheckStartTime(args[0])
 		if err != nil {
-			return fmt.Errorf("check StartTime failed: %s", err)
+			return fmt.Errorf("check startTime failed: %s", err)
 		}
 
-		ForecastTime, err = common.CheckForecastTime(args[1])
+		forecastTime, err = common.CheckForecastTime(args[1])
 		if err != nil {
-			return fmt.Errorf("check ForecastTime failed: %s", err)
+			return fmt.Errorf("check forecastTime failed: %s", err)
 		}
 		return nil
 	},
 	Run: func(cmd *cobra.Command, args []string) {
-		if ShowTypes {
+		if showTypes {
 			showDataTypes(cmd, args)
 		} else {
 			findLocalFile(cmd, args)
@@ -74,26 +74,26 @@ var localCmd = &cobra.Command{
 }
 
 func findLocalFile(cmd *cobra.Command, args []string) {
-	if len(ConfigDir) == 0 {
-		DataType = localCommandName + "/" + DataType
+	if len(configDir) == 0 {
+		dataType = localCommandName + "/" + dataType
 	}
-	config, err2 := common.LoadConfig(ConfigDir, DataType)
+	config, err2 := common.LoadConfig(configDir, dataType)
 	if err2 != nil {
 		fmt.Fprintf(os.Stderr, "load config failed: %v\n", err2)
 		return
 	}
 
-	levels := strings.Split(LocationLevels, ",")
+	levels := strings.Split(locationLevels, ",")
 
-	pathItem := common.FindLocalFile(config, levels, StartTime, ForecastTime)
+	pathItem := common.FindLocalFile(config, levels, startTime, forecastTime)
 	fmt.Printf("%s\n", pathItem.Path)
 }
 
 func showDataTypes(cmd *cobra.Command, args []string) {
-	if len(ConfigDir) == 0 {
+	if len(configDir) == 0 {
 		showEmbeddedDataTypes()
 	} else {
-		showLocalDataTypes(ConfigDir)
+		showLocalDataTypes(configDir)
 	}
 }
 
@@ -109,13 +109,13 @@ func showLocalDataTypes(configDir string) {
 		return nil
 	}
 
-	err := filepath.Walk(ConfigDir, walkConfigDirectory)
+	err := filepath.Walk(configDir, walkConfigDirectory)
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "Walk config directory has error: %s\n", err)
 		return
 	}
 	for _, configPath := range configFilePaths {
-		relConfigPath, err2 := filepath.Rel(ConfigDir, configPath)
+		relConfigPath, err2 := filepath.Rel(configDir, configPath)
 		if err2 != nil {
 			fmt.Fprintf(os.Stderr, "Get rel path failed: %s\n", err2)
 			continue
