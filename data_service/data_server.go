@@ -26,6 +26,10 @@ func (s *NWPCDataServer) FindDataPath(ctx context.Context, req *DataRequest) (*D
 
 	response, err := s.findDataPath(req)
 
+	if err != nil {
+		return response, err
+	}
+
 	log.WithFields(log.Fields{
 		"component": "data_server",
 		"action":    "FindDataPath",
