@@ -416,6 +416,21 @@ paths:
   - type: local
     level: archive
     path: /g1/COMMONDATA/OPER/NWPC/GRAPES_TYM/Fcst-main/{.Year}{.Month}{.Day}{.Hour}`},
+	{`local/grapes_tym/grib2/orig`, `# gmf grapes gfs
+#   grib2 orig
+
+default: NOTFOUND
+
+file_name: rmf.tcgra.{.Year}{.Month}{.Day}{.Hour}{.Forecast}.grb2
+
+paths:
+  - type: local
+    level: runtime
+    path: /g2/nwp_pd/NWP_GRAPES_TYM_POST_DATA/{.Year}{.Month}{.Day}{.Hour}/rundir/output/orig_grib2
+
+  - type: local
+    level: archive
+    path: /g1/COMMONDATA/OPER/NWPC/GRAPES_TYM/Prod-grib/{.Year}{.Month}{.Day}{.Hour}`},
 	{`storage/grapes_gfs_gda/bin/modelvar`, `# gda grapes gfs
 #   modelvar
 
