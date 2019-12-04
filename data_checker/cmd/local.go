@@ -18,7 +18,7 @@ func init() {
 	localCmd.Flags().SortFlags = false
 
 	localCmd.Flags().StringVar(&configDir, "data-config-dir", "",
-		"Config dir.")
+		"Data config dir, same as nwpc_data_client local command.")
 
 	localCmd.Flags().StringVar(&dataType, "data-type", "",
 		"Data type used to locate config file path in config dir.")
@@ -51,40 +51,66 @@ var localCmd = &cobra.Command{
 		return nil
 	},
 	Run: func(cmd *cobra.Command, args []string) {
-		scanner := bufio.NewScanner(os.Stdin)
-		scanner.Split(bufio.ScanWords)
-		startTimeString := startTime.Format("2006010215")
-		var forecastTimeList []time.Duration
-		for scanner.Scan() {
-			forecastTimeString := scanner.Text()
-			forecastTime, err := time.ParseDuration(forecastTimeString)
-			if err != nil {
-				log.Fatalf("parse input has error:%v", err)
-			}
-			forecastTimeList = append(forecastTimeList, forecastTime)
-			log.Infof("checking for data of %s + %03d...", startTimeString, int(forecastTime.Hours()))
-		}
-		err := scanner.Err()
-		if err != nil {
-			log.Fatal(err)
-		}
-
+		// parse options
 		levels := strings.Split(locationLevels, ",")
+
+		// load config
 		if len(configDir) == 0 {
 			dataType = localCommandName + "/" + dataType
 		}
 		config, err2 := common.LoadConfig(configDir, dataType)
+		if err2 != nil {
+			log.Fatalf("load config failed: %v\n", err2)
+			return
+		}
+		fmt.Printf("%v\n", config)
+
+		forecastTimeList := parseInput()
 		for _, oneTime := range forecastTimeList {
-			if err2 != nil {
-				log.Fatalf("load config failed: %v\n", err2)
-				return
+			filePath := findLocalFile(config, levels, oneTime)
+			if filePath == config.Default {
+				log.WithFields(log.Fields{
+					"forecast_hour": int(oneTime.Hours()),
+				}).Warningf("file is not found")
+			} else {
+				log.WithFields(log.Fields{
+					"forecast_hour": int(oneTime.Hours()),
+				}).Infof("found file: %s", filePath)
 			}
-			findLocalFile(config, levels, oneTime)
 		}
 	},
 }
 
-func findLocalFile(config common.DataConfig, levels []string, forecastTime time.Duration) {
+func parseInput() []time.Duration {
+	scanner := bufio.NewScanner(os.Stdin)
+	scanner.Split(bufio.ScanWords)
+	startTimeString := startTime.Format("2006010215")
+	var forecastTimeList []time.Duration
+	for scanner.Scan() {
+		forecastTimeString := scanner.Text()
+		forecastTime, err := time.ParseDuration(forecastTimeString)
+		if err != nil {
+			log.Fatalf("parse input has error:%v", err)
+		}
+		forecastTimeList = append(forecastTimeList, forecastTime)
+		log.Infof("checking for data of %s + %03d...", startTimeString, int(forecastTime.Hours()))
+	}
+	err := scanner.Err()
+	if err != nil {
+		log.Fatal(err)
+	}
+	return forecastTimeList
+}
+
+func findLocalFile(config common.DataConfig, levels []string, forecastTime time.Duration) string {
 	pathItem := common.FindLocalFile(config, levels, startTime, forecastTime)
-	fmt.Printf("%s\n", pathItem.Path)
+	return pathItem.Path
+}
+
+func getFileSize(filePath string) (int64, error) {
+	fileInfo, err := os.Stat(filePath)
+	if err != nil {
+		return -1, fmt.Errorf("get file info has error:%v", err)
+	}
+	return fileInfo.Size(), nil
 }
