@@ -8,8 +8,8 @@ var (
 	configDir      = ""
 	dataType       = ""
 	locationLevels = ""
-	maxCheckCount  = 240
-	checkInterval  = "30s"
+	maxCheckCount  = 2880
+	checkInterval  = "5s"
 
 	startTime time.Time
 )

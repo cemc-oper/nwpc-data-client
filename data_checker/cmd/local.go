@@ -26,10 +26,10 @@ func init() {
 	localCmd.Flags().StringVar(&locationLevels, "location-level", "",
 		"Location levels, split by ',', such as 'runtime,archive'.")
 
-	localCmd.Flags().IntVar(&maxCheckCount, "max-check-count", 240,
+	localCmd.Flags().IntVar(&maxCheckCount, "max-check-count", 2880,
 		"max check count for one forecast time.")
 
-	localCmd.Flags().StringVar(&checkInterval, "check-interval", "30s",
+	localCmd.Flags().StringVar(&checkInterval, "check-interval", "5s",
 		"check interval, time duration, such as 30s, 1min and so on.")
 }
 
@@ -75,35 +75,53 @@ var localCmd = &cobra.Command{
 		}
 		fmt.Printf("%v\n", config)
 
+		ch := make(chan CheckResult)
+
 		forecastTimeList := parseInput()
 		for _, oneTime := range forecastTimeList {
-			err = checkForOneTime(config, levels, oneTime, checkDuration)
-			if err != nil {
+			go checkForOneTime(ch, config, levels, oneTime, checkDuration)
+		}
+
+		for _ = range forecastTimeList {
+			result := <-ch
+			if result.Error != nil {
 				log.WithFields(log.Fields{
-					"forecast_hour": int(oneTime.Hours()),
-				}).Fatalf("check failed: %v", err)
+					"forecast_hour": int(result.ForecastTime.Hours()),
+				}).Fatalf("check failed: %v", result.Error)
+			} else {
+				log.WithFields(log.Fields{
+					"forecast_hour": int(result.ForecastTime.Hours()),
+				}).Infof("file is available, run command...")
 			}
 		}
 	},
 }
 
+type CheckResult struct {
+	ForecastTime time.Duration
+	FilePath     string
+	Error        error
+}
+
 func checkForOneTime(
+	ch chan CheckResult,
 	config common.DataConfig,
 	levels []string,
 	forecastTime time.Duration,
-	checkDuration time.Duration) error {
+	checkDuration time.Duration) {
 	foundData := false
 	roundNumber := 0
+	filePath := config.Default
 
 	for roundNumber < maxCheckCount {
 		log.WithFields(log.Fields{
 			"forecast_hour": int(forecastTime.Hours()),
-		}).Warningf("checking... %d/%d", roundNumber, maxCheckCount)
-		filePath := findLocalFile(config, levels, forecastTime)
+		}).Infof("checking... %d/%d", roundNumber, maxCheckCount)
+		filePath = findLocalFile(config, levels, forecastTime)
 		if filePath == config.Default {
 			log.WithFields(log.Fields{
 				"forecast_hour": int(forecastTime.Hours()),
-			}).Warningf("file is not found")
+			}).Infof("checking...not found")
 		} else {
 			log.WithFields(log.Fields{
 				"forecast_hour": int(forecastTime.Hours()),
@@ -119,13 +137,13 @@ func checkForOneTime(
 				if currentSize == lastSize {
 					log.WithFields(log.Fields{
 						"forecast_hour": int(forecastTime.Hours()),
-					}).Warningf("checking size...success %d/%d", roundNumber, maxCheckCount)
+					}).Infof("checking size...success %d/%d", roundNumber, maxCheckCount)
 					foundData = true
 					break
 				} else {
 					log.WithFields(log.Fields{
 						"forecast_hour": int(forecastTime.Hours()),
-					}).Warningf("checking size...changed %d/%d", roundNumber, maxCheckCount)
+					}).Infof("checking size...changed %d/%d", roundNumber, maxCheckCount)
 					time.Sleep(checkDuration)
 					lastSize = currentSize
 				}
@@ -137,11 +155,16 @@ func checkForOneTime(
 		roundNumber += 1
 	}
 
-	if foundData {
-		return nil
-	} else {
-		return fmt.Errorf("too many times")
+	result := CheckResult{
+		ForecastTime: forecastTime,
+		FilePath:     filePath,
+		Error:        nil,
 	}
+
+	if !foundData {
+		result.Error = fmt.Errorf("too many times")
+	}
+	ch <- result
 }
 
 func parseInput() []time.Duration {
