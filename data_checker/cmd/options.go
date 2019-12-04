@@ -10,6 +10,7 @@ var (
 	locationLevels = ""
 	maxCheckCount  = 2880
 	checkInterval  = "5s"
+	executeCommand = ""
 
 	startTime time.Time
 )

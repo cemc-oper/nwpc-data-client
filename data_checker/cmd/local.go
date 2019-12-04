@@ -4,11 +4,13 @@ import (
 	"bufio"
 	"errors"
 	"fmt"
+	"github.com/SimonBaeumer/cmd"
 	"github.com/nwpc-oper/nwpc-data-client/common"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 	"os"
 	"strings"
+	"text/template"
 	"time"
 )
 
@@ -31,6 +33,10 @@ func init() {
 
 	localCmd.Flags().StringVar(&checkInterval, "check-interval", "5s",
 		"check interval, time duration, such as 30s, 1min and so on.")
+
+	localCmd.Flags().StringVar(&executeCommand, "execute-command", "",
+		"command template to be executed when file is available")
+
 }
 
 const localCommandName = "local"
@@ -63,6 +69,11 @@ var localCmd = &cobra.Command{
 		if err != nil {
 			log.Fatalf("parse check-interval failed: %v", err)
 		}
+		var commandTemplate *template.Template = nil
+		if executeCommand != "" {
+			commandTemplate = template.Must(template.New("command").
+				Delims("{", "}").Parse(executeCommand))
+		}
 
 		// load config
 		if len(configDir) == 0 {
@@ -92,6 +103,21 @@ var localCmd = &cobra.Command{
 				log.WithFields(log.Fields{
 					"forecast_hour": int(result.ForecastTime.Hours()),
 				}).Infof("file is available, run command...")
+
+				if commandTemplate == nil {
+					continue
+				}
+
+				err = execCommand(commandTemplate, startTime, result.ForecastTime, result.FilePath)
+				if err != nil {
+					log.WithFields(log.Fields{
+						"forecast_hour": int(result.ForecastTime.Hours()),
+					}).Fatalf("run command failed: %v", err)
+				} else {
+					log.WithFields(log.Fields{
+						"forecast_hour": int(result.ForecastTime.Hours()),
+					}).Infof("run command success")
+				}
 			}
 		}
 	},
@@ -199,4 +225,27 @@ func getFileSize(filePath string) (int64, error) {
 		return -100, fmt.Errorf("get file info has error:%v", err)
 	}
 	return fileInfo.Size(), nil
+}
+
+func execCommand(commandTemplate *template.Template, startTime time.Time, forecastTime time.Duration, filePath string) error {
+	tpVar := common.GenerateTemplateVariable(startTime, forecastTime)
+	var commandBuilder strings.Builder
+	err := commandTemplate.Execute(&commandBuilder, tpVar)
+	if err != nil {
+		return fmt.Errorf("command template execute has error: %v", err)
+	}
+	commandString := commandBuilder.String()
+	log.WithFields(log.Fields{
+		"forecast_time": forecastTime.Hours(),
+	}).Infof("running command <%s> ...", commandString)
+
+	c := cmd.NewCommand(commandString, cmd.WithStandardStreams)
+	err = c.Execute()
+	if err != nil {
+		return fmt.Errorf("run command <%s> has error: %v", commandString, err)
+	} else if c.ExitCode() != 0 {
+		return fmt.Errorf("run command <%s> exit code is not 0: %d", commandString, c.ExitCode())
+	} else {
+		return nil
+	}
 }
