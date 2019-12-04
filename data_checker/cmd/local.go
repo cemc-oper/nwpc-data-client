@@ -25,6 +25,12 @@ func init() {
 
 	localCmd.Flags().StringVar(&locationLevels, "location-level", "",
 		"Location levels, split by ',', such as 'runtime,archive'.")
+
+	localCmd.Flags().IntVar(&maxCheckCount, "max-check-count", 240,
+		"max check count for one forecast time.")
+
+	localCmd.Flags().StringVar(&checkInterval, "check-interval", "30s",
+		"check interval, time duration, such as 30s, 1min and so on.")
 }
 
 const localCommandName = "local"
@@ -53,32 +59,89 @@ var localCmd = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 		// parse options
 		levels := strings.Split(locationLevels, ",")
+		checkDuration, err := time.ParseDuration(checkInterval)
+		if err != nil {
+			log.Fatalf("parse check-interval failed: %v", err)
+		}
 
 		// load config
 		if len(configDir) == 0 {
 			dataType = localCommandName + "/" + dataType
 		}
-		config, err2 := common.LoadConfig(configDir, dataType)
-		if err2 != nil {
-			log.Fatalf("load config failed: %v\n", err2)
+		config, err := common.LoadConfig(configDir, dataType)
+		if err != nil {
+			log.Fatalf("load config failed: %v\n", err)
 			return
 		}
 		fmt.Printf("%v\n", config)
 
 		forecastTimeList := parseInput()
 		for _, oneTime := range forecastTimeList {
-			filePath := findLocalFile(config, levels, oneTime)
-			if filePath == config.Default {
+			err = checkForOneTime(config, levels, oneTime, checkDuration)
+			if err != nil {
 				log.WithFields(log.Fields{
 					"forecast_hour": int(oneTime.Hours()),
-				}).Warningf("file is not found")
-			} else {
-				log.WithFields(log.Fields{
-					"forecast_hour": int(oneTime.Hours()),
-				}).Infof("found file: %s", filePath)
+				}).Fatalf("check failed: %v", err)
 			}
 		}
 	},
+}
+
+func checkForOneTime(
+	config common.DataConfig,
+	levels []string,
+	forecastTime time.Duration,
+	checkDuration time.Duration) error {
+	foundData := false
+	roundNumber := 0
+
+	for roundNumber < maxCheckCount {
+		log.WithFields(log.Fields{
+			"forecast_hour": int(forecastTime.Hours()),
+		}).Warningf("checking... %d/%d", roundNumber, maxCheckCount)
+		filePath := findLocalFile(config, levels, forecastTime)
+		if filePath == config.Default {
+			log.WithFields(log.Fields{
+				"forecast_hour": int(forecastTime.Hours()),
+			}).Warningf("file is not found")
+		} else {
+			log.WithFields(log.Fields{
+				"forecast_hour": int(forecastTime.Hours()),
+			}).Infof("checking...success: %s", filePath)
+
+			log.WithFields(log.Fields{
+				"forecast_hour": int(forecastTime.Hours()),
+			}).Infof("checking size... %d/%d", roundNumber, maxCheckCount)
+
+			var lastSize int64 = -1
+			for roundNumber < maxCheckCount {
+				currentSize, _ := getFileSize(filePath)
+				if currentSize == lastSize {
+					log.WithFields(log.Fields{
+						"forecast_hour": int(forecastTime.Hours()),
+					}).Warningf("checking size...success %d/%d", roundNumber, maxCheckCount)
+					foundData = true
+					break
+				} else {
+					log.WithFields(log.Fields{
+						"forecast_hour": int(forecastTime.Hours()),
+					}).Warningf("checking size...changed %d/%d", roundNumber, maxCheckCount)
+					time.Sleep(checkDuration)
+					lastSize = currentSize
+				}
+				roundNumber += 1
+			}
+			break
+		}
+		time.Sleep(checkDuration)
+		roundNumber += 1
+	}
+
+	if foundData {
+		return nil
+	} else {
+		return fmt.Errorf("too many times")
+	}
 }
 
 func parseInput() []time.Duration {
@@ -110,7 +173,7 @@ func findLocalFile(config common.DataConfig, levels []string, forecastTime time.
 func getFileSize(filePath string) (int64, error) {
 	fileInfo, err := os.Stat(filePath)
 	if err != nil {
-		return -1, fmt.Errorf("get file info has error:%v", err)
+		return -100, fmt.Errorf("get file info has error:%v", err)
 	}
 	return fileInfo.Size(), nil
 }
