@@ -244,10 +244,19 @@ func getFileSize(filePath string) (int64, error) {
 	return fileInfo.Size(), nil
 }
 
+type CheckerTemplateVariable struct {
+	common.TemplateVariable
+	FilePath string
+}
+
 func runCommand(commandTemplate *template.Template, startTime time.Time, forecastTime time.Duration, filePath string) error {
 	tpVar := common.GenerateTemplateVariable(startTime, forecastTime)
+	var checkerVar CheckerTemplateVariable
+	checkerVar.TemplateVariable = tpVar
+	checkerVar.FilePath = filePath
+
 	var commandBuilder strings.Builder
-	err := commandTemplate.Execute(&commandBuilder, tpVar)
+	err := commandTemplate.Execute(&commandBuilder, checkerVar)
 	if err != nil {
 		return fmt.Errorf("command template execute has error: %v", err)
 	}
