@@ -256,7 +256,10 @@ func runCommand(commandTemplate *template.Template, startTime time.Time, forecas
 		"forecast_time": forecastTime.Hours(),
 	}).Infof("running command <%s> ...", commandString)
 
-	c := cmd.NewCommand(commandString, cmd.WithStandardStreams)
+	c := cmd.NewCommand(
+		commandString,
+		cmd.WithStandardStreams,
+		cmd.WithInheritedEnvironment(nil))
 	err = c.Execute()
 	if err != nil {
 		return fmt.Errorf("run command <%s> has error: %v", commandString, err)
