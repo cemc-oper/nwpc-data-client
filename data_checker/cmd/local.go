@@ -37,6 +37,9 @@ func init() {
 	localCmd.Flags().StringVar(&executeCommand, "execute-command", "",
 		"command template to be executed when file is available")
 
+	localCmd.Flags().StringVar(&delayTimeForEachForecastTime, "delay-time", "10s",
+		"delay time for each forecast time.")
+
 }
 
 const localCommandName = "local"
@@ -74,6 +77,10 @@ var localCmd = &cobra.Command{
 			commandTemplate = template.Must(template.New("command").
 				Delims("{", "}").Parse(executeCommand))
 		}
+		delayTime, err := time.ParseDuration(delayTimeForEachForecastTime)
+		if err != nil {
+			log.Fatal("parse delay-time failed: %v", err)
+		}
 
 		// load config
 		if len(configDir) == 0 {
@@ -89,8 +96,18 @@ var localCmd = &cobra.Command{
 		ch := make(chan CheckResult)
 
 		forecastTimeList := parseInput()
-		for _, oneTime := range forecastTimeList {
-			go checkForOneTime(ch, config, levels, oneTime, checkDuration)
+		for index, oneTime := range forecastTimeList {
+			go func(currentIndex int, forecastTime time.Duration) {
+				sleepTime := delayTime * time.Duration(currentIndex)
+				log.WithFields(log.Fields{
+					"forecast_hour": forecastTime.Hours(),
+				}).Infof("sleeping before check...%v", sleepTime)
+				time.Sleep(sleepTime)
+				log.WithFields(log.Fields{
+					"forecast_hour": forecastTime.Hours(),
+				}).Infof("checking begin...")
+				checkForOneTime(ch, config, levels, forecastTime, checkDuration)
+			}(index, oneTime)
 		}
 
 		for _ = range forecastTimeList {
@@ -205,7 +222,7 @@ func parseInput() []time.Duration {
 			log.Fatalf("parse input has error:%v", err)
 		}
 		forecastTimeList = append(forecastTimeList, forecastTime)
-		log.Infof("checking for data of %s + %03d...", startTimeString, int(forecastTime.Hours()))
+		log.Infof("got check task for %s + %03d", startTimeString, int(forecastTime.Hours()))
 	}
 	err := scanner.Err()
 	if err != nil {

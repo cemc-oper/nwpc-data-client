@@ -5,12 +5,13 @@ import (
 )
 
 var (
-	configDir      = ""
-	dataType       = ""
-	locationLevels = ""
-	maxCheckCount  = 2880
-	checkInterval  = "5s"
-	executeCommand = ""
+	configDir                    = ""
+	dataType                     = ""
+	locationLevels               = ""
+	maxCheckCount                = 2880
+	checkInterval                = "5s"
+	executeCommand               = ""
+	delayTimeForEachForecastTime = "0s"
 
 	startTime time.Time
 )
