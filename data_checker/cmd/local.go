@@ -104,11 +104,11 @@ var localCmd = &cobra.Command{
 					"forecast_hour": int(result.ForecastTime.Hours()),
 				}).Infof("file is available, run command...")
 
-				if commandTemplate == nil {
+				if executeCommand == "" {
 					continue
 				}
 
-				err = execCommand(commandTemplate, startTime, result.ForecastTime, result.FilePath)
+				err = runCommand(commandTemplate, startTime, result.ForecastTime, result.FilePath)
 				if err != nil {
 					log.WithFields(log.Fields{
 						"forecast_hour": int(result.ForecastTime.Hours()),
@@ -227,7 +227,7 @@ func getFileSize(filePath string) (int64, error) {
 	return fileInfo.Size(), nil
 }
 
-func execCommand(commandTemplate *template.Template, startTime time.Time, forecastTime time.Duration, filePath string) error {
+func runCommand(commandTemplate *template.Template, startTime time.Time, forecastTime time.Duration, filePath string) error {
 	tpVar := common.GenerateTemplateVariable(startTime, forecastTime)
 	var commandBuilder strings.Builder
 	err := commandTemplate.Execute(&commandBuilder, tpVar)
