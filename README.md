@@ -25,7 +25,8 @@ Use `Makefile` to build project on Linux and
 
 ```bash
 nwpc_data_client local --data-type some/data/type \
-    start_time forecast_time
+    --start-time start_time \
+    --forecast-time forecast_time
 ```
 
 `data-type` is some relative path under config directory. Such as
@@ -38,7 +39,7 @@ nwpc_data_client local --data-type some/data/type \
 For example, use the command below to find GMF GRAPES GFS GRIB2 data of 24 forecast hour in start hour 00 on 2018/09/03.
 
 ```text
-$nwpc_data_client local --data-type=grapes_gfs_gmf/grib2/orig 2018090300 24h
+$nwpc_data_client local --data-type=grapes_gfs_gmf/grib2/orig --start-time 2018090300 --forecast-time 24h
 /g2/nwp_pd/NWP_PST_DATA/GMF_GRAPES_GFS_V2.2_POST/togrib2/output_togrib2/2018090300/gmf.gra.2018090300024.grb2
 ```
 
@@ -73,7 +74,8 @@ external storage nodes which are mount to special HPC login nodes.
 
 ```bash
 nwpc_data_client hpc --config-dir=config_dir --data-type=some/data/type \
-    start_time forecast_time
+    --start-time start_time \
+    --forecast-time forecast_time
 ```
 
 `hpc` support all options of `local`, and has more options to access external storage nodes using ssh protocol.
@@ -94,7 +96,7 @@ and user should test to access remote host manually before using this command.
 For example, use the command below to find GDA GRAPES GFS modelvar data of 000 forecast hour in start hour 00 on 2019/05/20.
 
 ```text
-$nwpc_data_client hpc --data-type=grapes_gfs_gda/bin/modelvar 2019050200 0h
+$nwpc_data_client hpc --data-type=grapes_gfs_gda/bin/modelvar --start-time 2019050200 --forecast-time 0h
 storage
 /sstorage1/COMMONDATA/OPER/nwp/GRAPES_GFS/GDA_GRAPES_GFS/Fcst-9h/2019050121/modelvar2019050121_000
 ```

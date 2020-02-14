@@ -43,7 +43,8 @@ Get data file information on server.
 nwpc_data_client service --address=data-service-address \
     --action getDataFileInfo \
     --data-type=some/data/type \
-    start_time forecast_time
+    --start-time=start_time \
+    --forecast-time=forecast_time
 ```
 
 When data file is found, two lines are printed: one for data file path and the other for data file size.
@@ -68,7 +69,8 @@ nwpc_data_client service --address=data-service-address \
     --action downloadDataFile \
     --output-dir=outout/dir \
     --data-type=some/data/type \
-    start_time forecast_time
+    --start-time=start_time \
+    --forecast-time=forecast_time
 ```
 
 Data file is saved on output dir with original file name on remote server.
