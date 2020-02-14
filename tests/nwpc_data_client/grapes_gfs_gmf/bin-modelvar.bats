@@ -1,9 +1,6 @@
 #!/usr/bin/env bats
 
 check_date=$(date -d "-1 day" +%Y%m%d)
-year=$(echo ${check_date} | cut -b1-4)
-month=$(echo ${check_date} | cut -b5-6)
-day=$(echo ${check_date} | cut -b7-8)
 hour=00
 check_date_time=${check_date}${hour}
 
@@ -19,7 +16,8 @@ check_data_time_4dvar=${check_date_4dvar}${hour_4dv}
     run "${NWPC_DATA_CLIENT_PROGRAM}" local \
       --location-level=runtime \
         --data-type=grapes_gfs_gmf/bin/modelvar \
-        "${check_date_time}" 3h
+        --start-time "${check_date_time}" \
+        --forecast-time 3h
     [ "x${output}" = "x${expected_result}" ]
     return
   fi
@@ -30,7 +28,8 @@ check_data_time_4dvar=${check_date_4dvar}${hour_4dv}
     run "${NWPC_DATA_CLIENT_PROGRAM}" local \
         --location-level=runtime \
         --data-type=grapes_gfs_gmf/bin/modelvar \
-        "${today_check_date}${hour}" 3h
+        --start-time "${today_check_date}${hour}" \
+        --forecast-time 3h
     [ "x${output}" = "x${expected_result}" ]
     return
   fi
@@ -44,7 +43,8 @@ check_data_time_4dvar=${check_date_4dvar}${hour_4dv}
     result=$(${NWPC_DATA_CLIENT_PROGRAM} local \
         --location-level=archive \
         --data-type=grapes_gfs_gmf/bin/modelvar \
-        "${check_date_time}" 3h)
+        --start-time "${check_date_time}" \
+        --forecast-time 3h)
     [ "x${result}" = "x${expected_result}" ]
     return
   fi
@@ -63,7 +63,8 @@ config="--config-dir=${NWPC_DATA_CLIENT_CONFIG_DIR}/local"
         --location-level=runtime \
         "${config}" \
         --data-type=grapes_gfs_gmf/bin/modelvar \
-        "${check_date_time}" 3h)
+        --start-time "${check_date_time}" \
+        --forecast-time 3h)
     [ "x${result}" = "x${expected_result}" ]
     return
   fi
@@ -75,7 +76,8 @@ config="--config-dir=${NWPC_DATA_CLIENT_CONFIG_DIR}/local"
         --location-level=runtime \
         "${config}" \
         --data-type=grapes_gfs_gmf/bin/modelvar \
-        "${today_check_date}${hour}" 3h
+        --start-time "${today_check_date}${hour}" \
+        --forecast-time 3h
     [ "x${output}" = "x${expected_result}" ]
     return
   fi
@@ -90,7 +92,8 @@ config="--config-dir=${NWPC_DATA_CLIENT_CONFIG_DIR}/local"
         --location-level=archive \
         "${config}" \
         --data-type=grapes_gfs_gmf/bin/modelvar \
-        "${check_date_time}" 3h)
+        --start-time "${check_date_time}" \
+        --forecast-time 3h)
     [ "x${result}" = "x${expected_result}" ]
     return
   fi

@@ -9,7 +9,8 @@ check_date_time=${check_date}00
     run "${NWPC_DATA_CLIENT_PROGRAM}" local \
         --location-level=runtime \
         --data-type=grapes_tym/grib2/orig \
-        "${check_date_time}" 3h
+        --start-time "${check_date_time}" \
+        --forecast-time 3h
     [ "${output}" = "${expected_result}" ]
     return
   fi
@@ -23,7 +24,8 @@ check_date_time=${check_date}00
     run "${NWPC_DATA_CLIENT_PROGRAM}" local \
         --location-level=archive \
         --data-type=grapes_tym/grib2/orig \
-        "${check_date_time}" 3h
+        --start-time "${check_date_time}" \
+        --forecast-time 3h
     [ "${output}" = "${expected_result}" ]
     return
   fi
@@ -40,7 +42,8 @@ config="--config-dir=${NWPC_DATA_CLIENT_CONFIG_DIR}/local"
     run "${NWPC_DATA_CLIENT_PROGRAM}" local \
         "${config}" \
         --data-type=grapes_tym/grib2/orig \
-        "${check_date_time}" 3h
+        --start-time "${check_date_time}" \
+        --forecast-time 3h
     [ "${output}" = "${expected_result}" ]
     return
   fi
@@ -56,7 +59,8 @@ config="--config-dir=${NWPC_DATA_CLIENT_CONFIG_DIR}/local"
         "${config}" \
         --location-level=archive \
         --data-type=grapes_tym/grib2/orig \
-        "${check_date_time}" 3h
+        --start-time "${check_date_time}" \
+        --forecast-time 3h
     [ "${output}" = "${expected_result}" ]
     return
   fi
