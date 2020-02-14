@@ -1,7 +1,6 @@
 package cmd
 
 import (
-	"errors"
 	"fmt"
 	"github.com/nwpc-oper/nwpc-data-client/common"
 	"github.com/nwpc-oper/nwpc-data-client/common/config"
@@ -26,6 +25,11 @@ func init() {
 	localCmd.Flags().StringVar(&locationLevels, "location-level", "",
 		"Location levels, split by ',', such as 'runtime,archive'.")
 
+	localCmd.Flags().StringVar(&startTimeSting, "start-time", "",
+		"start time, YYYYMMDDHH, such as 2020021400")
+	localCmd.Flags().StringVar(&forecastTimeString, "forecast-time", "",
+		"forecast time, FFFh, such as 0h, 120h")
+
 	localCmd.Flags().BoolVar(&showTypes, "show-types", false,
 		"Show supported data types defined in config dir and exit.")
 }
@@ -34,10 +38,7 @@ const localCommandName = "local"
 
 const localCommandDocString = `nwpc_data_client local
 Find local data path using config files in config dir.
-
-Args:
-    start_time: YYYYMMDDHH, such as 2018080100
-    forecast_time: FFFh, such as 0h, 120h`
+`
 
 var localCmd = &cobra.Command{
 	Use:   localCommandName,
@@ -49,20 +50,9 @@ var localCmd = &cobra.Command{
 		}
 
 		cmd.MarkFlagRequired("data-type")
+		cmd.MarkFlagRequired("start-time")
+		cmd.MarkFlagRequired("forecast-time")
 
-		if len(args) != 2 {
-			return errors.New("requires two arguments")
-		}
-		var err error
-		startTime, err = common.ParseStartTime(args[0])
-		if err != nil {
-			return fmt.Errorf("check startTime failed: %s", err)
-		}
-
-		forecastTime, err = common.ParseForecastTime(args[1])
-		if err != nil {
-			return fmt.Errorf("check forecastTime failed: %s", err)
-		}
 		return nil
 	},
 	Run: func(cmd *cobra.Command, args []string) {
@@ -75,9 +65,22 @@ var localCmd = &cobra.Command{
 }
 
 func findLocalFile(cmd *cobra.Command, args []string) {
+	startTime, err := common.ParseStartTime(startTimeSting)
+	if err != nil {
+		log.Errorf("check startTime failed: %s", err)
+		return
+	}
+
+	forecastTime, err = common.ParseForecastTime(forecastTimeString)
+	if err != nil {
+		log.Errorf("check forecastTime failed: %s", err)
+		return
+	}
+
 	if len(configDir) == 0 {
 		dataType = localCommandName + "/" + dataType
 	}
+
 	localConfig, err2 := common.LoadConfig(configDir, dataType)
 	if err2 != nil {
 		log.Errorf("load config failed: %v", err2)

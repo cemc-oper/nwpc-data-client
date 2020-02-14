@@ -1,7 +1,6 @@
 package cmd
 
 import (
-	"errors"
 	"fmt"
 	"github.com/nwpc-oper/nwpc-data-client/common"
 	log "github.com/sirupsen/logrus"
@@ -23,6 +22,11 @@ func init() {
 	hpcCmd.Flags().StringVar(&locationLevels, "location-level", "",
 		"Location levels, split by ',', such as 'runtime,archive'.")
 
+	hpcCmd.Flags().StringVar(&startTimeSting, "start-time", "",
+		"start time, YYYYMMDDHH, such as 2020021400")
+	hpcCmd.Flags().StringVar(&forecastTimeString, "forecast-time", "",
+		"forecast time, FFFh, such as 0h, 120h")
+
 	hpcCmd.Flags().StringVar(&storageUser, "storage-user", user, "user name for storage.")
 	hpcCmd.Flags().StringVar(&storageHost, "storage-host", "10.40.140.44:22", "host for storage")
 	hpcCmd.Flags().StringVar(&privateKeyFilePath, "private-key", fmt.Sprintf("%s/.ssh/id_rsa", home),
@@ -40,10 +44,7 @@ const hpcCommandDocString = `nwpc_data_client hpc
 Find data path on hpc using config files in config dir.
 
 Support both to find local files and to find files on storage nodes.
-
-Args:
-    start_time: YYYYMMDDHH, such as 2018080100
-    forecast_time: FFFh, such as 120h`
+`
 
 var hpcCmd = &cobra.Command{
 	Use:   hpcCommandName,
@@ -55,20 +56,9 @@ var hpcCmd = &cobra.Command{
 		}
 
 		cmd.MarkFlagRequired("data-type")
+		cmd.MarkFlagRequired("start-time")
+		cmd.MarkFlagRequired("forecast-time")
 
-		if len(args) != 2 {
-			return errors.New("requires two arguments: startTime and forecastTime")
-		}
-		var err error
-		startTime, err = common.ParseStartTime(args[0])
-		if err != nil {
-			return fmt.Errorf("check startTime failed: %s", err)
-		}
-
-		forecastTime, err = common.ParseForecastTime(args[1])
-		if err != nil {
-			return fmt.Errorf("check forecastTime failed: %s", err)
-		}
 		return nil
 	},
 	Run: func(cmd *cobra.Command, args []string) {
@@ -81,6 +71,18 @@ var hpcCmd = &cobra.Command{
 }
 
 func runHpcCommand(cmd *cobra.Command, args []string) {
+	startTime, err := common.ParseStartTime(startTimeSting)
+	if err != nil {
+		log.Errorf("check startTime failed: %s", err)
+		return
+	}
+
+	forecastTime, err = common.ParseForecastTime(forecastTimeString)
+	if err != nil {
+		log.Errorf("check forecastTime failed: %s", err)
+		return
+	}
+
 	if len(configDir) == 0 {
 		dataType = hpcCommandName + "/" + dataType
 	}

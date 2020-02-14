@@ -12,6 +12,9 @@ var (
 	locationLevels = ""
 	showTypes      = false
 
+	startTimeSting     = ""
+	forecastTimeString = ""
+
 	startTime    time.Time
 	forecastTime time.Duration
 

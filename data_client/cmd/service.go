@@ -2,7 +2,6 @@ package cmd
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"github.com/nwpc-oper/nwpc-data-client/common"
 	"github.com/nwpc-oper/nwpc-data-client/data_service"
@@ -25,6 +24,11 @@ func init() {
 	serviceCommand.Flags().StringVar(&locationLevels, "location-level", "",
 		"Location levels, split by ',', such as 'runtime,archive'.")
 
+	serviceCommand.Flags().StringVar(&startTimeSting, "start-time", "",
+		"start time, YYYYMMDDHH, such as 2020021400")
+	serviceCommand.Flags().StringVar(&forecastTimeString, "forecast-time", "",
+		"forecast time, FFFh, such as 0h, 120h")
+
 	serviceCommand.Flags().StringVar(&serviceAddress, "address", "",
 		"serviceAddress of nwpc_data_server.")
 
@@ -35,26 +39,21 @@ func init() {
 		"output file directory, default is work directory.")
 
 	serviceCommand.MarkFlagRequired("data-type")
+	serviceCommand.MarkFlagRequired("start-time")
+	serviceCommand.MarkFlagRequired("forecast-time")
 	serviceCommand.MarkFlagRequired("address")
 	serviceCommand.MarkFlagRequired("action")
 }
 
 const serviceCommandDocString = `nwpc_data_client service
 Find or get data from nwpc_data_server.
-
-Args:
-    start_time: YYYYMMDDHH, such as 2018080100
-    forecast_time: time duration, such as 0h, 120h`
+`
 
 var serviceCommand = &cobra.Command{
 	Use:   "service",
 	Short: "Find data path using nwpc_data_server on HPC.",
 	Long:  serviceCommandDocString,
 	Args: func(cmd *cobra.Command, args []string) error {
-		if len(args) != 2 {
-			return errors.New("requires two arguments")
-		}
-
 		if serviceAction == "downloadDataFile" {
 			cmd.MarkFlagRequired("output-dir")
 		}
@@ -62,6 +61,18 @@ var serviceCommand = &cobra.Command{
 		return nil
 	},
 	Run: func(cmd *cobra.Command, args []string) {
+		_, err := common.ParseStartTime(startTimeSting)
+		if err != nil {
+			log.Errorf("check startTime failed: %s", err)
+			return
+		}
+
+		_, err = common.ParseForecastTime(forecastTimeString)
+		if err != nil {
+			log.Errorf("check forecastTime failed: %s", err)
+			return
+		}
+
 		conn, err := grpc.Dial(serviceAddress, grpc.WithInsecure())
 		if err != nil {
 			log.WithFields(log.Fields{
@@ -83,8 +94,8 @@ var serviceCommand = &cobra.Command{
 			r, err := c.FindDataPath(ctx, &data_service.DataRequest{
 				DataType:       dataType,
 				LocationLevels: locationLevels,
-				StartTime:      args[0],
-				ForecastTime:   args[1],
+				StartTime:      startTimeSting,
+				ForecastTime:   forecastTimeString,
 			})
 			if err != nil {
 				log.WithFields(log.Fields{
@@ -98,8 +109,8 @@ var serviceCommand = &cobra.Command{
 			r, err := c.GetDataFileInfo(ctx, &data_service.DataRequest{
 				DataType:       dataType,
 				LocationLevels: locationLevels,
-				StartTime:      args[0],
-				ForecastTime:   args[1],
+				StartTime:      startTimeSting,
+				ForecastTime:   forecastTimeString,
 			})
 			if err != nil {
 				log.WithFields(log.Fields{
@@ -118,8 +129,8 @@ var serviceCommand = &cobra.Command{
 			r, err := c.GetDataFileInfo(ctx, &data_service.DataRequest{
 				DataType:       dataType,
 				LocationLevels: locationLevels,
-				StartTime:      args[0],
-				ForecastTime:   args[1],
+				StartTime:      startTimeSting,
+				ForecastTime:   forecastTimeString,
 			})
 			if err != nil {
 				log.WithFields(log.Fields{
@@ -142,8 +153,8 @@ var serviceCommand = &cobra.Command{
 			stream, err := c.DownloadDataFile(ctx, &data_service.DataRequest{
 				DataType:       dataType,
 				LocationLevels: locationLevels,
-				StartTime:      args[0],
-				ForecastTime:   args[1],
+				StartTime:      startTimeSting,
+				ForecastTime:   forecastTimeString,
 			})
 
 			f, err := os.OpenFile(outputFilePath, os.O_CREATE|os.O_WRONLY, 0644)
