@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"github.com/nwpc-oper/nwpc-data-client/common"
+	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 	"os"
 	"strings"
@@ -88,7 +89,7 @@ func runHpcCommand(cmd *cobra.Command, args []string) {
 	dataConfig, err2 := common.LoadConfig(configDir, dataType)
 
 	if err2 != nil {
-		fmt.Fprintf(os.Stderr, "load config failed: %s\n", err2)
+		log.Errorf("load config failed: %s", err2)
 		return
 	}
 

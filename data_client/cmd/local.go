@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"github.com/nwpc-oper/nwpc-data-client/common"
 	"github.com/nwpc-oper/nwpc-data-client/common/config"
+	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 	"os"
 	"path/filepath"
@@ -77,15 +78,15 @@ func findLocalFile(cmd *cobra.Command, args []string) {
 	if len(configDir) == 0 {
 		dataType = localCommandName + "/" + dataType
 	}
-	config, err2 := common.LoadConfig(configDir, dataType)
+	localConfig, err2 := common.LoadConfig(configDir, dataType)
 	if err2 != nil {
-		fmt.Fprintf(os.Stderr, "load config failed: %v\n", err2)
+		log.Errorf("load config failed: %v", err2)
 		return
 	}
 
 	levels := strings.Split(locationLevels, ",")
 
-	pathItem := common.FindLocalFile(config, levels, startTime, forecastTime)
+	pathItem := common.FindLocalFile(localConfig, levels, startTime, forecastTime)
 	fmt.Printf("%s\n", pathItem.Path)
 }
 
@@ -111,13 +112,13 @@ func showLocalDataTypes(configDir string) {
 
 	err := filepath.Walk(configDir, walkConfigDirectory)
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "Walk config directory has error: %s\n", err)
+		log.Errorf("Walk config directory has error: %s", err)
 		return
 	}
 	for _, configPath := range configFilePaths {
 		relConfigPath, err2 := filepath.Rel(configDir, configPath)
 		if err2 != nil {
-			fmt.Fprintf(os.Stderr, "Get rel path failed: %s\n", err2)
+			log.Errorf("Get rel path failed: %s", err2)
 			continue
 		}
 		fmt.Printf("%s\n", relConfigPath[:len(relConfigPath)-5])

@@ -2,6 +2,7 @@ package common
 
 import (
 	"fmt"
+	log "github.com/sirupsen/logrus"
 	"os"
 	"path/filepath"
 	"strings"
@@ -18,7 +19,7 @@ func FindLocalFile(config DataConfig, locationLevels []string, startTime time.Ti
 	var fileNameBuilder strings.Builder
 	err := fileNameTemplate.Execute(&fileNameBuilder, tpVar)
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "file name template execute has error: %s\n", err)
+		log.Errorf("file name template execute has error: %s", err)
 		return PathItem{
 			Path:     config.Default,
 			PathType: config.Default,
@@ -40,7 +41,7 @@ func FindLocalFile(config DataConfig, locationLevels []string, startTime time.Ti
 		var dirPathBuilder strings.Builder
 		err = dirPathTemplate.Execute(&dirPathBuilder, tpVar)
 		if err != nil {
-			fmt.Fprintf(os.Stderr, "dir path template execute has error: %s\n", err)
+			log.Errorf("dir path template execute has error: %s", err)
 			continue
 		}
 		dirPath := dirPathBuilder.String()
