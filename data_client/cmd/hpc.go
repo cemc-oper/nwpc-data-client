@@ -6,7 +6,6 @@ import (
 	"github.com/nwpc-oper/nwpc-data-client/common"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
-	"os"
 	"strings"
 )
 

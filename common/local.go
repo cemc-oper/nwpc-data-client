@@ -1,7 +1,6 @@
 package common
 
 import (
-	"fmt"
 	log "github.com/sirupsen/logrus"
 	"os"
 	"path/filepath"
