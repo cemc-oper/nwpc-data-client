@@ -53,12 +53,12 @@ var localCmd = &cobra.Command{
 			return errors.New("requires two arguments")
 		}
 		var err error
-		startTime, err = common.CheckStartTime(args[0])
+		startTime, err = common.ParseStartTime(args[0])
 		if err != nil {
 			return fmt.Errorf("check startTime failed: %s", err)
 		}
 
-		forecastTime, err = common.CheckForecastTime(args[1])
+		forecastTime, err = common.ParseForecastTime(args[1])
 		if err != nil {
 			return fmt.Errorf("check forecastTime failed: %s", err)
 		}

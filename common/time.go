@@ -5,7 +5,7 @@ import (
 	"time"
 )
 
-func CheckStartTime(value string) (time.Time, error) {
+func ParseStartTime(value string) (time.Time, error) {
 	if len(value) != 10 {
 		return time.Time{}, fmt.Errorf("length of start_time must be 10")
 	}
@@ -16,11 +16,7 @@ func CheckStartTime(value string) (time.Time, error) {
 	return s, nil
 }
 
-func checkForecastHour(value string) (time.Duration, error) {
-	return CheckForecastTime(fmt.Sprintf("%sh", value))
-}
-
-func CheckForecastTime(value string) (time.Duration, error) {
+func ParseForecastTime(value string) (time.Duration, error) {
 	d, err := time.ParseDuration(value)
 	if err != nil {
 		return 0, fmt.Errorf("parse duration error: %v", err)

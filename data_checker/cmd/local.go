@@ -59,7 +59,7 @@ var localCmd = &cobra.Command{
 			return errors.New("requires one arguments")
 		}
 		var err error
-		startTime, err = common.CheckStartTime(args[0])
+		startTime, err = common.ParseStartTime(args[0])
 		if err != nil {
 			return fmt.Errorf("check startTime failed: %s", err)
 		}
@@ -245,14 +245,14 @@ func getFileSize(filePath string) (int64, error) {
 }
 
 type CheckerTemplateVariable struct {
-	common.TemplateVariable
+	common.TimeTemplateVariable
 	FilePath string
 }
 
 func runCommand(commandTemplate *template.Template, startTime time.Time, forecastTime time.Duration, filePath string) error {
-	tpVar := common.GenerateTemplateVariable(startTime, forecastTime)
+	tpVar := common.GenerateTimeTemplateVariable(startTime, forecastTime)
 	var checkerVar CheckerTemplateVariable
-	checkerVar.TemplateVariable = tpVar
+	checkerVar.TimeTemplateVariable = tpVar
 	checkerVar.FilePath = filePath
 
 	var commandBuilder strings.Builder

@@ -148,12 +148,12 @@ func (s *NWPCDataServer) findDataPath(req *DataRequest) (*DataPathResponse, erro
 		return &emptyResponse, fmt.Errorf("load config failed: %v", err)
 	}
 
-	startTime, err := common.CheckStartTime(startTimeString)
+	startTime, err := common.ParseStartTime(startTimeString)
 	if err != nil {
 		return &emptyResponse, fmt.Errorf("check StartTime failed: %s", err)
 	}
 
-	forecastTime, err := common.CheckForecastTime(forecastTimeString)
+	forecastTime, err := common.ParseForecastTime(forecastTimeString)
 	if err != nil {
 		return &emptyResponse, fmt.Errorf("check ForecastTime failed: %s", err)
 	}

@@ -13,7 +13,7 @@ func FindHpcFile(
 	config DataConfig, locationLevels []string, startTime time.Time, forecastTime time.Duration,
 	storageUser string, storageHost string, privateKeyFilePath string, hostKeyFilePath string,
 ) PathItem {
-	tpVar := GenerateTemplateVariable(startTime, forecastTime)
+	tpVar := GenerateTimeTemplateVariable(startTime, forecastTime)
 
 	fileNameTemplate := template.Must(template.New("fileName").
 		Delims("{", "}").Parse(config.FileName))

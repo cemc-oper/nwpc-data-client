@@ -5,7 +5,7 @@ import (
 	"time"
 )
 
-type TemplateVariable struct {
+type TimeTemplateVariable struct {
 	Year     string
 	Month    string
 	Day      string
@@ -17,11 +17,11 @@ type TemplateVariable struct {
 	Hour4DV  string
 }
 
-func GenerateTemplateVariable(startTime time.Time, forecastTime time.Duration) TemplateVariable {
+func GenerateTimeTemplateVariable(startTime time.Time, forecastTime time.Duration) TimeTemplateVariable {
 	forecastHour := int(forecastTime.Hours())
 
 	startTime4DV := startTime.Add(time.Hour * -3)
-	tpVariable := TemplateVariable{
+	tpVariable := TimeTemplateVariable{
 		Year:     startTime.Format("2006"),
 		Month:    startTime.Format("01"),
 		Day:      startTime.Format("02"),
