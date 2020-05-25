@@ -416,7 +416,7 @@ paths:
   - type: local
     level: archive
     path: /g1/COMMONDATA/OPER/NWPC/GRAPES_TYM/Fcst-main/{.Year}{.Month}{.Day}{.Hour}`},
-	{`local/grapes_tym/grib2/orig`, `# gmf grapes gfs
+	{`local/grapes_tym/grib2/orig`, `# grapes tym
 #   grib2 orig
 
 default: NOTFOUND
@@ -430,7 +430,11 @@ paths:
 
   - type: local
     level: archive
-    path: /g1/COMMONDATA/OPER/NWPC/GRAPES_TYM/Prod-grib/{.Year}{.Month}{.Day}{.Hour}`},
+    path: /g1/COMMONDATA/OPER/NWPC/GRAPES_TYM/Prod-grib/{.Year}{.Month}{.Day}{.Hour}
+
+  - type: local
+    level: archive
+    path: /g1/COMMONDATA/OPER/NWPC/GRAPES_TYM/Prod-grib/{.Year}{.Month}{.Day}{.Hour}/ORIG`},
 	{`storage/grapes_gfs_gda/bin/modelvar`, `# gda grapes gfs
 #   modelvar
 

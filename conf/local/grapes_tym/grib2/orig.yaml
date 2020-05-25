@@ -13,3 +13,7 @@ paths:
   - type: local
     level: archive
     path: /g1/COMMONDATA/OPER/NWPC/GRAPES_TYM/Prod-grib/{.Year}{.Month}{.Day}{.Hour}
+
+  - type: local
+    level: archive
+    path: /g1/COMMONDATA/OPER/NWPC/GRAPES_TYM/Prod-grib/{.Year}{.Month}{.Day}{.Hour}/ORIG
