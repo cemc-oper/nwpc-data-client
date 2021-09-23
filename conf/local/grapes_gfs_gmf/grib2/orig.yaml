@@ -8,8 +8,13 @@ file_name: gmf.gra.{.Year}{.Month}{.Day}{.Hour}{.Forecast}.grb2
 paths:
   - type: local
     level: runtime
-    path: /g2/nwp_pd/NWP_PST_DATA/GMF_GRAPES_GFS_POST/togrib2/output_togrib2/{.Year}{.Month}{.Day}{.Hour}
+    path: /g2/nwp_pd/NWP_GRAPES_GFS_GMF_POST_DATA/{.Year}{.Month}{.Day}{.Hour}/togrib2/output/grib2_orig
 
+  - type: local
+    level: archive
+    path: /g1/COMMONDATA/OPER/NWPC/GRAPES_GFS_GMF/Prod-grib/{.Year}{.Month}{.Day}{.Hour}/ORIG
+
+  # archive dir for v2.4
   - type: local
     level: archive
     path: /g1/COMMONDATA/OPER/NWPC/GRAPES_GFS_GMF/Prod-grib/{.Year4DV}{.Month4DV}{.Day4DV}{.Hour4DV}/ORIG

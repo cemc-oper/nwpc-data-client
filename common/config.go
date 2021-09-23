@@ -114,7 +114,8 @@ type PathItem struct {
 }
 
 type DataConfig struct {
-	Default  string     `yaml:"default"`
-	FileName string     `yaml:"file_name"`
-	Paths    []PathItem `yaml:"paths"`
+	Default   string     `yaml:"default"`
+	FileName  string     `yaml:"file_name"`
+	FileNames []string   `yaml:"file_names"`
+	Paths     []PathItem `yaml:"paths"`
 }
