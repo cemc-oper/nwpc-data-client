@@ -6,6 +6,7 @@ import (
 )
 
 type TimeTemplateVariable struct {
+	StartTime   time.Time
 	Year        string
 	Month       string
 	Day         string
@@ -28,6 +29,7 @@ func GenerateTimeTemplateVariable(startTime time.Time, forecastTime time.Duratio
 	startTime4DV := startTime.Add(time.Hour * -3)
 	startTime1HR := startTime.Add(time.Hour * -1)
 	tpVariable := TimeTemplateVariable{
+		StartTime:   startTime,
 		Year:        startTime.Format("2006"),
 		Month:       startTime.Format("01"),
 		Day:         startTime.Format("02"),

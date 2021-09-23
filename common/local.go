@@ -9,6 +9,27 @@ import (
 	"time"
 )
 
+func generateStartTime(startTime time.Time, hour int) time.Time {
+	newStartTime := startTime.Add(time.Hour * time.Duration(hour))
+	return newStartTime
+}
+
+func getYear(startTime time.Time) string {
+	return startTime.Format("2006")
+}
+
+func getMonth(startTime time.Time) string {
+	return startTime.Format("01")
+}
+
+func getDay(startTime time.Time) string {
+	return startTime.Format("02")
+}
+
+func getHour(startTime time.Time) string {
+	return startTime.Format("15")
+}
+
 func FindLocalFile(config DataConfig, locationLevels []string, startTime time.Time, forecastTime time.Duration) PathItem {
 	tpVar := GenerateTimeTemplateVariable(startTime, forecastTime)
 
@@ -16,8 +37,13 @@ func FindLocalFile(config DataConfig, locationLevels []string, startTime time.Ti
 
 	if len(config.FileNames) > 0 {
 		for _, item := range config.FileNames {
-			fileNameTemplate := template.Must(template.New("fileName").
-				Delims("{", "}").Parse(item))
+			fileNameTemplate := template.Must(template.New("fileName").Funcs(template.FuncMap{
+				"generateStartTime": generateStartTime,
+				"getYear":           getYear,
+				"getMonth":          getMonth,
+				"getDay":            getDay,
+				"getHour":           getHour,
+			}).Delims("{", "}").Parse(item))
 			var fileNameBuilder strings.Builder
 			err := fileNameTemplate.Execute(&fileNameBuilder, tpVar)
 			if err != nil {
@@ -33,9 +59,13 @@ func FindLocalFile(config DataConfig, locationLevels []string, startTime time.Ti
 	}
 
 	if len(config.FileName) > 0 {
-		fileNameTemplate := template.Must(template.New("fileName").
-			Delims("{", "}").Parse(config.FileName))
-
+		fileNameTemplate := template.Must(template.New("fileName").Funcs(template.FuncMap{
+			"generateStartTime": generateStartTime,
+			"getYear":           getYear,
+			"getMonth":          getMonth,
+			"getDay":            getDay,
+			"getHour":           getHour,
+		}).Delims("{", "}").Parse(config.FileName))
 		var fileNameBuilder strings.Builder
 		err := fileNameTemplate.Execute(&fileNameBuilder, tpVar)
 		if err != nil {
@@ -69,7 +99,7 @@ func FindLocalFile(config DataConfig, locationLevels []string, startTime time.Ti
 		dirPath := dirPathBuilder.String()
 		for _, fileName := range fileNames {
 			filePath := filepath.Join(dirPath, fileName)
-			log.Debugf("%s\n", filePath)
+			log.Infof("%s\n", filePath)
 
 			if CheckLocalFile(filePath) {
 				return PathItem{
