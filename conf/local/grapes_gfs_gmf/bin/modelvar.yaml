@@ -8,8 +8,8 @@ file_name: modelvar{.Year}{.Month}{.Day}{.Hour}_{.Forecast}
 paths:
   - type: local
     level: runtime
-    path: /g2/nwp/GRAPES_GFS/MODEL/data/NWP_GMFS/{.Hour4DV}/output
+    path: /g2/nwp/GRAPES_GFS3.2/MODEL/data/NWP_GMFS/{generateStartTime .StartTime -3 | getHour}/output
 
   - type: local
     level: archive
-    path: /g1/COMMONDATA/OPER/NWPC/GRAPES_GFS_GMF/Fcst-long/{.Year4DV}{.Month4DV}{.Day4DV}{.Hour4DV}
+    path: /g1/COMMONDATA/OPER/NWPC/GRAPES_GFS_GMF/Fcst-long/{generateStartTime .StartTime -3 | getYear}{generateStartTime .StartTime -3 | getMonth}{generateStartTime .StartTime -3 | getDay}{generateStartTime .StartTime -3 | getHour}

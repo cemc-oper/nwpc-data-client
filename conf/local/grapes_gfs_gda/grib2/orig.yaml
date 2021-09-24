@@ -12,4 +12,4 @@ paths:
 
   - type: local
     level: archive
-    path: /g1/COMMONDATA/OPER/NWPC/GRAPES_GFS_GDA/Prod-grib/{.Year4DV}{.Month4DV}{.Day4DV}{.Hour4DV}/ORIG
+    path: /g1/COMMONDATA/OPER/NWPC/GRAPES_GFS_GDA/Prod-grib/{generateStartTime .StartTime -3 | getYear}{generateStartTime .StartTime -3 | getMonth}{generateStartTime .StartTime -3 | getDay}{generateStartTime .StartTime -3 | getHour}/ORIG

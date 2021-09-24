@@ -1,5 +1,5 @@
-# gmf grapes gfs
-#   postvar
+# grapes meso 3km
+#   modelvar
 
 default: NOTFOUND
 

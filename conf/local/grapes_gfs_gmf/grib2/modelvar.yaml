@@ -9,9 +9,14 @@ paths:
   # run time dir
   - type: local
     level: runtime
-    path: /g2/nwp_pd/NWP_PST_DATA/GMF_GRAPES_GFS_POST/togrib2/output_togrib2/{.Year}{.Month}{.Day}{.Hour}
+    path: /g2/nwp_pd/NWP_GRAPES_GFS_GMF_POST_DATA/{.Year}{.Month}{.Day}{.Hour}/togrib2/output/grib2_orig/
 
   # archive dir
   - type: local
     level: archive
-    path: /g1/COMMONDATA/OPER/NWPC/GRAPES_GFS_GMF/Prod-grib/{.Year4DV}{.Month4DV}{.Day4DV}{.Hour4DV}/MODELVAR
+    path: /g1/COMMONDATA/OPER/NWPC/GRAPES_GFS_GMF/Prod-grib/{.Year}{.Month}{.Day}{.Hour}/MODELVAR
+
+  # archive dir
+  - type: local
+    level: archive
+    path: /g1/COMMONDATA/OPER/NWPC/GRAPES_GFS_GMF/Prod-grib/{generateStartTime .StartTime -3 | getYear}{generateStartTime .StartTime -3 | getMonth}{generateStartTime .StartTime -3 | getDay}{generateStartTime .StartTime -3 | getHour}/MODELVAR

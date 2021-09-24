@@ -201,31 +201,41 @@ paths:
 
 default: NOTFOUND
 
-file_name: modelvar{.Year4DV}{.Month4DV}{.Day4DV}{.Hour4DV}_{.Forecast}
+file_name: modelvar{generateStartTime .StartTime -3 | getYear}{generateStartTime .StartTime -3 | getMonth}{generateStartTime .StartTime -3 | getDay}{generateStartTime .StartTime -3 | getHour}_{.Forecast}
 
 paths:
   - type: local
     level: runtime
-    path: /g2/nwp/GRAPES_GFS/MODEL/data/NWP_GDAS/{.Hour4DV}/output
+    path: /g2/nwp/GRAPES_GFS3.2/MODEL/data/NWP_GDAS/{.Hour}/output
+
+  - type: local
+    level: runtime/archive
+    path: /g2/nwp/GRAPES_GFS3.2/DATA/DATABAK/NWP_GDAS/FCST_results
 
   - type: local
     level: archive
-    path: /g1/COMMONDATA/OPER/NWPC/GRAPES_GFS_GDA/Fcst-9h/{.Year4DV}{.Month4DV}{.Day4DV}{.Hour4DV}`},
+    path: /g1/COMMONDATA/OPER/NWPC/GRAPES_GFS_GDA/Fcst-9h/{.Year}{.Month}{.Day}{.Hour}`},
 	{`local/grapes_gfs_gda/bin/postvar`, `# gda grapes gfs
 #   postvar
 
 default: NOTFOUND
 
-file_name: postvar{.Year4DV}{.Month4DV}{.Day4DV}{.Hour4DV}_{.Forecast}
+file_name: postvar{generateStartTime .StartTime -3 | getYear}{generateStartTime .StartTime -3 | getMonth}{generateStartTime .StartTime -3 | getDay}{generateStartTime .StartTime -3 | getHour}_{.Forecast}
 
 paths:
   - type: local
     level: runtime
-    path: /g2/nwp/GRAPES_GFS/MODEL/data/NWP_GDAS/{.Hour4DV}/output
+    path: /g2/nwp/GRAPES_GFS3.2/MODEL/data/NWP_GDAS/{.Hour}/output
+
+  - type: local
+    level: runtime/archive
+    path: /g2/nwp/GRAPES_GFS3.2/DATA/DATABAK/NWP_GDAS/FCST_results
+
 
   - type: local
     level: archive
-    path: /g1/COMMONDATA/OPER/NWPC/GRAPES_GFS_GDA/Fcst-9h/{.Year4DV}{.Month4DV}{.Day4DV}{.Hour4DV}`},
+    path: /g1/COMMONDATA/OPER/NWPC/GRAPES_GFS_GDA/Fcst-9h/{.Year}{.Month}{.Day}{.Hour}
+`},
 	{`local/grapes_gfs_gda/grib2/modelvar`, `# gda grapes gfs
 #   grib2 modelvar
 
@@ -236,11 +246,11 @@ file_name: modelvar{.Year}{.Month}{.Day}{.Hour}{.Forecast}.grb2
 paths:
   - type: local
     level: runtime
-    path: /g2/nwp_pd/NWP_PST_DATA/GDA_GRAPES_GFS_POST/gfs_togrib2/output_togrib2/{.Year}{.Month}{.Day}{.Hour}
+    path: /g2/nwp_pd/GDA_GRAPES_GFS_POST/gfs_togrib2/output_togrib2/{.Year}{.Month}{.Day}{.Hour}
 
   - type: local
     level: archive
-    path: /g1/COMMONDATA/OPER/NWPC/GRAPES_GFS_GDA/Prod-grib/{.Year4DV}{.Month4DV}{.Day4DV}{.Hour4DV}/MODELVAR`},
+    path: /g1/COMMONDATA/OPER/NWPC/GRAPES_GFS_GDA/Prod-grib/{generateStartTime .StartTime -3 | getYear}{generateStartTime .StartTime -3 | getMonth}{generateStartTime .StartTime -3 | getDay}{generateStartTime .StartTime -3 | getHour}/MODELVAR`},
 	{`local/grapes_gfs_gda/grib2/orig`, `# gda grapes gfs
 #   orig grib2
 
@@ -255,7 +265,8 @@ paths:
 
   - type: local
     level: archive
-    path: /g1/COMMONDATA/OPER/NWPC/GRAPES_GFS_GDA/Prod-grib/{.Year4DV}{.Month4DV}{.Day4DV}{.Hour4DV}/ORIG`},
+    path: /g1/COMMONDATA/OPER/NWPC/GRAPES_GFS_GDA/Prod-grib/{generateStartTime .StartTime -3 | getYear}{generateStartTime .StartTime -3 | getMonth}{generateStartTime .StartTime -3 | getDay}{generateStartTime .StartTime -3 | getHour}/ORIG
+`},
 	{`local/grapes_gfs_gmf/bin/modelvar`, `# gmf grapes gfs
 #   modelvar
 
@@ -266,11 +277,12 @@ file_name: modelvar{.Year}{.Month}{.Day}{.Hour}_{.Forecast}
 paths:
   - type: local
     level: runtime
-    path: /g2/nwp/GRAPES_GFS/MODEL/data/NWP_GMFS/{.Hour4DV}/output
+    path: /g2/nwp/GRAPES_GFS3.2/MODEL/data/NWP_GMFS/{generateStartTime .StartTime -3 | getHour}/output
 
   - type: local
     level: archive
-    path: /g1/COMMONDATA/OPER/NWPC/GRAPES_GFS_GMF/Fcst-long/{.Year4DV}{.Month4DV}{.Day4DV}{.Hour4DV}`},
+    path: /g1/COMMONDATA/OPER/NWPC/GRAPES_GFS_GMF/Fcst-long/{generateStartTime .StartTime -3 | getYear}{generateStartTime .StartTime -3 | getMonth}{generateStartTime .StartTime -3 | getDay}{generateStartTime .StartTime -3 | getHour}
+`},
 	{`local/grapes_gfs_gmf/bin/postvar`, `# gmf grapes gfs
 #   postvar
 
@@ -281,11 +293,12 @@ file_name: postvar{.Year}{.Month}{.Day}{.Hour}_{.Forecast}
 paths:
   - type: local
     level: runtime
-    path: /g2/nwp/GRAPES_GFS/MODEL/data/NWP_GMFS/{.Hour4DV}/output
+    path: /g2/nwp/GRAPES_GFS3.2/MODEL/data/NWP_GMFS/{generateStartTime .StartTime -3 | getHour}/output
 
   - type: local
     level: archive
-    path: /g1/COMMONDATA/OPER/NWPC/GRAPES_GFS_GMF/Fcst-long/{.Year4DV}{.Month4DV}{.Day4DV}{.Hour4DV}`},
+    path: /g1/COMMONDATA/OPER/NWPC/GRAPES_GFS_GMF/Fcst-long/{generateStartTime .StartTime -3 | getYear}{generateStartTime .StartTime -3 | getMonth}{generateStartTime .StartTime -3 | getDay}{generateStartTime .StartTime -3 | getHour}
+`},
 	{`local/grapes_gfs_gmf/grib2/modelvar`, `# gmf grapes gfs
 #   grib2 modelvar
 
@@ -297,12 +310,17 @@ paths:
   # run time dir
   - type: local
     level: runtime
-    path: /g2/nwp_pd/NWP_PST_DATA/GMF_GRAPES_GFS_POST/togrib2/output_togrib2/{.Year}{.Month}{.Day}{.Hour}
+    path: /g2/nwp_pd/NWP_GRAPES_GFS_GMF_POST_DATA/{.Year}{.Month}{.Day}{.Hour}/togrib2/output/grib2_orig/
 
   # archive dir
   - type: local
     level: archive
-    path: /g1/COMMONDATA/OPER/NWPC/GRAPES_GFS_GMF/Prod-grib/{.Year4DV}{.Month4DV}{.Day4DV}{.Hour4DV}/MODELVAR`},
+    path: /g1/COMMONDATA/OPER/NWPC/GRAPES_GFS_GMF/Prod-grib/{.Year}{.Month}{.Day}{.Hour}/MODELVAR
+
+  # archive dir
+  - type: local
+    level: archive
+    path: /g1/COMMONDATA/OPER/NWPC/GRAPES_GFS_GMF/Prod-grib/{generateStartTime .StartTime -3 | getYear}{generateStartTime .StartTime -3 | getMonth}{generateStartTime .StartTime -3 | getDay}{generateStartTime .StartTime -3 | getHour}/MODELVAR`},
 	{`local/grapes_gfs_gmf/grib2/ne`, `# gmf grapes gfs
 #   grib2 ne
 
@@ -313,11 +331,11 @@ file_name: ne_gmf.gra.{.Year}{.Month}{.Day}{.Hour}{.Forecast}.grb2
 paths:
   - type: local
     level: runtime
-    path: /g2/nwp_pd/NWP_PST_DATA/GMF_GRAPES_GFS_POST/togrib2/output_ne/{.Year}{.Month}{.Day}{.Hour}
+    path: /g2/nwp_pd/NWP_GRAPES_GFS_GMF_POST_DATA/{.Year}{.Month}{.Day}{.Hour}/togrib2/output/grib2_ne/
 
   - type: local
     level: archive
-    path: /g1/COMMONDATA/OPER/NWPC/GRAPES_GFS_GMF/Prod-grib/{.Year4DV}{.Month4DV}{.Day4DV}{.Hour4DV}/CMACAST`},
+    path: /g1/COMMONDATA/OPER/NWPC/GRAPES_GFS_GMF/Prod-grib/{.Year}{.Month}{.Day}{.Hour}/CMACAST`},
 	{`local/grapes_gfs_gmf/grib2/orig`, `# gmf grapes gfs
 #   grib2 orig
 
@@ -328,7 +346,7 @@ file_name: gmf.gra.{.Year}{.Month}{.Day}{.Hour}{.Forecast}.grb2
 paths:
   - type: local
     level: runtime
-    path: /g2/nwp_pd/NWP_GRAPES_GFS_GMF_POST_DATA/{.Year}{.Month}{.Day}{.Hour}/togrib2/output/grib2_orig
+    path: /g2/nwp_pd/NWP_GRAPES_GFS_GMF_POST_DATA/{.Year}{.Month}{.Day}{.Hour}/togrib2/output/grib2_orig/
 
   - type: local
     level: archive
@@ -337,9 +355,9 @@ paths:
   # archive dir for v2.4
   - type: local
     level: archive
-    path: /g1/COMMONDATA/OPER/NWPC/GRAPES_GFS_GMF/Prod-grib/{.Year4DV}{.Month4DV}{.Day4DV}{.Hour4DV}/ORIG`},
-	{`local/grapes_meso_3km/bin/modelvar`, `# gmf grapes gfs
-#   postvar
+    path: /g1/COMMONDATA/OPER/NWPC/GRAPES_GFS_GMF/Prod-grib/{generateStartTime .StartTime -3 | getYear}{generateStartTime .StartTime -3 | getMonth}{generateStartTime .StartTime -3 | getDay}{generateStartTime .StartTime -3 | getHour}/ORIG`},
+	{`local/grapes_meso_3km/bin/modelvar`, `# grapes meso 3km
+#   modelvar
 
 default: NOTFOUND
 
