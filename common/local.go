@@ -1,6 +1,7 @@
 package common
 
 import (
+	"fmt"
 	log "github.com/sirupsen/logrus"
 	"os"
 	"path/filepath"
@@ -30,6 +31,14 @@ func getHour(startTime time.Time) string {
 	return startTime.Format("15")
 }
 
+func getForecastHour(forecastTime time.Duration, style string) string {
+	return fmt.Sprintf(style, int(forecastTime.Hours()))
+}
+
+func getForecastMinute(forecastTime time.Duration, style string) string {
+	return fmt.Sprintf(style, int(forecastTime.Minutes())%60)
+}
+
 func FindLocalFile(config DataConfig, locationLevels []string, startTime time.Time, forecastTime time.Duration) PathItem {
 	tpVar := GenerateTimeTemplateVariable(startTime, forecastTime)
 
@@ -43,6 +52,8 @@ func FindLocalFile(config DataConfig, locationLevels []string, startTime time.Ti
 				"getMonth":          getMonth,
 				"getDay":            getDay,
 				"getHour":           getHour,
+				"getForecastHour":   getForecastHour,
+				"getForecastMinute": getForecastMinute,
 			}).Delims("{", "}").Parse(item))
 			var fileNameBuilder strings.Builder
 			err := fileNameTemplate.Execute(&fileNameBuilder, tpVar)
@@ -65,6 +76,8 @@ func FindLocalFile(config DataConfig, locationLevels []string, startTime time.Ti
 			"getMonth":          getMonth,
 			"getDay":            getDay,
 			"getHour":           getHour,
+			"getForecastHour":   getForecastHour,
+			"getForecastMinute": getForecastMinute,
 		}).Delims("{", "}").Parse(config.FileName))
 		var fileNameBuilder strings.Builder
 		err := fileNameTemplate.Execute(&fileNameBuilder, tpVar)
@@ -99,7 +112,7 @@ func FindLocalFile(config DataConfig, locationLevels []string, startTime time.Ti
 		dirPath := dirPathBuilder.String()
 		for _, fileName := range fileNames {
 			filePath := filepath.Join(dirPath, fileName)
-			log.Infof("%s\n", filePath)
+			//log.Infof("%s\n", filePath)
 
 			if CheckLocalFile(filePath) {
 				return PathItem{
