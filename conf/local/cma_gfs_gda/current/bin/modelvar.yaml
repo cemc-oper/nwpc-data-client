@@ -1,0 +1,15 @@
+# CMA-GFS gda
+#   modelvar
+
+default: NOTFOUND
+
+file_name: modelvar{generateStartTime .StartTime -3 | getYear}{generateStartTime .StartTime -3 | getMonth}{generateStartTime .StartTime -3 | getDay}{generateStartTime .StartTime -3 | getHour}_{.Forecast}
+
+paths:
+  - type: local
+    level: runtime
+    path: /g0/nwp/CMA-GFS4.0_DATA/MODEL/data/NWP_GDAS/{.Hour}/output
+
+  - type: local
+    level: archive
+    path: /g1/COMMONDATA/OPER/NWPC/GRAPES_GFS_GDA/Fcst-9h/{.Year}{.Month}{.Day}{.Hour}

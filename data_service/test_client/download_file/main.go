@@ -2,7 +2,7 @@ package main
 
 import (
 	"context"
-	"github.com/nwpc-oper/nwpc-data-client/data_service"
+	"github.com/cemc-oper/nwpc-data-client/data_service"
 	log "github.com/sirupsen/logrus"
 	"google.golang.org/grpc"
 	"io"
@@ -30,7 +30,7 @@ func main() {
 	defer cancel()
 
 	stream, err := c.DownloadDataFile(ctx, &data_service.DataRequest{
-		DataType:       "grapes_gfs_gmf/grib2/orig",
+		DataType:       "cma_gfs_gmf/grib2/orig",
 		LocationLevels: []string{"all"},
 		StartTime:      "2019080700",
 		ForecastTime:   "120h",

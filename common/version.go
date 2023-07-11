@@ -11,5 +11,5 @@ var (
 func PrintVersionInformation() {
 	fmt.Printf("Version %s (%s)\n", Version, GitCommit)
 	fmt.Printf("Build at %s\n", BuildTime)
-	fmt.Printf("Please visit https://github.com/nwpc-oper/nwpc-data-client for more information.\n")
+	fmt.Printf("Please visit https://github.com/cemc-oper/nwpc-data-client for more information.\n")
 }

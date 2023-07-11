@@ -1,12 +1,12 @@
 # NWPC Data Client
 
-A CLI client for operation system's files in NWPC.
+A CLI client for operation system files in CEMC/CMA.
 
 ## Features
 
-- Find file path for operation system data in HPC-PI.
-- Find file path in external storage nodes from HPC-PI.
-- Download data file through a data service.
+- Find file path for operation system data in CMA HPC.
+- :construction: Find file path in external storage nodes from CMA HPC.
+- :construction: Download data file through a data service.
 
 ## Installing
 
@@ -21,7 +21,7 @@ Use `Makefile` to build project on Linux and
 
 ### local
 
-`nwpc_data_client local` command finds local files on HPC-PI.
+`nwpc_data_client local` command finds local files on CMA HPC.
 
 ```bash
 nwpc_data_client local --data-type some/data/type \
@@ -38,7 +38,7 @@ nwpc_data_client local --data-type some/data/type \
 
 For example, use the command below to find GMF GRAPES GFS GRIB2 data of 24 forecast hour in start hour 00 on 2018/09/03.
 
-```text
+```
 $nwpc_data_client local --data-type=grapes_gfs_gmf/grib2/orig --start-time 2018090300 --forecast-time 24h
 /g2/nwp_pd/NWP_PST_DATA/GMF_GRAPES_GFS_V2.2_POST/togrib2/output_togrib2/2018090300/gmf.gra.2018090300024.grb2
 ```
@@ -130,6 +130,6 @@ Run `make test` to run all tests. [bats](https://github.com/neurodebian/bats) is
 
 ## License
 
-Copyright &copy; 2019 Perilla Roc at nwpc-oper.
+Copyright &copy; 2019-2023 Perilla Roc at cemc-oper.
 
 `nwpc-data-client` is licensed under [The MIT License](https://opensource.org/licenses/MIT).

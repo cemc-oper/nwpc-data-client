@@ -1,0 +1,19 @@
+# CMA-MESO 3KM
+#   postvar warm
+
+default: NOTFOUND
+
+file_name: postvar{.Year}{.Month}{.Day}{.Hour}{.Forecast}00
+
+paths:
+  - type: local
+    level: runtime
+    path: /g0/nwp/NWP_RMFS_DATA/cma_meso_3km/warm/{.Hour}/fcst/grapes_model/run
+
+  - type: local
+    level: runtime/archive
+    path: /g0/nwp/NWP_RMFS_DATA/cma_meso_3km/DATABAK/warm/{.Year}{.Month}{.Day}{.Hour}
+
+  - type: local
+    level: archive
+    path: /g1/COMMONDATA/OPER/NWPC/GRAPES_MESO_3KM/Fcst-main/{.Year}{.Month}{.Day}{.Hour}

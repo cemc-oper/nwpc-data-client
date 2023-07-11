@@ -1,0 +1,17 @@
+# cma-gfs gmf
+#   grib2 modelvar
+
+default: NOTFOUND
+
+file_names:
+  - modelvar{.Year}{.Month}{.Day}{.Hour}_{.Forecast}
+  # - modelvar{generateStartTime .StartTime -3 | getYear}{generateStartTime .StartTime -3 | getMonth}{generateStartTime .StartTime -3 | getDay}{generateStartTime .StartTime -3 | getHour}_{generateForecastTime .ForecastTime "3h" | getForecastHour | printf "%03d"}
+
+paths:
+  - type: local
+    level: runtime
+    path: /g0/nwp/CMA-GFS4.0_DATA/MODEL/NWP_GMFS/{.Hour}/output
+
+  - type: local
+    level: archive
+    path: /g1/COMMONDATA/OPER/NWPC/GRAPES_GFS_GMF/Fcst-long/{.Year}{.Month}{.Day}{.Hour}

@@ -2,7 +2,7 @@ package cmd
 
 import (
 	"fmt"
-	"github.com/nwpc-oper/nwpc-data-client/common"
+	"github.com/cemc-oper/nwpc-data-client/common"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 	"strings"

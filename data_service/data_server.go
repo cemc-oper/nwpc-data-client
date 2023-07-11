@@ -3,7 +3,7 @@ package data_service
 import (
 	"context"
 	"fmt"
-	"github.com/nwpc-oper/nwpc-data-client/common"
+	"github.com/cemc-oper/nwpc-data-client/common"
 	log "github.com/sirupsen/logrus"
 	"os"
 )

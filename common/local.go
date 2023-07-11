@@ -9,6 +9,10 @@ import (
 	"time"
 )
 
+// template function to generate start time. should be used with getYear, getMonth, getDay, getHour functions.
+// Usage:
+//
+//	{generateStartTime .StartTime -3 | getYear}
 func generateStartTime(startTime time.Time, hour int) time.Time {
 	newStartTime := startTime.Add(time.Hour * time.Duration(hour))
 	return newStartTime
@@ -30,16 +34,25 @@ func getHour(startTime time.Time) string {
 	return startTime.Format("15")
 }
 
+// template function to generate forecast time. should be used with getForecastHour, getForecastMinute functions.
 func generateForecastTime(forecastTime time.Duration, timeInterval string) time.Duration {
 	t, _ := time.ParseDuration(timeInterval)
 	newForecastTime := forecastTime + t
 	return newForecastTime
 }
 
+// template function to get hour from forecast time.
+// Usage:
+//
+//	{getForecastHour .ForecastTime "%03d"}
 func getForecastHour(forecastTime time.Duration) int {
 	return int(forecastTime.Hours())
 }
 
+// template function to get minute from forecast time.
+// Usage:
+//
+//	{getForecastMinute .ForecastTime "%02d"}
 func getForecastMinute(forecastTime time.Duration) int {
 	return int(forecastTime.Minutes()) % 60
 }

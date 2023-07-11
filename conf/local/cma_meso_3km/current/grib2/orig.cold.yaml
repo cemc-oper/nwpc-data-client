@@ -1,0 +1,15 @@
+# CMA-MESO 3KM
+#   grib2 orig cold
+
+default: NOTFOUND
+
+file_name: rmf.hgra.{.Year}{.Month}{.Day}{.Hour}{.Forecast}.grb2
+
+paths:
+  - type: local
+    level: runtime
+    path: /g0/nwp_pd/NWP_GRAPES_MESO_3KM_POST_DATA/{.Year}{.Month}{.Day}{.Hour}_cold/togrib2/output
+
+  - type: local
+    level: archive
+    path: /g1/COMMONDATA/OPER/NWPC/GRAPES_MESO_3KM/Prod-grib/{.Year}{.Month}{.Day}{.Hour}/ORIG

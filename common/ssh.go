@@ -5,12 +5,12 @@ import (
 	log "github.com/sirupsen/logrus"
 	"golang.org/x/crypto/ssh"
 	"golang.org/x/crypto/ssh/knownhosts"
-	"io/ioutil"
+	"os"
 	"strings"
 )
 
 func CheckFileOverSSH(filePath string, user string, host string, privateKeyFilePath string, hostKeyFilePath string) bool {
-	key, err := ioutil.ReadFile(privateKeyFilePath)
+	key, err := os.ReadFile(privateKeyFilePath)
 	if err != nil {
 		log.WithFields(log.Fields{
 			"component": "ssh",

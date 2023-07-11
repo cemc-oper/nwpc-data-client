@@ -2,8 +2,8 @@ package cmd
 
 import (
 	"fmt"
-	"github.com/nwpc-oper/nwpc-data-client/common"
-	"github.com/nwpc-oper/nwpc-data-client/common/config"
+	"github.com/cemc-oper/nwpc-data-client/common"
+	"github.com/cemc-oper/nwpc-data-client/common/config"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 	"os"

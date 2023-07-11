@@ -1,4 +1,4 @@
-module github.com/nwpc-oper/nwpc-data-client
+module github.com/cemc-oper/nwpc-data-client
 
 go 1.13
 

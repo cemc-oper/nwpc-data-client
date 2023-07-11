@@ -2,7 +2,7 @@ package common
 
 import (
 	"fmt"
-	"github.com/nwpc-oper/nwpc-data-client/common/config"
+	"github.com/cemc-oper/nwpc-data-client/common/config"
 	"gopkg.in/yaml.v2"
 	"io/ioutil"
 	"os"

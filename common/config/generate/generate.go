@@ -2,9 +2,8 @@ package main
 
 import (
 	"fmt"
-	"github.com/nwpc-oper/nwpc-data-client/common"
+	"github.com/cemc-oper/nwpc-data-client/common"
 	log "github.com/sirupsen/logrus"
-	"io/ioutil"
 	"os"
 	"path/filepath"
 )
@@ -41,7 +40,7 @@ func main() {
 		dataType := dataTypeFile[:len(dataTypeFile)-5]
 		fmt.Printf("%s\n", dataType)
 
-		content, err := ioutil.ReadFile(path)
+		content, err := os.ReadFile(path)
 		if err != nil {
 			return err
 		}

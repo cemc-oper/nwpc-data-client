@@ -5,11 +5,13 @@ import (
 	"errors"
 	"fmt"
 	"github.com/SimonBaeumer/cmd"
-	"github.com/nwpc-oper/nwpc-data-client/common"
+	"github.com/cemc-oper/nwpc-data-client/common"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 	"os"
+	"os/signal"
 	"strings"
+	"syscall"
 	"text/template"
 	"time"
 )
@@ -110,33 +112,50 @@ var localCmd = &cobra.Command{
 			}(index, oneTime)
 		}
 
-		for _ = range forecastTimeList {
-			result := <-ch
-			if result.Error != nil {
-				log.WithFields(log.Fields{
-					"forecast_hour": int(result.ForecastTime.Hours()),
-				}).Fatalf("check failed: %v", result.Error)
-			} else {
-				log.WithFields(log.Fields{
-					"forecast_hour": int(result.ForecastTime.Hours()),
-				}).Infof("file is available, run command...")
+		done := make(chan bool, 1)
 
-				if executeCommand == "" {
-					continue
-				}
+		sigs := make(chan os.Signal, 1)
+		signal.Notify(sigs, syscall.SIGHUP, syscall.SIGINT, syscall.SIGTERM, syscall.SIGQUIT)
 
-				err = runCommand(commandTemplate, startTime, result.ForecastTime, result.FilePath)
-				if err != nil {
+		go func() {
+			sig := <-sigs
+			log.Infof("catching signal: %v\n", sig)
+			os.Exit(3)
+		}()
+
+		go func() {
+			for _ = range forecastTimeList {
+				result := <-ch
+				if result.Error != nil {
 					log.WithFields(log.Fields{
 						"forecast_hour": int(result.ForecastTime.Hours()),
-					}).Fatalf("run command failed: %v", err)
+					}).Fatalf("check failed: %v", result.Error)
 				} else {
 					log.WithFields(log.Fields{
 						"forecast_hour": int(result.ForecastTime.Hours()),
-					}).Infof("run command success")
+					}).Infof("file is available, run command...")
+
+					if executeCommand == "" {
+						continue
+					}
+
+					err = runCommand(commandTemplate, startTime, result.ForecastTime, result.FilePath)
+					if err != nil {
+						log.WithFields(log.Fields{
+							"forecast_hour": int(result.ForecastTime.Hours()),
+						}).Fatalf("run command failed: %v", err)
+					} else {
+						log.WithFields(log.Fields{
+							"forecast_hour": int(result.ForecastTime.Hours()),
+						}).Infof("run command success")
+					}
 				}
 			}
-		}
+			done <- true
+		}()
+
+		<-done
+		log.Infof("exiting")
 	},
 }
 

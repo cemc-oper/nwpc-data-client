@@ -1,7 +1,7 @@
 package cmd
 
 import (
-	"github.com/nwpc-oper/nwpc-data-client/common"
+	"github.com/cemc-oper/nwpc-data-client/common"
 	"github.com/spf13/cobra"
 )
 
