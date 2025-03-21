@@ -130,6 +130,6 @@ Run `make test` to run all tests. [bats](https://github.com/neurodebian/bats) is
 
 ## License
 
-Copyright &copy; 2019-2023 Perilla Roc at cemc-oper.
+Copyright &copy; 2019-2025 developers at cemc-oper.
 
 `nwpc-data-client` is licensed under [The MIT License](https://opensource.org/licenses/MIT).

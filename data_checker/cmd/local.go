@@ -42,6 +42,8 @@ func init() {
 	localCmd.Flags().StringVar(&delayTimeForEachForecastTime, "delay-time", "10s",
 		"delay time for each forecast time.")
 
+	localCmd.Flags().BoolVar(&debugMode, "debug", false, "debug mode")
+
 }
 
 const localCommandName = "local"
@@ -118,6 +120,9 @@ var localCmd = &cobra.Command{
 		return nil
 	},
 	Run: func(cmd *cobra.Command, args []string) {
+		if debugMode {
+			log.SetLevel(log.DebugLevel)
+		}
 		// parse options
 		levels := strings.Split(locationLevels, ",")
 		checkDuration, err := time.ParseDuration(checkInterval)

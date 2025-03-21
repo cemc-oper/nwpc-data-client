@@ -12,6 +12,7 @@ var (
 	checkInterval                = "5s"
 	executeCommand               = ""
 	delayTimeForEachForecastTime = "0s"
+	debugMode                    = false
 
 	startTime time.Time
 )

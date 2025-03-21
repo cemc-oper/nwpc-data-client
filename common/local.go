@@ -151,9 +151,10 @@ func FindLocalFile(config DataConfig, locationLevels []string, startTime time.Ti
 
 func CheckLocalFile(filePath string) bool {
 	if _, err := os.Stat(filePath); err != nil {
+		log.Debugf("check file path failed: %s", filePath)
 		return false
 	}
-
+	log.Debugf("check file path success: %s", filePath)
 	return true
 }
 

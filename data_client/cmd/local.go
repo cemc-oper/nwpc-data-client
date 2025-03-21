@@ -32,6 +32,8 @@ func init() {
 
 	localCmd.Flags().BoolVar(&showTypes, "show-types", false,
 		"Show supported data types defined in config dir and exit.")
+
+	localCmd.Flags().BoolVar(&debugMode, "debug", false, "debug mode")
 }
 
 const localCommandName = "local"
@@ -56,6 +58,10 @@ var localCmd = &cobra.Command{
 		return nil
 	},
 	Run: func(cmd *cobra.Command, args []string) {
+		if debugMode {
+			log.Info("Running in debug mode")
+			log.SetLevel(log.DebugLevel)
+		}
 		if showTypes {
 			showDataTypes(cmd, args)
 		} else {

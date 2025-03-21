@@ -28,4 +28,6 @@ var (
 	storageUser        = ""
 	hostKeyFilePath    = fmt.Sprintf("%s/.ssh/known_hosts", home)
 	privateKeyFilePath = fmt.Sprintf("%s/.ssh/id_rsa", home)
+
+	debugMode = false
 )
