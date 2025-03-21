@@ -44,7 +44,7 @@ func generateForecastTime(forecastTime time.Duration, timeInterval string) time.
 // template function to get hour from forecast time.
 // Usage:
 //
-//	{getForecastHour .ForecastTime "%03d"}
+//	{.ForecastTime | getForecastHour | printf "%03d"}
 func getForecastHour(forecastTime time.Duration) int {
 	return int(forecastTime.Hours())
 }
@@ -52,7 +52,7 @@ func getForecastHour(forecastTime time.Duration) int {
 // template function to get minute from forecast time.
 // Usage:
 //
-//	{getForecastMinute .ForecastTime "%02d"}
+//	{.ForecastTime | getForecastMinute | printf "%02d"}
 func getForecastMinute(forecastTime time.Duration) int {
 	return int(forecastTime.Minutes()) % 60
 }
