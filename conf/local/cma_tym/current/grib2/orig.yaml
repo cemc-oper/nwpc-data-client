@@ -8,12 +8,8 @@ file_name: rmf.tcgra.{.Year}{.Month}{.Day}{.Hour}{.Forecast}.grb2
 paths:
   - type: local
     level: runtime
-    path: /g2/nwp_pd/NWP_GRAPES_TYM_POST_DATA/{.Year}{.Month}{.Day}{.Hour}/rundir/output/orig_grib2
+    path: /g2/op_post/OPER/WORKDIR/NWP_CMA_TYM_POST_DATA/{.Year}{.Month}{.Day}{.Hour}/data/output/grib2_orig
 
   - type: local
     level: archive
-    path: /g1/COMMONDATA/OPER/NWPC/GRAPES_TYM/Prod-grib/{.Year}{.Month}{.Day}{.Hour}
-
-  - type: local
-    level: archive
-    path: /g1/COMMONDATA/OPER/NWPC/GRAPES_TYM/Prod-grib/{.Year}{.Month}{.Day}{.Hour}/ORIG
+    path: /g3/COMMONDATA/OPER/CEMC/TYM/Prod-grib/{.Year}{.Month}{.Day}{.Hour}

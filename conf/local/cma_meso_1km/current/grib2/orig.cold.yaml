@@ -1,0 +1,15 @@
+# CMA-MESO 1KM
+#   grib2_orig cold
+
+default: NOTFOUND
+
+file_name: rmf.hgra.{.Year}{.Month}{.Day}{.Hour}{.Forecast}.grb2
+
+paths:
+  - type: local
+    level: runtime
+    path: /g2/op_post/OPER/WORKDIR/NWP_CMA_MESO_1KM_POST_DATA/{.Year}{.Month}{.Day}{.Hour}/data/output/grib2_orig
+
+  - type: local
+    level: archive
+    path: /g3/COMMONDATA/OPER/CEMC/MESO_1KM/Prod-grib/{.Year}{.Month}{.Day}{.Hour}/ORIG

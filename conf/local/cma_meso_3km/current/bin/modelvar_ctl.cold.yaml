@@ -1,0 +1,19 @@
+# CMA-MESO 3KM
+#   modelvar_ctl cold
+
+default: NOTFOUND
+
+file_name: modelvar.ctl_{.Year}{.Month}{.Day}{.Hour}00000
+
+paths:
+  - type: local
+    level: runtime
+    path: /g2/op_meso/OPER/WORKDIR/cma_meso_3km/cold/{.Hour}/fcst/grapes_model/run
+
+  - type: local
+    level: runtime/archive
+    path: /g2/op_meso/OPER/WORKDIR/cma_meso_3km/DATABAK/cold/{.Year}{.Month}{.Day}{.Hour}
+
+  - type: local
+    level: archive
+    path: /g3/COMMONDATA/OPER/CEMC/MESO_3KM/Fcst-main/{.Year}{.Month}{.Day}{.Hour}

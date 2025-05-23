@@ -1,0 +1,12 @@
+# CMA-MESO 1KM
+#   modelvar_ctl warm
+
+default: NOTFOUND
+
+file_names:
+  - modelvar.ctl_{.Year}{.Month}{.Day}{.Hour}00000
+
+paths:
+  - type: local
+    level: runtime
+    path: /g2/op_meso/OPER/WORKDIR/cma_meso_1km/warm/{.Hour}/fcst/grapes_model/run

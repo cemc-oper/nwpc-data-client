@@ -1,19 +1,19 @@
 # CMA-MESO 3KM
-#   postvar ctl cold
+#   postvar_ctl cold
 
 default: NOTFOUND
 
-file_name: post.ctl_{.Year}{.Month}{.Day}{.Hour}{.Forecast}00
+file_name: postvar.ctl_{.Year}{.Month}{.Day}{.Hour}00000
 
 paths:
   - type: local
     level: runtime
-    path: /g0/nwp/NWP_RMFS_DATA/cma_meso_3km/cold/{.Hour}/fcst/grapes_model/run
+    path: /g2/op_meso/NWP_RMFS_DATA/cma_meso_3km/cold/{.Hour}/fcst/grapes_model/run
 
   - type: local
     level: runtime/archive
-    path: /g0/nwp/NWP_RMFS_DATA/cma_meso_3km/DATABAK/cold/{.Year}{.Month}{.Day}{.Hour}
+    path: /g2/op_meso/NWP_RMFS_DATA/cma_meso_3km/DATABAK/cold/{.Year}{.Month}{.Day}{.Hour}
 
   - type: local
     level: archive
-    path: /g1/COMMONDATA/OPER/NWPC/GRAPES_MESO_3KM/Fcst-main/{.Year}{.Month}{.Day}{.Hour}
+    path: /g3/COMMONDATA/OPER/CEMC/MESO_3KM/Fcst-main/{.Year}{.Month}{.Day}{.Hour}

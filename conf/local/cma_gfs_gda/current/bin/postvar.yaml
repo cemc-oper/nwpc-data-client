@@ -8,8 +8,8 @@ file_name: postvar{generateStartTime .StartTime -3 | getYear}{generateStartTime 
 paths:
   - type: local
     level: runtime
-    path: /g0/nwp/CMA-GFS4.0_DATA/MODEL/data/NWP_GDAS/{.Hour}/output
+    path: /g2/op_gfs/CMA-GFS/CMA-GFS4.2_DATA/MODEL/GRAPES_EN4DVAR/{.Hour}/output
 
   - type: local
     level: archive
-    path: /g1/COMMONDATA/OPER/NWPC/GRAPES_GFS_GDA/Fcst-9h/{.Year}{.Month}{.Day}{.Hour}
+    path:  /g3/COMMONDATA/OPER/CEMC/GFS_GDA/GRAPES_EN4DVAR/Fcst-9h/{.Year}{.Month}{.Day}{.Hour}
