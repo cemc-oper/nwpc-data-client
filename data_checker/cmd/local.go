@@ -8,6 +8,7 @@ import (
 	"github.com/cemc-oper/nwpc-data-client/common"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
+	"io"
 	"os"
 	"os/signal"
 	"strings"
@@ -54,56 +55,6 @@ Check local data path using config files in config dir.
 Args:
     start_time: YYYYMMDDHH, such as 2018080100`
 
-//WARNING: duplicate
-
-// template function to generate start time. should be used with getYear, getMonth, getDay, getHour functions.
-// Usage:
-//
-//	{generateStartTime .StartTime -3 | getYear}
-func generateStartTime(startTime time.Time, hour int) time.Time {
-	newStartTime := startTime.Add(time.Hour * time.Duration(hour))
-	return newStartTime
-}
-
-func getYear(startTime time.Time) string {
-	return startTime.Format("2006")
-}
-
-func getMonth(startTime time.Time) string {
-	return startTime.Format("01")
-}
-
-func getDay(startTime time.Time) string {
-	return startTime.Format("02")
-}
-
-func getHour(startTime time.Time) string {
-	return startTime.Format("15")
-}
-
-// template function to generate forecast time. should be used with getForecastHour, getForecastMinute functions.
-func generateForecastTime(forecastTime time.Duration, timeInterval string) time.Duration {
-	t, _ := time.ParseDuration(timeInterval)
-	newForecastTime := forecastTime + t
-	return newForecastTime
-}
-
-// template function to get hour from forecast time.
-// Usage:
-//
-//	{.ForecastTime | getForecastHour | printf "%03d"}
-func getForecastHour(forecastTime time.Duration) int {
-	return int(forecastTime.Hours())
-}
-
-// template function to get minute from forecast time.
-// Usage:
-//
-//	{.ForecastTime | getForecastMinute | printf "%02d"}
-func getForecastMinute(forecastTime time.Duration) int {
-	return int(forecastTime.Minutes()) % 60
-}
-
 var localCmd = &cobra.Command{
 	Use:   localCommandName,
 	Short: "Check local data.",
@@ -120,34 +71,44 @@ var localCmd = &cobra.Command{
 		return nil
 	},
 	Run: func(cmd *cobra.Command, args []string) {
+		// parse options
+
+		// debug
 		if debugMode {
 			log.SetLevel(log.DebugLevel)
 		}
-		// parse options
+
+		// location levels
 		levels := strings.Split(locationLevels, ",")
+
+		// check duration
 		checkDuration, err := time.ParseDuration(checkInterval)
 		if err != nil {
 			log.Fatalf("parse check-interval failed: %v", err)
 		}
+
+		// execute command
 		var commandTemplate *template.Template = nil
 		if executeCommand != "" {
 			commandTemplate = template.Must(template.New("command").Funcs(template.FuncMap{
-				"generateStartTime":    generateStartTime,
-				"getYear":              getYear,
-				"getMonth":             getMonth,
-				"getDay":               getDay,
-				"getHour":              getHour,
-				"generateForecastTime": generateForecastTime,
-				"getForecastHour":      getForecastHour,
-				"getForecastMinute":    getForecastMinute,
+				"generateStartTime":    common.GenerateStartTime,
+				"getYear":              common.GetYear,
+				"getMonth":             common.GetMonth,
+				"getDay":               common.GetDay,
+				"getHour":              common.GetHour,
+				"generateForecastTime": common.GenerateForecastTime,
+				"getForecastHour":      common.GetForecastHour,
+				"getForecastMinute":    common.GetForecastMinute,
 			}).Delims("{", "}").Parse(executeCommand))
 		}
+
+		// delay time
 		delayTime, err := time.ParseDuration(delayTimeForEachForecastTime)
 		if err != nil {
-			log.Fatal("parse delay-time failed: %v", err)
+			log.Fatalf("parse delay-time failed: %v", err)
 		}
 
-		// load config
+		// data config dir, data type
 		if len(configDir) == 0 {
 			dataType = localCommandName + "/" + dataType
 		}
@@ -158,68 +119,82 @@ var localCmd = &cobra.Command{
 		}
 		fmt.Printf("%v\n", config)
 
-		ch := make(chan CheckResult)
+		checkDataFile(
+			config,
+			levels,
+			checkDuration,
+			commandTemplate,
+			delayTime)
 
-		forecastTimeList := parseInput()
-		for index, oneTime := range forecastTimeList {
-			go func(currentIndex int, forecastTime time.Duration) {
-				sleepTime := delayTime * time.Duration(currentIndex)
+		log.Infof("exiting")
+	},
+}
+
+func checkDataFile(
+	config common.DataConfig,
+	levels []string,
+	checkDuration time.Duration,
+	commandTemplate *template.Template,
+	delayTime time.Duration) {
+	ch := make(chan CheckResult)
+
+	forecastTimeList := parseForecastTimeInput(os.Stdin)
+	for index, oneTime := range forecastTimeList {
+		go func(currentIndex int, forecastTime time.Duration) {
+			sleepTime := delayTime * time.Duration(currentIndex)
+			forecastTimeString := common.FormatForecastTimeShort(forecastTime)
+			log.WithFields(log.Fields{"forecast_time": forecastTimeString}).
+				Infof("sleeping before check...%v", sleepTime)
+			time.Sleep(sleepTime)
+			log.WithFields(log.Fields{"forecast_time": forecastTimeString}).
+				Infof("checking begin...")
+			checkForOneTime(ch, config, levels, forecastTime, checkDuration)
+		}(index, oneTime)
+	}
+
+	done := make(chan bool, 1)
+
+	sigs := make(chan os.Signal, 1)
+	signal.Notify(sigs, syscall.SIGHUP, syscall.SIGINT, syscall.SIGTERM, syscall.SIGQUIT)
+
+	go func() {
+		sig := <-sigs
+		log.Infof("catching signal: %v\n", sig)
+		os.Exit(3)
+	}()
+
+	go func() {
+		for _ = range forecastTimeList {
+			result := <-ch
+			if result.Error != nil {
 				log.WithFields(log.Fields{
-					"forecast_time": fmt.Sprintf("%03dh%02dm", int(forecastTime.Hours()), int(forecastTime.Minutes())),
-				}).Infof("sleeping before check...%v", sleepTime)
-				time.Sleep(sleepTime)
+					"forecast_time": fmt.Sprintf("%03dh%02dm", int(result.ForecastTime.Hours()), int(result.ForecastTime.Hours())),
+				}).Fatalf("check failed: %v", result.Error)
+			} else {
 				log.WithFields(log.Fields{
-					"forecast_time": fmt.Sprintf("%03dh%02dm", int(forecastTime.Hours()), int(forecastTime.Minutes())),
-				}).Infof("checking begin...")
-				checkForOneTime(ch, config, levels, forecastTime, checkDuration)
-			}(index, oneTime)
-		}
+					"forecast_time": fmt.Sprintf("%03dh%02dm", int(result.ForecastTime.Hours()), int(result.ForecastTime.Hours())),
+				}).Infof("file is available, run command...")
 
-		done := make(chan bool, 1)
+				if executeCommand == "" {
+					continue
+				}
 
-		sigs := make(chan os.Signal, 1)
-		signal.Notify(sigs, syscall.SIGHUP, syscall.SIGINT, syscall.SIGTERM, syscall.SIGQUIT)
-
-		go func() {
-			sig := <-sigs
-			log.Infof("catching signal: %v\n", sig)
-			os.Exit(3)
-		}()
-
-		go func() {
-			for _ = range forecastTimeList {
-				result := <-ch
-				if result.Error != nil {
+				err := runCommand(commandTemplate, startTime, result.ForecastTime, result.FilePath)
+				if err != nil {
 					log.WithFields(log.Fields{
 						"forecast_time": fmt.Sprintf("%03dh%02dm", int(result.ForecastTime.Hours()), int(result.ForecastTime.Hours())),
-					}).Fatalf("check failed: %v", result.Error)
+					}).Fatalf("run command failed: %v", err)
 				} else {
 					log.WithFields(log.Fields{
 						"forecast_time": fmt.Sprintf("%03dh%02dm", int(result.ForecastTime.Hours()), int(result.ForecastTime.Hours())),
-					}).Infof("file is available, run command...")
-
-					if executeCommand == "" {
-						continue
-					}
-
-					err = runCommand(commandTemplate, startTime, result.ForecastTime, result.FilePath)
-					if err != nil {
-						log.WithFields(log.Fields{
-							"forecast_time": fmt.Sprintf("%03dh%02dm", int(result.ForecastTime.Hours()), int(result.ForecastTime.Hours())),
-						}).Fatalf("run command failed: %v", err)
-					} else {
-						log.WithFields(log.Fields{
-							"forecast_time": fmt.Sprintf("%03dh%02dm", int(result.ForecastTime.Hours()), int(result.ForecastTime.Hours())),
-						}).Infof("run command success")
-					}
+					}).Infof("run command success")
 				}
 			}
-			done <- true
-		}()
+		}
+		done <- true
+	}()
 
-		<-done
-		log.Infof("exiting")
-	},
+	<-done
 }
 
 type CheckResult struct {
@@ -238,37 +213,28 @@ func checkForOneTime(
 	roundNumber := 0
 	filePath := config.Default
 
+	forecastTimeString := common.FormatForecastTimeShort(forecastTime)
+
+	currentLog := log.WithFields(log.Fields{"forecast_time": forecastTimeString})
+
 	for roundNumber < maxCheckCount {
-		log.WithFields(log.Fields{
-			"forecast_time": fmt.Sprintf("%03dh%02dm", int(forecastTime.Hours()), int(forecastTime.Minutes())),
-		}).Infof("checking... %d/%d", roundNumber, maxCheckCount)
+		currentLog.Infof("checking... %d/%d", roundNumber, maxCheckCount)
 		filePath = findLocalFile(config, levels, forecastTime)
 		if filePath == config.Default {
-			log.WithFields(log.Fields{
-				"forecast_time": fmt.Sprintf("%03dh%02dm", int(forecastTime.Hours()), int(forecastTime.Minutes())),
-			}).Infof("checking...not found")
+			currentLog.Infof("checking exist...not found")
 		} else {
-			log.WithFields(log.Fields{
-				"forecast_time": fmt.Sprintf("%03dh%02dm", int(forecastTime.Hours()), int(forecastTime.Minutes())),
-			}).Infof("checking...success: %s", filePath)
-
-			log.WithFields(log.Fields{
-				"forecast_time": fmt.Sprintf("%03dh%02dm", int(forecastTime.Hours()), int(forecastTime.Minutes())),
-			}).Infof("checking size... %d/%d", roundNumber, maxCheckCount)
+			currentLog.Infof("checking exist...success: %s", filePath)
+			currentLog.Infof("checking size... %d/%d", roundNumber, maxCheckCount)
 
 			var lastSize int64 = -1
 			for roundNumber < maxCheckCount {
 				currentSize, _ := getFileSize(filePath)
 				if currentSize == lastSize {
-					log.WithFields(log.Fields{
-						"forecast_time": fmt.Sprintf("%03dh%02dm", int(forecastTime.Hours()), int(forecastTime.Minutes())),
-					}).Infof("checking size...success %d/%d", roundNumber, maxCheckCount)
+					currentLog.Infof("checking size...success %d/%d", roundNumber, maxCheckCount)
 					foundData = true
 					break
 				} else {
-					log.WithFields(log.Fields{
-						"forecast_time": fmt.Sprintf("%03dh%02dm", int(forecastTime.Hours()), int(forecastTime.Minutes())),
-					}).Infof("checking size...changed %d/%d", roundNumber, maxCheckCount)
+					currentLog.Infof("checking size...changed %d/%d", roundNumber, maxCheckCount)
 					time.Sleep(checkDuration)
 					lastSize = currentSize
 				}
@@ -292,8 +258,12 @@ func checkForOneTime(
 	ch <- result
 }
 
-func parseInput() []time.Duration {
-	scanner := bufio.NewScanner(os.Stdin)
+// parse input string to a forecast time list.
+// input string is a list of forecast time, each line or each token is a forecast time,
+// the format is "000h00m" or "000h", such as "000h 000h10m 001h00m 001h10m"
+// return a list of forecast time.
+func parseForecastTimeInput(r io.Reader) []time.Duration {
+	scanner := bufio.NewScanner(r)
 	scanner.Split(bufio.ScanWords)
 	startTimeString := startTime.Format("2006010215")
 	var forecastTimeList []time.Duration
@@ -301,11 +271,12 @@ func parseInput() []time.Duration {
 		forecastTimeString := scanner.Text()
 		forecastTime, err := time.ParseDuration(forecastTimeString)
 		if err != nil {
-			log.Fatalf("parse input has error:%v", err)
+			log.Fatalf("parse input has error: %v", err)
 		}
 		forecastTimeList = append(forecastTimeList, forecastTime)
-		log.Infof("got check task for %s + %03dh%03dm",
-			startTimeString, int(forecastTime.Hours()), int(forecastTime.Minutes()))
+
+		forecastTimeStringForLog := common.FormatForecastTimeShort(forecastTime)
+		log.Infof("got check task for %s + %s", startTimeString, forecastTimeStringForLog)
 	}
 	err := scanner.Err()
 	if err != nil {
@@ -343,9 +314,12 @@ func runCommand(commandTemplate *template.Template, startTime time.Time, forecas
 	if err != nil {
 		return fmt.Errorf("command template execute has error: %v", err)
 	}
+
 	commandString := commandBuilder.String()
+
+	forecastTimeString := common.FormatForecastTimeShort(forecastTime)
 	log.WithFields(log.Fields{
-		"forecast_time": forecastTime.Hours(),
+		"forecast_time": forecastTimeString,
 	}).Infof("running command <%s> ...", commandString)
 
 	c := cmd.NewCommand(
