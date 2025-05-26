@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"bufio"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"github.com/SimonBaeumer/cmd"
@@ -117,7 +118,8 @@ var localCmd = &cobra.Command{
 			log.Fatalf("load config failed: %v\n", err)
 			return
 		}
-		fmt.Printf("%v\n", config)
+		b, _ := json.MarshalIndent(config, "", "  ")
+		fmt.Println(string(b))
 
 		checkDataFile(
 			config,
