@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"github.com/cemc-oper/nwpc-data-client/common/config"
 	"gopkg.in/yaml.v2"
-	"io/ioutil"
 	"os"
 	"path/filepath"
 )
@@ -37,7 +36,7 @@ func loadLocalConfig(configDir string, dataType string) (DataConfig, error) {
 		return dataConfig, fmt.Errorf("model data type config is not found: %v", err)
 	}
 
-	data, err := ioutil.ReadFile(configFilePath)
+	data, err := os.ReadFile(configFilePath)
 	if err != nil {
 		return dataConfig, err
 	}
