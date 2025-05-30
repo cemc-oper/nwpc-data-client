@@ -9,54 +9,6 @@ import (
 	"time"
 )
 
-// template function to generate start time. should be used with getYear, getMonth, getDay, getHour functions.
-// Usage:
-//
-//	{generateStartTime .StartTime -3 | getYear}
-func generateStartTime(startTime time.Time, hour int) time.Time {
-	newStartTime := startTime.Add(time.Hour * time.Duration(hour))
-	return newStartTime
-}
-
-func getYear(startTime time.Time) string {
-	return startTime.Format("2006")
-}
-
-func getMonth(startTime time.Time) string {
-	return startTime.Format("01")
-}
-
-func getDay(startTime time.Time) string {
-	return startTime.Format("02")
-}
-
-func getHour(startTime time.Time) string {
-	return startTime.Format("15")
-}
-
-// template function to generate forecast time. should be used with getForecastHour, getForecastMinute functions.
-func generateForecastTime(forecastTime time.Duration, timeInterval string) time.Duration {
-	t, _ := time.ParseDuration(timeInterval)
-	newForecastTime := forecastTime + t
-	return newForecastTime
-}
-
-// template function to get hour from forecast time.
-// Usage:
-//
-//	{.ForecastTime | getForecastHour | printf "%03d"}
-func getForecastHour(forecastTime time.Duration) int {
-	return int(forecastTime.Hours())
-}
-
-// template function to get minute from forecast time.
-// Usage:
-//
-//	{.ForecastTime | getForecastMinute | printf "%02d"}
-func getForecastMinute(forecastTime time.Duration) int {
-	return int(forecastTime.Minutes()) % 60
-}
-
 func FindLocalFile(config DataConfig, locationLevels []string, startTime time.Time, forecastTime time.Duration) PathItem {
 	tpVar := GenerateTimeTemplateVariable(startTime, forecastTime)
 
@@ -65,14 +17,14 @@ func FindLocalFile(config DataConfig, locationLevels []string, startTime time.Ti
 	if len(config.FileNames) > 0 {
 		for _, item := range config.FileNames {
 			fileNameTemplate := template.Must(template.New("fileName").Funcs(template.FuncMap{
-				"generateStartTime":    generateStartTime,
-				"getYear":              getYear,
-				"getMonth":             getMonth,
-				"getDay":               getDay,
-				"getHour":              getHour,
-				"generateForecastTime": generateForecastTime,
-				"getForecastHour":      getForecastHour,
-				"getForecastMinute":    getForecastMinute,
+				"generateStartTime":    GenerateStartTime,
+				"getYear":              GetYear,
+				"getMonth":             GetMonth,
+				"getDay":               GetDay,
+				"getHour":              GetHour,
+				"generateForecastTime": GenerateForecastTime,
+				"getForecastHour":      GetForecastHour,
+				"getForecastMinute":    GetForecastMinute,
 			}).Delims("{", "}").Parse(item))
 			var fileNameBuilder strings.Builder
 			err := fileNameTemplate.Execute(&fileNameBuilder, tpVar)
@@ -90,14 +42,14 @@ func FindLocalFile(config DataConfig, locationLevels []string, startTime time.Ti
 
 	if len(config.FileName) > 0 {
 		fileNameTemplate := template.Must(template.New("fileName").Funcs(template.FuncMap{
-			"generateStartTime":    generateStartTime,
-			"getYear":              getYear,
-			"getMonth":             getMonth,
-			"getDay":               getDay,
-			"getHour":              getHour,
-			"generateForecastTime": generateForecastTime,
-			"getForecastHour":      getForecastHour,
-			"getForecastMinute":    getForecastMinute,
+			"generateStartTime":    GenerateStartTime,
+			"getYear":              GetYear,
+			"getMonth":             GetMonth,
+			"getDay":               GetDay,
+			"getHour":              GetHour,
+			"generateForecastTime": GenerateForecastTime,
+			"getForecastHour":      GetForecastHour,
+			"getForecastMinute":    GetForecastMinute,
 		}).Delims("{", "}").Parse(config.FileName))
 		var fileNameBuilder strings.Builder
 		err := fileNameTemplate.Execute(&fileNameBuilder, tpVar)
