@@ -8,10 +8,6 @@ file_name: model.ctl_{.Year}{.Month}{.Day}{.Hour}{.Forecast}00
 paths:
   - type: local
     level: runtime
-    path: /g2/op_meso/OPER/WORKDIR/NWP_CMA_TYM_DATA/grapes_d01/run
-
-  - type: local
-    level: runtime_archive
     path: /g2/op_meso/OPER/WORKDIR/NWP_CMA_TYM_DATA/grapes_d01/dat
 
   # - type: local

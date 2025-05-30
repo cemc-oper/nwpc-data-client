@@ -14,4 +14,4 @@ paths:
   # archive dir
   - type: local
     level: archive
-    path: /g3/COMMONDATA/OPER/CEMC/GFS/Prod-grib/{.Year}{.Month}{.Day}{.Hour}/MODELVAR
+    path: /g3/COMMONDATA/OPER/CEMC/GFS_GMF/Prod-grib/{.Year}{.Month}{.Day}{.Hour}/MODELVAR

@@ -1,0 +1,18 @@
+# cma-gfs
+#   postvar
+#   version >= v0.8.0
+
+
+default: NOTFOUND
+
+file_names:
+  - postvar{.Year}{.Month}{.Day}{.Hour}_{.Forecast}
+
+paths:
+  - type: local
+    level: runtime
+    path: /g2/op_gfs/CMA-GFS/CMA-GFS4.2_DATA/MODEL/GRAPES_GMFS/{.Hour}/output
+
+  - type: local
+    level: archive
+    path:  /g3/COMMONDATA/OPER/CEMC/GFS_GMF/Fcst-long/{.Year}{.Month}{.Day}{.Hour}

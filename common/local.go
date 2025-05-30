@@ -15,6 +15,7 @@ func FindLocalFile(config DataConfig, locationLevels []string, startTime time.Ti
 	var fileNames []string
 
 	if len(config.FileNames) > 0 {
+		log.Debugf("using file_names...\n")
 		for _, item := range config.FileNames {
 			fileNameTemplate := template.Must(template.New("fileName").Funcs(template.FuncMap{
 				"generateStartTime":    GenerateStartTime,
@@ -37,10 +38,12 @@ func FindLocalFile(config DataConfig, locationLevels []string, startTime time.Ti
 			}
 			fileName := fileNameBuilder.String()
 			fileNames = append(fileNames, fileName)
+			log.Debugf("find file name %s\n", fileName)
 		}
 	}
 
 	if len(config.FileName) > 0 {
+		log.Debugf("using file_name...\n")
 		fileNameTemplate := template.Must(template.New("fileName").Funcs(template.FuncMap{
 			"generateStartTime":    GenerateStartTime,
 			"getYear":              GetYear,
@@ -62,6 +65,7 @@ func FindLocalFile(config DataConfig, locationLevels []string, startTime time.Ti
 		}
 		fileName := fileNameBuilder.String()
 		fileNames = append(fileNames, fileName)
+		log.Debugf("find file name %s\n", fileName)
 	}
 
 	for _, item := range config.Paths {
@@ -70,6 +74,7 @@ func FindLocalFile(config DataConfig, locationLevels []string, startTime time.Ti
 		locationLevelType := item.LevelType
 
 		if !inLocationLevelTypes(locationLevels, locationLevelType) {
+			log.Debugf("skip location level type %s\n", locationLevelType)
 			continue
 		}
 

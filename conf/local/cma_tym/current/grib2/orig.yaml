@@ -12,4 +12,4 @@ paths:
 
   - type: local
     level: archive
-    path: /g3/COMMONDATA/OPER/CEMC/TYM/Prod-grib/{.Year}{.Month}{.Day}{.Hour}
+    path: /g3/COMMONDATA/OPER/CEMC/TYM/Prod-grib/{.Year}{.Month}{.Day}{.Hour}/ORIG

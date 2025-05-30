@@ -3,7 +3,7 @@
 
 default: NOTFOUND
 
-file_name: postvar{generateStartTime .StartTime -3 | getYear}{generateStartTime .StartTime -3 | getMonth}{generateStartTime .StartTime -3 | getDay}{generateStartTime .StartTime -3 | getHour}_{.Forecast}
+file_name: "postvar{generateStartTime .StartTime -3 | getYear}{generateStartTime .StartTime -3 | getMonth}{generateStartTime .StartTime -3 | getDay}{generateStartTime .StartTime -3 | getHour}_{generateForecastTime .ForecastTime \"3h\" | getForecastHour | printf \"%03d\"}"
 
 paths:
   - type: local

@@ -10,7 +10,7 @@ file_names:
 
 paths:
   - type: local
-    level: archive
+    level: runtime
     path: /g2/op_gfs/CMA-GFS/CMA-GFS4.2_DATA/MODEL/GRAPES_GMFS/{.Hour}/output
 
   - type: local
