@@ -1,0 +1,72 @@
+#!/usr/bin/env bats
+
+check_date=$(date -d "-1 day" +%Y%m%d)
+
+hour=00
+check_date_time=${check_date}${hour}
+
+setup() {
+  load '../../../tool/bats-support/load'
+  load '../../../tool/bats-assert/load'
+}
+
+# grib2 orig
+@test "test cma_meso_3km/current/grib2/orig.cold runtime" {
+  expected_result="/g2/op_post/OPER/WORKDIR/NWP_CMA_MESO_3KM_POST_DATA/${check_date_time}/data/output/grib2_orig/rmf.hgra.${check_date_time}003.grb2"
+  if [ ! -f "${expected_result}" ]; then
+    skip "data is not available: ${expected_result}"
+  fi
+  run "${NWPC_DATA_CLIENT_PROGRAM}" local \
+    --location-level=runtime \
+    --data-type=cma_meso_3km/current/grib2/orig.cold \
+    --start-time "${check_date_time}" \
+    --forecast-time 3h
+  assert_output ${expected_result}
+}
+
+@test "test cma_meso_3km/current/grib2/orig.cold archive" {
+  expected_result="/g3/COMMONDATA/OPER/CEMC/MESO_3KM/Prod-grib/${check_date_time}/ORIG/rmf.hgra.${check_date_time}003.grb2"
+  if [ ! -f "${expected_result}" ]; then
+    skip "data is not available: ${expected_result}"
+  fi
+  run "${NWPC_DATA_CLIENT_PROGRAM}" local \
+      --location-level=archive \
+      --data-type=cma_meso_3km/current/grib2/orig.cold \
+      --start-time "${check_date_time}" \
+      --forecast-time 3h
+  assert_output ${expected_result}
+}
+
+# grib2 orig with config
+config="--config-dir=${NWPC_DATA_CLIENT_CONFIG_DIR}/local"
+
+@test "test cma_meso_3km/current/grib2/orig.cold runtime with config" {
+  expected_result="/g2/op_post/OPER/WORKDIR/NWP_CMA_MESO_3KM_POST_DATA/${check_date_time}/data/output/grib2_orig/rmf.hgra.${check_date_time}003.grb2"
+  if [ ! -f "${expected_result}" ]; then
+    skip "data is not available: ${expected_result}"
+  fi
+  run "${NWPC_DATA_CLIENT_PROGRAM}" local \
+    --location-level=runtime \
+    "${config}" \
+    --data-type=cma_meso_3km/current/grib2/orig.cold \
+    --start-time "${check_date_time}" \
+    --forecast-time 3h
+  assert_output ${expected_result}
+}
+
+@test "test cma_meso_3km/current/grib2/orig.cold archive with config" {
+  expected_result="/g3/COMMONDATA/OPER/CEMC/MESO_3KM/Prod-grib/${check_date_time}/ORIG/rmf.hgra.${check_date_time}003.grb2"
+  if [ ! -f "${expected_result}" ]; then
+    skip "data is not available: ${expected_result}"
+  fi
+  run "${NWPC_DATA_CLIENT_PROGRAM}" local \
+      --location-level=archive \
+      "${config}" \
+      --data-type=cma_meso_3km/current/grib2/orig.cold \
+      --start-time "${check_date_time}" \
+      --forecast-time 3h
+  assert_output ${expected_result}
+}
+
+
+
