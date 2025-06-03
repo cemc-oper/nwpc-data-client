@@ -1,19 +1,18 @@
 # NWPC Data Client
 
-A CLI client for operation system files in CEMC/CMA.
+A data finder CLI tool for operational systems in CEMC/CMA.
 
 ## Features
 
-- Find file path for operation system data in CMA HPC.
-- :construction: Find file path in external storage nodes from CMA HPC.
-- :construction: Download data file through a data service.
+- Find file paths for operational system data in CMA HPC.
+- :thumbsdown: Find file paths in external storage nodes from CMA HPC.
+- :thumbsdown: Download data file through a data service.
 
 ## Installing
 
 Download the latest release and build source code. 
 
-Use `Makefile` to build project on Linux and 
-`nwpc_data_client` command will be installed in `bin` directory.
+Use `Makefile` to build the project on Linux and `nwpc_data_client` command will be installed in `bin` directory.
 
 ## Getting Started
 
@@ -31,19 +30,22 @@ nwpc_data_client local --data-type some/data/type \
 
 `data-type` is some relative path under config directory. Such as
 
-- `grapes_gfs_gda/grib2/modelvar`
-- `gmf_graeps_gfs/bin/modelvar`
+- `cma_gfs_gmf/current/grib2/modelvar`
+- `cma_gfs_gmf/current/bin/modelvar`
 
-`start_time` is `YYYYMMDDHH` and `forecast_time` is `FFFh`.
+`start-time` is `YYYYMMDDHH` and `forecast-time` is `FFFh`.
 
-For example, use the command below to find GMF GRAPES GFS GRIB2 data of 24 forecast hour in start hour 00 on 2018/09/03.
+For example, use the command below to find CMA-GFS GMF GRIB2 data of 24 forecast hour in start hour 00 on 2018/09/03.
 
 ```
-$nwpc_data_client local --data-type=grapes_gfs_gmf/grib2/orig --start-time 2018090300 --forecast-time 24h
-/g2/nwp_pd/NWP_PST_DATA/GMF_GRAPES_GFS_V2.2_POST/togrib2/output_togrib2/2018090300/gmf.gra.2018090300024.grb2
+$nwpc_data_client local \
+    --data-type=cma_gfs_gmf/current/grib2/orig \
+    --start-time 2025052900 \
+    --forecast-time 000h
+/g2/op_post/OPER/WORKDIR/NWP_CMA_GFS_GMF_POST_DATA/2025052900/data/output/grib2_orig/gmf.gra.2025052900000.grb2
 ```
 
-To list all data types available in some configure directory, run following command
+To list all data types available in some configured directory, run the following command
 
 ```bash
 nwpc_data_client local --show-types
@@ -52,20 +54,42 @@ nwpc_data_client local --show-types
 Results may be like:
 
 ```text
-grapes_gfs_gda/bin/modelvar
-grapes_gfs_gda/bin/postvar
-grapes_gfs_gda/grib2/modelvar
-grapes_gfs_gda/grib2/orig
-grapes_gfs_gmf/bin/modelvar
-grapes_gfs_gmf/bin/postvar
-grapes_gfs_gmf/grib2/modelvar
-grapes_gfs_gmf/grib2/ne
-grapes_gfs_gmf/grib2/orig
+cma_gfs_gda/current/bin/modelvar
+cma_gfs_gda/current/bin/postvar
+cma_gfs_gda/current/grib2/modelvar
+cma_gfs_gda/current/grib2/orig
+cma_gfs_gmf/current/bin/modelvar
+cma_gfs_gmf/current/grib2/modelvar
+cma_gfs_gmf/current/grib2/ne
+cma_gfs_gmf/current/grib2/orig
+cma_meso_1km/current/bin/modelvar.cold
+cma_meso_1km/current/bin/modelvar
+cma_meso_1km/current/bin/modelvar_ctl.cold
+cma_meso_1km/current/bin/modelvar_ctl
+cma_meso_1km/current/grib2/orig.cold
+cma_meso_1km/current/grib2/orig
+cma_meso_3km/current/bin/modelvar.cold
+cma_meso_3km/current/bin/modelvar
+cma_meso_3km/current/bin/modelvar_ctl.cold
+cma_meso_3km/current/bin/modelvar_ctl
+cma_meso_3km/current/bin/postvar.cold
+cma_meso_3km/current/bin/postvar
+cma_meso_3km/current/bin/postvar_ctl.cold
+cma_meso_3km/current/bin/postvar_ctl
+cma_meso_3km/current/grib2/orig.cold
+cma_meso_3km/current/grib2/orig
+cma_tym/current/bin/modelvar
+cma_tym/current/bin/modelvar_ctl
+cma_tym/current/bin/postvar
+cma_tym/current/bin/postvar_ctl
+cma_tym/current/grib2/orig
 ```
 
 Use `--config-dir` to set a custom config file directory.
 
 ### hpc
+
+> :warning: This command is not supported yet.
 
 `nwpc_data_client hpc` command find files on HPC-PI or external storage nodes from HPC-PI. 
 
@@ -121,6 +145,8 @@ paths:
 ```
 
 ## NWPC Data Service
+
+> :warning: This command is not supported yet.
 
 See [README.md](./data_service/README.md) under data_service.
 
