@@ -23,4 +23,4 @@ generate:
 	cd common/config/generate && go generate
 
 test:
-	./run_bats.sh
+	cd tests/bats && ./run_bats.sh
