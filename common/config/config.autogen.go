@@ -201,7 +201,10 @@ paths:
 
 default: NOTFOUND
 
-file_name: "modelvar{generateStartTime .StartTime -3 | getYear}{generateStartTime .StartTime -3 | getMonth}{generateStartTime .StartTime -3 | getDay}{generateStartTime .StartTime -3 | getHour}_{generateForecastTime .ForecastTime \"3h\" | getForecastHour | printf \"%03d\"}"
+{ $gdaStartTime := generateStartTime .StartTime -3 }
+{ $gdaForecastTime := generateForecastTime .ForecastTime "3h" }
+
+file_name: "modelvar{ getYear $gdaStartTime }{getMonth $gdaStartTime }{ getDay $gdaStartTime }{ getHour $gdaStartTime}_{ getForecastHour $gdaForecastTime | printf "%03d"}"
 
 paths:
   - type: local
@@ -216,7 +219,10 @@ paths:
 
 default: NOTFOUND
 
-file_name: "postvar{generateStartTime .StartTime -3 | getYear}{generateStartTime .StartTime -3 | getMonth}{generateStartTime .StartTime -3 | getDay}{generateStartTime .StartTime -3 | getHour}_{generateForecastTime .ForecastTime \"3h\" | getForecastHour | printf \"%03d\"}"
+{ $gdaStartTime := generateStartTime .StartTime -3 }
+{ $gdaForecastTime := generateForecastTime .ForecastTime "3h" }
+
+file_name: "postvar{ getYear $gdaStartTime}{ getMonth $gdaStartTime }{ getDay $gdaStartTime }{ getHour $gdaStartTime}_{ getForecastHour $gdaForecastTime | printf "%03d"}"
 
 paths:
   - type: local
@@ -232,7 +238,7 @@ paths:
 
 default: NOTFOUND
 
-file_name: modelvar{.Year}{.Month}{.Day}{.Hour}{.Forecast}.grb2
+file_name: modelvar{.Year}{.Month}{.Day}{.Hour}{.ForecastHour}.grb2
 
 paths:
   - type: local
@@ -247,7 +253,7 @@ paths:
 
 default: NOTFOUND
 
-file_name: gda.gra.{.Year}{.Month}{.Day}{.Hour}{.Forecast}.grb2
+file_name: gda.gra.{.Year}{.Month}{.Day}{.Hour}{.ForecastHour}.grb2
 
 paths:
   - type: local
@@ -265,7 +271,7 @@ paths:
 default: NOTFOUND
 
 file_names:
-  - modelvar{.Year}{.Month}{.Day}{.Hour}_{.Forecast}
+  - modelvar{.Year}{.Month}{.Day}{.Hour}_{.ForecastHour}
   # - modelvar{generateStartTime .StartTime -3 | getYear}{generateStartTime .StartTime -3 | getMonth}{generateStartTime .StartTime -3 | getDay}{generateStartTime .StartTime -3 | getHour}_{generateForecastTime .ForecastTime "3h" | getForecastHour | printf "%03d"}
 
 paths:
@@ -284,7 +290,7 @@ paths:
 default: NOTFOUND
 
 file_names:
-  - postvar{.Year}{.Month}{.Day}{.Hour}_{.Forecast}
+  - postvar{.Year}{.Month}{.Day}{.Hour}_{.ForecastHour}
 
 paths:
   - type: local
@@ -299,7 +305,7 @@ paths:
 
 default: NOTFOUND
 
-file_name: modelvar{.Year}{.Month}{.Day}{.Hour}{.Forecast}.grb2
+file_name: modelvar{.Year}{.Month}{.Day}{.Hour}{.ForecastHour}.grb2
 
 paths:
   # run time dir
@@ -316,7 +322,7 @@ paths:
 
 default: NOTFOUND
 
-file_name: ne_gmf.gra.{.Year}{.Month}{.Day}{.Hour}{.Forecast}.grb2
+file_name: ne_gmf.gra.{.Year}{.Month}{.Day}{.Hour}{.ForecastHour}.grb2
 
 paths:
   - type: local
@@ -331,7 +337,7 @@ paths:
 
 default: NOTFOUND
 
-file_name: gmf.gra.{.Year}{.Month}{.Day}{.Hour}{.Forecast}.grb2
+file_name: gmf.gra.{.Year}{.Month}{.Day}{.Hour}{.ForecastHour}.grb2
 
 paths:
   - type: local
@@ -347,7 +353,7 @@ paths:
 default: NOTFOUND
 
 file_names:
-  - modelvar{.Year}{.Month}{.Day}{.Hour}{.Forecast}00
+  - modelvar{.Year}{.Month}{.Day}{.Hour}{.ForecastHour}{.ForecastMinute}
 
 paths:
   - type: local
@@ -359,7 +365,7 @@ paths:
 default: NOTFOUND
 
 file_names:
-  - modelvar{.Year}{.Month}{.Day}{.Hour}{.Forecast}00
+  - modelvar{.Year}{.Month}{.Day}{.Hour}{.ForecastHour}{.ForecastMinute}
 
 paths:
   - type: local
@@ -396,7 +402,7 @@ paths:
 
 default: NOTFOUND
 
-file_name: rmf.hgra.{.Year}{.Month}{.Day}{.Hour}{.Forecast}.grb2
+file_name: rmf.hgra.{.Year}{.Month}{.Day}{.Hour}{.ForecastHour}.grb2
 
 paths:
   - type: local
@@ -411,7 +417,7 @@ paths:
 
 default: NOTFOUND
 
-file_name: rmf.hgra.{.Year}{.Month}{.Day}{.Hour}{.Forecast}.grb2
+file_name: rmf.hgra.{.Year}{.Month}{.Day}{.Hour}{.ForecastHour}.grb2
 
 paths:
   - type: local
@@ -426,7 +432,7 @@ paths:
 
 default: NOTFOUND
 
-file_name: modelvar{.Year}{.Month}{.Day}{.Hour}{.Forecast}00
+file_name: modelvar{.Year}{.Month}{.Day}{.Hour}{.ForecastHour}{.ForecastMinute}
 
 paths:
   - type: local
@@ -445,7 +451,7 @@ paths:
 
 default: NOTFOUND
 
-file_name: modelvar{.Year}{.Month}{.Day}{.Hour}{.Forecast}00
+file_name: modelvar{.Year}{.Month}{.Day}{.Hour}{.ForecastHour}{.ForecastMinute}
 
 paths:
   - type: local
@@ -502,7 +508,7 @@ paths:
 
 default: NOTFOUND
 
-file_name: postvar{.Year}{.Month}{.Day}{.Hour}{.Forecast}00
+file_name: postvar{.Year}{.Month}{.Day}{.Hour}{.ForecastHour}{.ForecastMinute}
 
 paths:
   - type: local
@@ -521,7 +527,7 @@ paths:
 
 default: NOTFOUND
 
-file_name: postvar{.Year}{.Month}{.Day}{.Hour}{.Forecast}00
+file_name: postvar{.Year}{.Month}{.Day}{.Hour}{.ForecastHour}{.ForecastMinute}
 
 paths:
   - type: local
@@ -578,7 +584,7 @@ paths:
 
 default: NOTFOUND
 
-file_name: rmf.hgra.{.Year}{.Month}{.Day}{.Hour}{.Forecast}.grb2
+file_name: rmf.hgra.{.Year}{.Month}{.Day}{.Hour}{.ForecastHour}.grb2
 
 paths:
   - type: local
@@ -593,7 +599,7 @@ paths:
 
 default: NOTFOUND
 
-file_name: rmf.hgra.{.Year}{.Month}{.Day}{.Hour}{.Forecast}.grb2
+file_name: rmf.hgra.{.Year}{.Month}{.Day}{.Hour}{.ForecastHour}.grb2
 
 paths:
   - type: local
@@ -608,7 +614,7 @@ paths:
 
 default: NOTFOUND
 
-file_name: modelvar{.Year}{.Month}{.Day}{.Hour}{.Forecast}00
+file_name: modelvar{.Year}{.Month}{.Day}{.Hour}{.ForecastHour}{.ForecastMinute}
 
 paths:
   - type: local
@@ -623,7 +629,7 @@ paths:
 
 default: NOTFOUND
 
-file_name: model.ctl_{.Year}{.Month}{.Day}{.Hour}{.Forecast}00
+file_name: model.ctl_{.Year}{.Month}{.Day}{.Hour}{.ForecastHour}{.ForecastMinute}
 
 paths:
   - type: local
@@ -638,7 +644,7 @@ paths:
 
 default: NOTFOUND
 
-file_name: postvar{.Year}{.Month}{.Day}{.Hour}{.Forecast}00
+file_name: postvar{.Year}{.Month}{.Day}{.Hour}{.ForecastHour}{.ForecastMinute}
 
 paths:
   - type: local
@@ -668,7 +674,7 @@ paths:
 
 default: NOTFOUND
 
-file_name: rmf.tcgra.{.Year}{.Month}{.Day}{.Hour}{.Forecast}.grb2
+file_name: rmf.tcgra.{.Year}{.Month}{.Day}{.Hour}{.ForecastHour}.grb2
 
 paths:
   - type: local

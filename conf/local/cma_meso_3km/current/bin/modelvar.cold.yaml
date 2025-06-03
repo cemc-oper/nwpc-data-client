@@ -3,7 +3,7 @@
 
 default: NOTFOUND
 
-file_name: modelvar{.Year}{.Month}{.Day}{.Hour}{.Forecast}00
+file_name: modelvar{.Year}{.Month}{.Day}{.Hour}{.ForecastHour}{.ForecastMinute}
 
 paths:
   - type: local

@@ -3,7 +3,7 @@
 
 default: NOTFOUND
 
-file_name: rmf.tcgra.{.Year}{.Month}{.Day}{.Hour}{.Forecast}.grb2
+file_name: rmf.tcgra.{.Year}{.Month}{.Day}{.Hour}{.ForecastHour}.grb2
 
 paths:
   - type: local

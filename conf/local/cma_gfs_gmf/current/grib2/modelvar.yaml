@@ -3,7 +3,7 @@
 
 default: NOTFOUND
 
-file_name: modelvar{.Year}{.Month}{.Day}{.Hour}{.Forecast}.grb2
+file_name: modelvar{.Year}{.Month}{.Day}{.Hour}{.ForecastHour}.grb2
 
 paths:
   # run time dir

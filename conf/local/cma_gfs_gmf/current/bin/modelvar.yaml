@@ -5,7 +5,7 @@
 default: NOTFOUND
 
 file_names:
-  - modelvar{.Year}{.Month}{.Day}{.Hour}_{.Forecast}
+  - modelvar{.Year}{.Month}{.Day}{.Hour}_{.ForecastHour}
   # - modelvar{generateStartTime .StartTime -3 | getYear}{generateStartTime .StartTime -3 | getMonth}{generateStartTime .StartTime -3 | getDay}{generateStartTime .StartTime -3 | getHour}_{generateForecastTime .ForecastTime "3h" | getForecastHour | printf "%03d"}
 
 paths:

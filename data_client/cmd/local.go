@@ -83,19 +83,25 @@ func findLocalFile(cmd *cobra.Command, args []string) {
 		return
 	}
 
+	levels := strings.Split(locationLevels, ",")
+
 	if len(configDir) == 0 {
 		dataType = localCommandName + "/" + dataType
 	}
 
-	localConfig, err2 := common.LoadConfig(configDir, dataType)
-	if err2 != nil {
-		log.Errorf("load config failed: %v", err2)
+	configContent, err := common.LoadConfigContent(configDir, dataType)
+	if err != nil {
+		log.Fatalf("load config failed: %v", err)
 		return
 	}
 
-	levels := strings.Split(locationLevels, ",")
+	dataConfig, err := common.ParseConfigContent(configContent, startTime, forecastTime)
+	if err != nil {
+		log.Fatalf("load config from content has error: %s", err)
+		return
+	}
 
-	pathItem := common.FindLocalFile(localConfig, levels, startTime, forecastTime)
+	pathItem := common.FindLocalFileV2(dataConfig, levels, startTime, forecastTime)
 	fmt.Printf("%s\n", pathItem.Path)
 }
 

@@ -142,9 +142,9 @@ func (s *NWPCDataServer) findDataPath(req *DataRequest) (*DataPathResponse, erro
 
 	emptyResponse := DataPathResponse{LocationType: "NOTFOUND", Location: "NOTFOUND"}
 
-	hpcDataConfig, err := common.LoadConfig(s.ConfigDir, dataType)
+	hpcContent, err := common.LoadConfigContent(s.ConfigDir, dataType)
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "load config failed: %s\n", err)
+		log.Errorf("load config content failed: %s\n", err)
 		return &emptyResponse, fmt.Errorf("load config failed: %v", err)
 	}
 
@@ -158,8 +158,13 @@ func (s *NWPCDataServer) findDataPath(req *DataRequest) (*DataPathResponse, erro
 		return &emptyResponse, fmt.Errorf("check ForecastTime failed: %s", err)
 	}
 
+	hpcDataConfig, err := common.LoadDataConfigFromContent(hpcContent)
+	if err != nil {
+		return &emptyResponse, fmt.Errorf("load hpc content failed: %s", err)
+	}
+
 	// TODO: add location levels
-	filePath := common.FindLocalFile(hpcDataConfig, locationLevels, startTime, forecastTime)
+	filePath := common.FindLocalFileV2(hpcDataConfig, locationLevels, startTime, forecastTime)
 
 	return &DataPathResponse{
 		LocationType: filePath.PathType,

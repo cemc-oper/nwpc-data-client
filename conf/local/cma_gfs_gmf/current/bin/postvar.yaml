@@ -6,7 +6,7 @@
 default: NOTFOUND
 
 file_names:
-  - postvar{.Year}{.Month}{.Day}{.Hour}_{.Forecast}
+  - postvar{.Year}{.Month}{.Day}{.Hour}_{.ForecastHour}
 
 paths:
   - type: local

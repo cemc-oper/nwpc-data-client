@@ -2,7 +2,6 @@ package cmd
 
 import (
 	"bufio"
-	"encoding/json"
 	"errors"
 	"fmt"
 	"github.com/SimonBaeumer/cmd"
@@ -113,16 +112,14 @@ var localCmd = &cobra.Command{
 		if len(configDir) == 0 {
 			dataType = localCommandName + "/" + dataType
 		}
-		config, err := common.LoadConfig(configDir, dataType)
+		configContent, err := common.LoadConfigContent(configDir, dataType)
 		if err != nil {
-			log.Fatalf("load config failed: %v\n", err)
+			log.Fatalf("load config content failed: %v\n", err)
 			return
 		}
-		b, _ := json.MarshalIndent(config, "", "  ")
-		fmt.Println(string(b))
 
 		checkDataFile(
-			config,
+			configContent,
 			levels,
 			checkDuration,
 			commandTemplate,
@@ -133,7 +130,7 @@ var localCmd = &cobra.Command{
 }
 
 func checkDataFile(
-	config common.DataConfig,
+	configContent string,
 	levels []string,
 	checkDuration time.Duration,
 	commandTemplate *template.Template,
@@ -150,7 +147,7 @@ func checkDataFile(
 			time.Sleep(sleepTime)
 			log.WithFields(log.Fields{"forecast_time": forecastTimeString}).
 				Infof("checking begin...")
-			checkForOneTime(ch, config, levels, forecastTime, checkDuration)
+			checkForOneTime(ch, configContent, levels, forecastTime, checkDuration)
 		}(index, oneTime)
 	}
 
@@ -168,28 +165,23 @@ func checkDataFile(
 	go func() {
 		for _ = range forecastTimeList {
 			result := <-ch
+			forecastTimeString := common.FormatForecastTimeShort(result.ForecastTime)
+			currentLog := log.WithFields(log.Fields{"forecast_time": forecastTimeString})
 			if result.Error != nil {
-				log.WithFields(log.Fields{
-					"forecast_time": fmt.Sprintf("%03dh%02dm", int(result.ForecastTime.Hours()), int(result.ForecastTime.Hours())),
-				}).Fatalf("check failed: %v", result.Error)
+				currentLog.Fatalf("check failed: %v", result.Error)
 			} else {
-				log.WithFields(log.Fields{
-					"forecast_time": fmt.Sprintf("%03dh%02dm", int(result.ForecastTime.Hours()), int(result.ForecastTime.Hours())),
-				}).Infof("file is available, run command...")
+				currentLog.Infof("file is available, run command...")
 
 				if executeCommand == "" {
+					currentLog.Debugf("ignore execute command because of empty command")
 					continue
 				}
 
 				err := runCommand(commandTemplate, startTime, result.ForecastTime, result.FilePath)
 				if err != nil {
-					log.WithFields(log.Fields{
-						"forecast_time": fmt.Sprintf("%03dh%02dm", int(result.ForecastTime.Hours()), int(result.ForecastTime.Hours())),
-					}).Fatalf("run command failed: %v", err)
+					currentLog.Fatalf("run command failed: %v", err)
 				} else {
-					log.WithFields(log.Fields{
-						"forecast_time": fmt.Sprintf("%03dh%02dm", int(result.ForecastTime.Hours()), int(result.ForecastTime.Hours())),
-					}).Infof("run command success")
+					currentLog.Infof("run command success")
 				}
 			}
 		}
@@ -207,22 +199,27 @@ type CheckResult struct {
 
 func checkForOneTime(
 	ch chan CheckResult,
-	config common.DataConfig,
+	configContent string,
 	levels []string,
 	forecastTime time.Duration,
 	checkDuration time.Duration) {
 	foundData := false
 	roundNumber := 0
-	filePath := config.Default
-
 	forecastTimeString := common.FormatForecastTimeShort(forecastTime)
-
 	currentLog := log.WithFields(log.Fields{"forecast_time": forecastTimeString})
+
+	dataConfig, err := common.ParseConfigContent(configContent, startTime, forecastTime)
+	if err != nil {
+		currentLog.Fatalf("parse config content failed: %v", err)
+		return
+	}
+
+	filePath := dataConfig.Default
 
 	for roundNumber < maxCheckCount {
 		currentLog.Infof("checking... %d/%d", roundNumber, maxCheckCount)
-		filePath = findLocalFile(config, levels, forecastTime)
-		if filePath == config.Default {
+		filePath = findLocalFile(dataConfig, levels, forecastTime)
+		if filePath == dataConfig.Default {
 			currentLog.Infof("checking exist...not found")
 		} else {
 			currentLog.Infof("checking exist...success: %s", filePath)
@@ -260,7 +257,7 @@ func checkForOneTime(
 	ch <- result
 }
 
-// parse input string to a forecast time list.
+// parseForecastTimeInput parses input string to a forecast time list.
 // input string is a list of forecast time, each line or each token is a forecast time,
 // the format is "000h00m" or "000h", such as "000h 000h10m 001h00m 001h10m"
 // return a list of forecast time.
@@ -288,7 +285,7 @@ func parseForecastTimeInput(r io.Reader) []time.Duration {
 }
 
 func findLocalFile(config common.DataConfig, levels []string, forecastTime time.Duration) string {
-	pathItem := common.FindLocalFile(config, levels, startTime, forecastTime)
+	pathItem := common.FindLocalFileV2(config, levels, startTime, forecastTime)
 	return pathItem.Path
 }
 

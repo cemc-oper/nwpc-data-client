@@ -4,7 +4,7 @@
 default: NOTFOUND
 
 file_names:
-  - modelvar{.Year}{.Month}{.Day}{.Hour}{.Forecast}00
+  - modelvar{.Year}{.Month}{.Day}{.Hour}{.ForecastHour}{.ForecastMinute}
 
 paths:
   - type: local
