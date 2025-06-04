@@ -201,8 +201,8 @@ paths:
 
 default: NOTFOUND
 
-{ $gdaStartTime := generateStartTime .StartTime -3 }
-{ $gdaForecastTime := generateForecastTime .ForecastTime "3h" }
+  { $gdaStartTime := generateStartTime .StartTime -3 }
+  { $gdaForecastTime := generateForecastTime .ForecastTime "3h" }
 
 file_name: "modelvar{ getYear $gdaStartTime }{getMonth $gdaStartTime }{ getDay $gdaStartTime }{ getHour $gdaStartTime}_{ getForecastHour $gdaForecastTime | printf "%03d"}"
 
@@ -219,8 +219,8 @@ paths:
 
 default: NOTFOUND
 
-{ $gdaStartTime := generateStartTime .StartTime -3 }
-{ $gdaForecastTime := generateForecastTime .ForecastTime "3h" }
+  { $gdaStartTime := generateStartTime .StartTime -3 }
+  { $gdaForecastTime := generateForecastTime .ForecastTime "3h" }
 
 file_name: "postvar{ getYear $gdaStartTime}{ getMonth $gdaStartTime }{ getDay $gdaStartTime }{ getHour $gdaStartTime}_{ getForecastHour $gdaForecastTime | printf "%03d"}"
 
