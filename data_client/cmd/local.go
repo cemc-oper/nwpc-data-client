@@ -29,6 +29,8 @@ func init() {
 		"start time, YYYYMMDDHH, such as 2020021400")
 	localCmd.Flags().StringVar(&forecastTimeString, "forecast-time", "",
 		"forecast time, FFFh, such as 0h, 120h")
+	localCmd.Flags().StringVar(&member, "member", "",
+		"ensemble member, MMM, such as 000, 014")
 
 	localCmd.Flags().BoolVar(&showTypes, "show-types", false,
 		"Show supported data types defined in config dir and exit.")
@@ -95,7 +97,7 @@ func findLocalFile(cmd *cobra.Command, args []string) {
 		return
 	}
 
-	dataConfig, err := common.ParseConfigContent(configContent, startTime, forecastTime)
+	dataConfig, err := common.ParseConfigContent(configContent, startTime, forecastTime, member)
 	if err != nil {
 		log.Fatalf("load config from content has error: %s", err)
 		return

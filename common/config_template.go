@@ -5,7 +5,7 @@ import (
 	"time"
 )
 
-type TimeTemplateVariable struct {
+type ConfigTemplateVariable struct {
 	StartTime      time.Time
 	ForecastTime   time.Duration
 	Year           string
@@ -14,13 +14,14 @@ type TimeTemplateVariable struct {
 	Hour           string
 	ForecastHour   string
 	ForecastMinute string
+	Member         string
 }
 
-func GenerateTimeTemplateVariable(startTime time.Time, forecastTime time.Duration) TimeTemplateVariable {
+func GenerateConfigTemplateVariable(startTime time.Time, forecastTime time.Duration, member string) ConfigTemplateVariable {
 	forecastHour := int(forecastTime.Hours())
 	forecastMinute := int(forecastTime.Minutes()) % 60
 
-	tpVariable := TimeTemplateVariable{
+	tpVariable := ConfigTemplateVariable{
 		StartTime:      startTime,
 		ForecastTime:   forecastTime,
 		Year:           startTime.Format("2006"),
@@ -29,6 +30,7 @@ func GenerateTimeTemplateVariable(startTime time.Time, forecastTime time.Duratio
 		Hour:           startTime.Format("15"),
 		ForecastHour:   fmt.Sprintf("%03d", forecastHour),
 		ForecastMinute: fmt.Sprintf("%02d", forecastMinute),
+		Member:         member,
 	}
 	return tpVariable
 }

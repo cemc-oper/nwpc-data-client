@@ -1,0 +1,11 @@
+# cma-reps
+#   grib2 orig
+
+default: NOTFOUND
+
+file_name: gef.gra.{.Member}.{.Year}{.Month}{.Day}{.Hour}{.ForecastHour}.grb2
+
+paths:
+  - type: local
+    level: archive
+    path: /g3/COMMONDATA/OPER/CEMC/GEPS/Prod-grib/{.Year}{.Month}{.Day}{.Hour}/grib2

@@ -61,9 +61,9 @@ func loadContentFromLocal(configDir string, dataType string) (string, error) {
 }
 
 // ParseConfigContent parse config content template with start time and forecast time.
-func ParseConfigContent(content string, startTime time.Time, forecastTime time.Duration) (DataConfig, error) {
+func ParseConfigContent(content string, startTime time.Time, forecastTime time.Duration, member string) (DataConfig, error) {
 	dataConfig := DataConfig{}
-	tpVar := GenerateTimeTemplateVariable(startTime, forecastTime)
+	tpVar := GenerateConfigTemplateVariable(startTime, forecastTime, member)
 
 	forecastTimeStr := FormatForecastTimeShort(forecastTime)
 	currentLog := log.WithFields(log.Fields{"forecastTime": forecastTimeStr})

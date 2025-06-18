@@ -12,7 +12,7 @@ import (
 // Deprecated: FindLocalFile should be replaced by FindLocalFileV2.
 func FindLocalFile(config DataConfig, locationLevels []string, startTime time.Time, forecastTime time.Duration) PathItem {
 
-	tpVar := GenerateTimeTemplateVariable(startTime, forecastTime)
+	tpVar := GenerateConfigTemplateVariable(startTime, forecastTime, "")
 
 	forecastTimeStr := FormatForecastTimeShort(forecastTime)
 	currentLog := log.WithFields(log.Fields{"forecastTime": forecastTimeStr})

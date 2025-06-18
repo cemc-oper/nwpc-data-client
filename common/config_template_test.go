@@ -6,18 +6,18 @@ import (
 	"time"
 )
 
-func TestGenerateTimeTemplateVariable(t *testing.T) {
+func TestGenerateConfigTemplateVariable(t *testing.T) {
 	tests := []struct {
 		name         string
 		startTime    time.Time
 		forecastTime time.Duration
-		expected     TimeTemplateVariable
+		expected     ConfigTemplateVariable
 	}{
 		{
 			"Test 1",
 			time.Date(2025, 5, 9, 0, 0, 0, 0, time.UTC),
 			24 * time.Hour,
-			TimeTemplateVariable{
+			ConfigTemplateVariable{
 				StartTime:      time.Date(2025, 5, 9, 0, 0, 0, 0, time.UTC),
 				ForecastTime:   24 * time.Hour,
 				Year:           "2025",
@@ -32,7 +32,7 @@ func TestGenerateTimeTemplateVariable(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			templateVariable := GenerateTimeTemplateVariable(tt.startTime, tt.forecastTime)
+			templateVariable := GenerateConfigTemplateVariable(tt.startTime, tt.forecastTime, "")
 			assert.Equal(t, tt.expected, templateVariable)
 		})
 	}

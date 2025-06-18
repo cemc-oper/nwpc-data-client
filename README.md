@@ -23,7 +23,8 @@ Use `Makefile` to build the project on Linux and `nwpc_data_client` command will
 `nwpc_data_client local` command finds local files on CMA HPC.
 
 ```bash
-nwpc_data_client local --data-type some/data/type \
+nwpc_data_client local \
+    --data-type some/data/type \
     --start-time start_time \
     --forecast-time forecast_time
 ```
@@ -33,9 +34,9 @@ nwpc_data_client local --data-type some/data/type \
 - `cma_gfs_gmf/current/grib2/modelvar`
 - `cma_gfs_gmf/current/bin/modelvar`
 
-`start-time` is `YYYYMMDDHH` and `forecast-time` is `FFFh`.
+`start-time` is `YYYYMMDDHH` and `forecast-time` is `FFFh` or `FFFh00m`.
 
-For example, use the command below to find CMA-GFS GMF GRIB2 data of 24 forecast hour in start hour 00 on 2018/09/03.
+For example, use the command below to find CMA-GFS GMF GRIB2 data of 24 forecast hour in start hour 00 on 2025/05/29.
 
 ```
 $nwpc_data_client local \
@@ -45,7 +46,7 @@ $nwpc_data_client local \
 /g2/op_post/OPER/WORKDIR/NWP_CMA_GFS_GMF_POST_DATA/2025052900/data/output/grib2_orig/gmf.gra.2025052900000.grb2
 ```
 
-To list all data types available in some configured directory, run the following command
+To list all data types available in some configured directory, run the following command:
 
 ```bash
 nwpc_data_client local --show-types
@@ -152,7 +153,18 @@ See [README.md](./data_service/README.md) under data_service.
 
 ## Test
 
-Run `make test` to run all tests. [bats](https://github.com/neurodebian/bats) is required.
+Run `make test` to run all tests. 
+
+> NOTE:
+>
+> Tests in `tests/bats` should run in CMA-HPC2023.
+>
+
+Tests in `tests/bats` use the following projects embedded as git submodules:
+
+- [bats-core](https://github.com/bats-core/bats-core)
+- [bats-support](https://github.com/bats-core/bats-support)
+- [bats-assert](https://github.com/bats-core/bats-assert)
 
 ## License
 

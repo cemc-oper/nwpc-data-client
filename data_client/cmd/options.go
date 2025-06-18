@@ -10,10 +10,13 @@ var (
 	configDir      = ""
 	dataType       = ""
 	locationLevels = ""
-	showTypes      = false
 
 	startTimeSting     = ""
 	forecastTimeString = ""
+	member             = ""
+
+	showTypes = false
+	debugMode = false
 
 	startTime    time.Time
 	forecastTime time.Duration
@@ -28,6 +31,4 @@ var (
 	storageUser        = ""
 	hostKeyFilePath    = fmt.Sprintf("%s/.ssh/known_hosts", home)
 	privateKeyFilePath = fmt.Sprintf("%s/.ssh/id_rsa", home)
-
-	debugMode = false
 )

@@ -137,6 +137,8 @@ func checkDataFile(
 	delayTime time.Duration) {
 	ch := make(chan CheckResult)
 
+	member := ""
+
 	forecastTimeList := parseForecastTimeInput(os.Stdin)
 	for index, oneTime := range forecastTimeList {
 		go func(currentIndex int, forecastTime time.Duration) {
@@ -147,7 +149,7 @@ func checkDataFile(
 			time.Sleep(sleepTime)
 			log.WithFields(log.Fields{"forecast_time": forecastTimeString}).
 				Infof("checking begin...")
-			checkForOneTime(ch, configContent, levels, forecastTime, checkDuration)
+			checkForOneTime(ch, configContent, levels, forecastTime, member, checkDuration)
 		}(index, oneTime)
 	}
 
@@ -177,7 +179,7 @@ func checkDataFile(
 					continue
 				}
 
-				err := runCommand(commandTemplate, startTime, result.ForecastTime, result.FilePath)
+				err := runCommand(commandTemplate, startTime, result.ForecastTime, member, result.FilePath)
 				if err != nil {
 					currentLog.Fatalf("run command failed: %v", err)
 				} else {
@@ -202,13 +204,14 @@ func checkForOneTime(
 	configContent string,
 	levels []string,
 	forecastTime time.Duration,
+	member string,
 	checkDuration time.Duration) {
 	foundData := false
 	roundNumber := 0
 	forecastTimeString := common.FormatForecastTimeShort(forecastTime)
 	currentLog := log.WithFields(log.Fields{"forecast_time": forecastTimeString})
 
-	dataConfig, err := common.ParseConfigContent(configContent, startTime, forecastTime)
+	dataConfig, err := common.ParseConfigContent(configContent, startTime, forecastTime, member)
 	if err != nil {
 		currentLog.Fatalf("parse config content failed: %v", err)
 		return
@@ -298,14 +301,14 @@ func getFileSize(filePath string) (int64, error) {
 }
 
 type CheckerTemplateVariable struct {
-	common.TimeTemplateVariable
+	common.ConfigTemplateVariable
 	FilePath string
 }
 
-func runCommand(commandTemplate *template.Template, startTime time.Time, forecastTime time.Duration, filePath string) error {
-	tpVar := common.GenerateTimeTemplateVariable(startTime, forecastTime)
+func runCommand(commandTemplate *template.Template, startTime time.Time, forecastTime time.Duration, member string, filePath string) error {
+	tpVar := common.GenerateConfigTemplateVariable(startTime, forecastTime, member)
 	var checkerVar CheckerTemplateVariable
-	checkerVar.TimeTemplateVariable = tpVar
+	checkerVar.ConfigTemplateVariable = tpVar
 	checkerVar.FilePath = filePath
 
 	var commandBuilder strings.Builder
