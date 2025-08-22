@@ -4,10 +4,6 @@ import (
 	"bufio"
 	"errors"
 	"fmt"
-	"github.com/SimonBaeumer/cmd"
-	"github.com/cemc-oper/nwpc-data-client/common"
-	log "github.com/sirupsen/logrus"
-	"github.com/spf13/cobra"
 	"io"
 	"os"
 	"os/signal"
@@ -15,6 +11,11 @@ import (
 	"syscall"
 	"text/template"
 	"time"
+
+	"github.com/SimonBaeumer/cmd"
+	"github.com/cemc-oper/nwpc-data-client/common"
+	log "github.com/sirupsen/logrus"
+	"github.com/spf13/cobra"
 )
 
 func init() {
@@ -231,7 +232,11 @@ func checkForOneTime(
 			var lastSize int64 = -1
 			for roundNumber < maxCheckCount {
 				currentSize, _ := getFileSize(filePath)
-				if currentSize == lastSize {
+				if currentSize == 0 {
+					currentLog.Warnf("get size 0, continue to wait for a valid data size %d/%d", roundNumber, maxCheckCount)
+					time.Sleep(checkDuration)
+					lastSize = currentSize
+				} else if currentSize == lastSize {
 					currentLog.Infof("checking size...success %d/%d", roundNumber, maxCheckCount)
 					foundData = true
 					break
