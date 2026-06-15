@@ -13,7 +13,7 @@ before:
     # You may remove this if you don't use go modules.
     - go mod tidy
     # you may remove this if you don't need go generate
-    - go generate ./common/config/generate
+#    - go generate ./common/config/generate
 
 builds:
   - id: data_client
@@ -23,9 +23,9 @@ builds:
       - CGO_ENABLED=0
     goos:
       - linux
-      - windows
+#      - windows
     goarch:
-      - amd64
+#      - amd64
       - arm64
     ldflags:
       - -X "github.com/cemc-oper/nwpc-data-client/common.Version={{ .Version }}"
@@ -38,9 +38,9 @@ builds:
       - CGO_ENABLED=0
     goos:
       - linux
-      - windows
+#      - windows
     goarch:
-      - amd64
+#      - amd64
       - arm64
     ldflags:
       - -X "github.com/cemc-oper/nwpc-data-client/common.Version={{ .Version }}"
