@@ -90,7 +90,7 @@ func (s *NWPCDataServer) DownloadDataFile(req *DataRequest, stream NWPCDataServi
 	log.WithFields(log.Fields{
 		"component": "data_server",
 		"action":    "DownloadDataFile",
-	}).Info("DownloadFile for %s", req)
+	}).Infof("DownloadFile for %s", req)
 
 	dataResponse, err := s.findDataPath(req)
 	if err != nil {

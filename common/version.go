@@ -3,9 +3,9 @@ package common
 import "fmt"
 
 var (
-	Version   = "Unknown version"
-	BuildTime = "Unknown build time"
-	GitCommit = "Unknown GitCommit"
+	Version   = "dev"
+	BuildTime = "unknown"
+	GitCommit = "unknown"
 )
 
 func PrintVersionInformation() {

@@ -17,7 +17,9 @@ $env:GOOS = "linux"
 $env:GOARCH = $Arch
 $env:CGO_ENABLED = "0"
 
-$VERSION = (Get-Content -Raw -Path "VERSION").Trim()
+$VERSION = ((git describe --tags --always --dirty 2>$null) -replace "`n", "")
+if (-not $VERSION) { $VERSION = (Get-Content -Raw -Path "VERSION").Trim() }
+if (-not $VERSION) { $VERSION = "dev" }
 $BUILD_TIME = ([datetime]::UtcNow).ToString("yyyy-MM-ddTHH:mm:ssZ")
 $GIT_COMMIT = ((git rev-parse --short HEAD 2>$null) -replace "`n", "")
 if (-not $GIT_COMMIT) { $GIT_COMMIT = "unknown" }
