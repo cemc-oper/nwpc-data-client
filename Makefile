@@ -1,26 +1,26 @@
+include build.mk
+
+BIN_NAMES := $(foreach bin,$(BINARIES),$(word 1,$(subst :, ,$(bin))))
+BIN_TARGETS := $(addprefix $(BIN_PATH)/,$(BIN_NAMES))
+
+.PHONY: all command generate test clean
 all: command
-.PHONY: nwpc_data_client nwpc_data_server nwpc_data_checker generate test
 
-export VERSION := $(shell cat VERSION)
-export BUILD_TIME := $(shell date --utc --rfc-3339 ns 2> /dev/null | sed -e 's/ /T/')
-export GIT_COMMIT := $(shell git rev-parse --short HEAD 2> /dev/null || true)
+command: $(BIN_TARGETS)
 
-export BIN_PATH := $(shell pwd)/bin
+$(BIN_PATH)/nwpc_data_client: data_client/main.go
+$(BIN_PATH)/nwpc_data_checker: data_checker/main.go
+$(BIN_PATH)/nwpc_data_server: data_service/data_server/main.go
 
-
-command: nwpc_data_client nwpc_data_server nwpc_data_checker
-
-nwpc_data_client:
-	$(MAKE) -C data_client
-
-nwpc_data_server:
-	$(MAKE) -C data_service
-
-nwpc_data_checker:
-	$(MAKE) -C data_checker
+$(BIN_TARGETS):
+	@mkdir -p $(BIN_PATH)
+	CGO_ENABLED=0 go build -ldflags "$(LDFLAGS)" -o $@ $<
 
 generate:
 	cd common/config/generate && go generate
 
 test:
 	cd tests/bats && ./run_bats.sh
+
+clean:
+	rm -rf $(BIN_PATH)

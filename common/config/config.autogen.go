@@ -196,6 +196,17 @@ paths:
     level: storage
     path: /sstorage1/COMMONDATA/OPER/NWPC/GRAPES_GFS_GMF/Prod-grib/{.Year4DV}{.Month4DV}{.Day4DV}{.Hour4DV}/ORIG
 `},
+	{`local/cma_geps/current/grib2/orig`, `# cma-reps
+#   grib2 orig
+
+default: NOTFOUND
+
+file_name: gef.gra.{.Member}.{.Year}{.Month}{.Day}{.Hour}{.ForecastHour}.grb2
+
+paths:
+  - type: local
+    level: archive
+    path: /g3/COMMONDATA/OPER/CEMC/GEPS/Prod-grib/{.Year}{.Month}{.Day}{.Hour}/grib2`},
 	{`local/cma_gfs_gda/current/bin/modelvar`, `# cma-gfs
 #   modelvar
 
@@ -609,6 +620,17 @@ paths:
   - type: local
     level: archive
     path: /g3/COMMONDATA/OPER/CEMC/MESO_3KM/Prod-grib/{.Year}{.Month}{.Day}{.Hour}/ORIG`},
+	{`local/cma_reps/current/grib2/orig`, `# cma-reps
+#   grib2 orig
+
+default: NOTFOUND
+
+file_name: mef.gra.{.Member}.{.Year}{.Month}{.Day}{.Hour}{.ForecastHour}.grb2
+
+paths:
+  - type: local
+    level: archive
+    path: /g3/COMMONDATA/OPER/CEMC/REPS/Prod-grib/{.Year}{.Month}{.Day}{.Hour}/grib2`},
 	{`local/cma_tym/current/bin/modelvar`, `# CMA-TYM
 #   modelvar
 

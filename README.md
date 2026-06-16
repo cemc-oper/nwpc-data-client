@@ -10,9 +10,47 @@ A data finder CLI tool for operational systems in CEMC/CMA.
 
 ## Installing
 
-Download the latest release and build source code. 
+Download the latest release or build from source.
 
-Use `Makefile` to build the project on Linux and `nwpc_data_client` command will be installed in `bin` directory.
+### Local build (Linux / macOS / WSL / Git Bash)
+
+Use `make` to build all binaries (`nwpc_data_client`, `nwpc_data_checker`, `nwpc_data_server`) into the `bin/` directory:
+
+```bash
+make
+```
+
+Build a single binary:
+
+```bash
+make nwpc_data_client
+make nwpc_data_checker
+make nwpc_data_server
+```
+
+### Cross-compile from Windows (PowerShell)
+
+If GoReleaser is not installed, use the fallback script:
+
+```powershell
+# Linux amd64
+.\build_cross.ps1 -Arch amd64
+
+# Linux arm64
+.\build_cross.ps1 -Arch arm64
+```
+
+### Release builds (GoReleaser)
+
+GoReleaser is the preferred tool for cross-platform and release builds:
+
+```bash
+# Snapshot build (no tag required)
+goreleaser build --snapshot --clean
+
+# Release build (requires a git tag)
+goreleaser release --clean
+```
 
 ## Getting Started
 
