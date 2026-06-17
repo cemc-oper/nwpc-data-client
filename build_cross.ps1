@@ -31,7 +31,7 @@ New-Item -ItemType Directory -Force -Path $OUT_DIR | Out-Null
 $Binaries = @(
     @{ Name = "nwpc_data_client";  Source = "data_client/main.go" },
     @{ Name = "nwpc_data_checker"; Source = "data_checker/main.go" },
-    @{ Name = "nwpc_data_server";  Source = "data_service/data_server/main.go" }
+    @{ Name = "nwpc_data_server";  Source = "data_server/main.go" }
 )
 
 foreach ($bin in $Binaries) {

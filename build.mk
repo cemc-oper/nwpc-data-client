@@ -13,4 +13,4 @@ LDFLAGS := -X "github.com/cemc-oper/nwpc-data-client/common.Version=$(VERSION)" 
 # binary_name:source_dir
 BINARIES := nwpc_data_client:data_client \
             nwpc_data_checker:data_checker \
-            nwpc_data_server:data_service/data_server
+            nwpc_data_server:data_server

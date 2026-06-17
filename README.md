@@ -185,9 +185,9 @@ paths:
 
 ## NWPC Data Service
 
-> :warning: This command is not supported yet.
+`nwpc_data_server` provides a gRPC service to resolve data paths and download files remotely. `nwpc_data_client service` acts as the gRPC client.
 
-See [README.md](./data_service/README.md) under data_service.
+See [data_server/README.md](./data_server/README.md) for server and client usage details.
 
 ## Test
 

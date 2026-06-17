@@ -9,6 +9,7 @@ import (
 )
 
 type NWPCDataServer struct {
+	UnimplementedNWPCDataServiceServer
 	ConfigDir string
 }
 

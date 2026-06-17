@@ -3,11 +3,12 @@ package cmd
 import (
 	"context"
 	"fmt"
+	"github.com/cemc-oper/nwpc-data-client/api/data_service"
 	"github.com/cemc-oper/nwpc-data-client/common"
-	"github.com/cemc-oper/nwpc-data-client/data_service"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/credentials/insecure"
 	"io"
 	"os"
 	"path/filepath"
@@ -73,7 +74,7 @@ var serviceCommand = &cobra.Command{
 			return
 		}
 
-		conn, err := grpc.Dial(serviceAddress, grpc.WithInsecure())
+		conn, err := grpc.Dial(serviceAddress, grpc.WithTransportCredentials(insecure.NewCredentials()))
 		if err != nil {
 			log.WithFields(log.Fields{
 				"component": "service",

@@ -47,7 +47,7 @@ builds:
       - -X "github.com/cemc-oper/nwpc-data-client/common.BuildTime={{ .Date }}"
       - -X "github.com/cemc-oper/nwpc-data-client/common.GitCommit={{ .ShortCommit }}"
   - id: data_server
-    main: './data_service/data_server'
+    main: './data_server'
     binary: 'nwpc_data_server'
     env:
       - CGO_ENABLED=0

@@ -1,7 +1,7 @@
 package cmd
 
 import (
-	"github.com/cemc-oper/nwpc-data-client/data_service"
+	pb "github.com/cemc-oper/nwpc-data-client/api/data_service"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 	"google.golang.org/grpc"
@@ -43,7 +43,7 @@ func runGRPCServer(configDir string, address string) {
 		}).Fatalf("failed to listen: %v", err)
 	}
 	s := grpc.NewServer()
-	data_service.RegisterNWPCDataServiceServer(s, &data_service.NWPCDataServer{
+	pb.RegisterNWPCDataServiceServer(s, &pb.NWPCDataServer{
 		ConfigDir: configDir,
 	})
 

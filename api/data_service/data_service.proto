@@ -1,5 +1,7 @@
 syntax = "proto3";
 
+option go_package = "github.com/cemc-oper/nwpc-data-client/api/data_service;data_service";
+
 enum StatusCode {
     Unknown = 0;
     Success = 1;

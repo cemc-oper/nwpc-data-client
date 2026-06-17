@@ -10,7 +10,7 @@ command: $(BIN_TARGETS)
 
 $(BIN_PATH)/nwpc_data_client: data_client/main.go
 $(BIN_PATH)/nwpc_data_checker: data_checker/main.go
-$(BIN_PATH)/nwpc_data_server: data_service/data_server/main.go
+$(BIN_PATH)/nwpc_data_server: data_server/main.go
 
 $(BIN_TARGETS):
 	@mkdir -p $(BIN_PATH)
@@ -18,6 +18,7 @@ $(BIN_TARGETS):
 
 generate:
 	cd common/config/generate && go generate
+	cd api/data_service && go generate
 
 test:
 	cd tests/bats && ./run_bats.sh
