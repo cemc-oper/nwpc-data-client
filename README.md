@@ -5,8 +5,6 @@ A data finder CLI tool for operational systems in CEMC/CMA.
 ## Features
 
 - Find file paths for operational system data in CMA HPC.
-- :thumbsdown: Find file paths in external storage nodes from CMA HPC.
-- :thumbsdown: Download data file through a data service.
 
 ## Installing
 
@@ -14,7 +12,7 @@ Download the latest release or build from source.
 
 ### Local build (Linux / macOS / WSL / Git Bash)
 
-Use `make` to build all binaries (`nwpc_data_client`, `nwpc_data_checker`, `nwpc_data_server`) into the `bin/` directory:
+Use `make` to build all binaries (`nwpc_data_client`, `nwpc_data_checker`) into the `bin/` directory:
 
 ```bash
 make
@@ -25,7 +23,6 @@ Build a single binary:
 ```bash
 make nwpc_data_client
 make nwpc_data_checker
-make nwpc_data_server
 ```
 
 ### Cross-compile from Windows (PowerShell)
@@ -125,69 +122,6 @@ cma_tym/current/grib2/orig
 ```
 
 Use `--config-dir` to set a custom config file directory.
-
-### hpc
-
-> :warning: This command is not supported yet.
-
-`nwpc_data_client hpc` command find files on HPC-PI or external storage nodes from HPC-PI. 
-
-Data files could be on HPC's local storage nodes (eg. /g2) or 
-external storage nodes which are mount to special HPC login nodes.
-
-```bash
-nwpc_data_client hpc --config-dir=config_dir --data-type=some/data/type \
-    --start-time start_time \
-    --forecast-time forecast_time
-```
-
-`hpc` support all options of `local`, and has more options to access external storage nodes using ssh protocol.
-
-- `--storage-user`: user to login, default is environment variable `USER`
-- `--storage-host`: host to login, default is `10.40.140.44:22`
-- `--private-key`: private key file path, default is `$HOME/.ssh/id_rsa`
-- `--host-key`: host key file path,  default is `$HOME/.ssh/known_hosts`
-
-Currently only no password private key is supported, 
-and user should test to access remote host manually before using this command.
-
-`paths` field in `hpc`'s config file has two types: 
-
-- `local` for local files
-- `storage` for files on external storage.
-
-For example, use the command below to find GDA GRAPES GFS modelvar data of 000 forecast hour in start hour 00 on 2019/05/20.
-
-```text
-$nwpc_data_client hpc --data-type=grapes_gfs_gda/bin/modelvar --start-time 2019050200 --forecast-time 0h
-storage
-/sstorage1/COMMONDATA/OPER/nwp/GRAPES_GFS/GDA_GRAPES_GFS/Fcst-9h/2019050121/modelvar2019050121_000
-```
-
-The command return two lines: 
-
-1. first line is path type: `local` or `storage`.
-2. second line is file path.
-
-If no file is found, both lines will be value of `default` field in config file. 
-
-`paths` section of a config file may like this:
-
-```yaml
-paths:
-  - type: local
-    level: archive
-    path: /g2/nwp/OPER_ARCH_TEST/nwp/GRAPES_GFS/GDA_GRAPES_GFS/Fcst-9h/{.Year4DV}{.Month4DV}{.Day4DV}{.Hour4DV}
-  - type: storage
-    level: storage
-    path: /sstorage1/COMMONDATA/OPER/nwp/GRAPES_GFS/GDA_GRAPES_GFS/Fcst-9h/{.Year4DV}{.Month4DV}{.Day4DV}{.Hour4DV}
-```
-
-## NWPC Data Service
-
-`nwpc_data_server` provides a gRPC service to resolve data paths and download files remotely. `nwpc_data_client service` acts as the gRPC client.
-
-See [data_server/README.md](./data_server/README.md) for server and client usage details.
 
 ## Test
 

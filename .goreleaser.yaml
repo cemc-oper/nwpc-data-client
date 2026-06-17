@@ -46,21 +46,6 @@ builds:
       - -X "github.com/cemc-oper/nwpc-data-client/common.Version={{ .Version }}"
       - -X "github.com/cemc-oper/nwpc-data-client/common.BuildTime={{ .Date }}"
       - -X "github.com/cemc-oper/nwpc-data-client/common.GitCommit={{ .ShortCommit }}"
-  - id: data_server
-    main: './data_server'
-    binary: 'nwpc_data_server'
-    env:
-      - CGO_ENABLED=0
-    goos:
-      - linux
-      - windows
-    goarch:
-      - amd64
-      - arm64
-    ldflags:
-      - -X "github.com/cemc-oper/nwpc-data-client/common.Version={{ .Version }}"
-      - -X "github.com/cemc-oper/nwpc-data-client/common.BuildTime={{ .Date }}"
-      - -X "github.com/cemc-oper/nwpc-data-client/common.GitCommit={{ .ShortCommit }}"
 
 archives:
   - formats: [tar.gz]
