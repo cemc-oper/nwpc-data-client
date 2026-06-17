@@ -2,14 +2,15 @@ package common
 
 import (
 	"fmt"
-	"github.com/cemc-oper/nwpc-data-client/common/config"
-	log "github.com/sirupsen/logrus"
-	"gopkg.in/yaml.v2"
 	"os"
 	"path/filepath"
 	"strings"
 	"text/template"
 	"time"
+
+	"github.com/cemc-oper/nwpc-data-client/common/config"
+	log "github.com/sirupsen/logrus"
+	"gopkg.in/yaml.v2"
 )
 
 const ConfigFileBasename = ".yaml"
