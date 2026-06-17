@@ -293,7 +293,7 @@ func parseForecastTimeInput(r io.Reader) []time.Duration {
 }
 
 func findLocalFile(config common.DataConfig, levels []string, forecastTime time.Duration) string {
-	pathItem := common.FindLocalFileV2(config, levels, startTime, forecastTime)
+	pathItem := common.FindLocalFile(config, levels, startTime, forecastTime)
 	return pathItem.Path
 }
 

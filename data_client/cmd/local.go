@@ -103,7 +103,7 @@ func findLocalFile(cmd *cobra.Command, args []string) {
 		return
 	}
 
-	pathItem := common.FindLocalFileV2(dataConfig, levels, startTime, forecastTime)
+	pathItem := common.FindLocalFile(dataConfig, levels, startTime, forecastTime)
 	fmt.Printf("%s\n", pathItem.Path)
 }
 
