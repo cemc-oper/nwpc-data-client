@@ -31,7 +31,7 @@ type DataConfig struct {
 // LoadConfigContent read config content from a local file or from embedded config strings.
 func LoadConfigContent(configDir string, dataType string) (string, error) {
 	if len(configDir) == 0 {
-		content, err := findEmbeddedConfig(dataType)
+		content, err := loadContentFromEmbedded(dataType)
 		if err != nil {
 			return "", fmt.Errorf("find embedded config for data type %s has error: %v", dataType, err)
 		}
@@ -95,8 +95,8 @@ func ParseConfigContent(content string, startTime time.Time, forecastTime time.D
 	return dataConfig, nil
 }
 
-// findEmbeddedConfig find data config string in embedded configs.
-func findEmbeddedConfig(dataType string) (string, error) {
+// loadContentFromEmbedded find data config string in embedded configs.
+func loadContentFromEmbedded(dataType string) (string, error) {
 	for _, configItem := range config.EmbeddedConfigs {
 		if configItem[0] == dataType {
 			return configItem[1], nil
@@ -130,45 +130,6 @@ func inLocationLevelTypes(locationLevelTypes []string, locationLevelType string)
 	return false
 }
 
-func LoadConfig(configDir string, dataType string) (DataConfig, error) {
-	dataConfig := DataConfig{}
-
-	var configObject DataConfig
-	var err error
-
-	if len(configDir) == 0 {
-		configObject, err = loadEmbeddedConfig(dataType)
-	} else {
-		configObject, err = loadLocalConfig(configDir, dataType)
-	}
-
-	if err != nil {
-		return dataConfig, fmt.Errorf("load config failed: %v", err)
-	}
-	return configObject, nil
-}
-
-func loadLocalConfig(configDir string, dataType string) (DataConfig, error) {
-	dataConfig := DataConfig{}
-
-	configFilePath, err := findLocalConfig(configDir, dataType)
-	if err != nil {
-		return dataConfig, fmt.Errorf("model data type config is not found: %v", err)
-	}
-
-	data, err := os.ReadFile(configFilePath)
-	if err != nil {
-		return dataConfig, err
-	}
-
-	err = yaml.Unmarshal(data, &dataConfig)
-	if err != nil {
-		return dataConfig, err
-	}
-
-	return dataConfig, nil
-}
-
 func findLocalConfig(configDir string, dataType string) (string, error) {
 	configDirPath, _ := filepath.Abs(configDir)
 	configFilePath := filepath.Join(configDirPath, dataType+ConfigFileBasename)
@@ -184,20 +145,4 @@ func findLocalConfig(configDir string, dataType string) (string, error) {
 		return configFilePath, fmt.Errorf("file is not exist")
 	}
 	return configFilePath, nil
-}
-
-func loadEmbeddedConfig(dataType string) (DataConfig, error) {
-	dataConfig := DataConfig{}
-
-	configContent, err := findEmbeddedConfig(dataType)
-	if err != nil {
-		return dataConfig, fmt.Errorf("model data type config is not found: %v", err)
-	}
-
-	err = yaml.Unmarshal([]byte(configContent), &dataConfig)
-	if err != nil {
-		return dataConfig, err
-	}
-
-	return dataConfig, nil
 }
