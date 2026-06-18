@@ -12,8 +12,8 @@ import (
 	"text/template"
 	"time"
 
-	"github.com/SimonBaeumer/cmd"
 	"github.com/cemc-oper/nwpc-data-client/common"
+	"github.com/commander-cli/cmd"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 )
@@ -25,6 +25,9 @@ func init() {
 
 	localCmd.Flags().StringVar(&configDir, "data-config-dir", "",
 		"Data config dir, same as nwpc_data_client local command.")
+
+	localCmd.Flags().StringVar(&configFile, "data-config-file", "",
+		"Data config file path. If set, --data-config-dir and --data-type are ignored.")
 
 	localCmd.Flags().StringVar(&dataType, "data-type", "",
 		"Data type used to locate config file path in config dir.")
@@ -63,6 +66,9 @@ var localCmd = &cobra.Command{
 	Args: func(cmd *cobra.Command, args []string) error {
 		if len(args) != 1 {
 			return errors.New("requires one arguments")
+		}
+		if configFile == "" && dataType == "" {
+			return errors.New("requires --data-type or --config-file")
 		}
 		var err error
 		startTime, err = common.ParseStartTime(args[0])
@@ -110,10 +116,15 @@ var localCmd = &cobra.Command{
 		}
 
 		// data config dir, data type
-		if len(configDir) == 0 {
-			dataType = localCommandName + "/" + dataType
+		var configContent string
+		if configFile != "" {
+			configContent, err = common.LoadConfigContentFromFile(configFile)
+		} else {
+			if len(configDir) == 0 {
+				dataType = localCommandName + "/" + dataType
+			}
+			configContent, err = common.LoadConfigContent(configDir, dataType)
 		}
-		configContent, err := common.LoadConfigContent(configDir, dataType)
 		if err != nil {
 			log.Fatalf("load config content failed: %v\n", err)
 			return

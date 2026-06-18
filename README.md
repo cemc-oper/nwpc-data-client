@@ -5,6 +5,7 @@ A data finder CLI tool for operational systems in CEMC/CMA.
 ## Features
 
 - Find file paths for operational system data in CMA HPC.
+- Watch data files and execute some command when data file is ready.
 
 ## Installing
 
@@ -51,7 +52,7 @@ goreleaser release --clean
 
 ## Getting Started
 
-`nwpc_data_client` has several sub-commands.
+`nwpc_data_client` has the following sub-command.
 
 ### local
 
@@ -122,6 +123,159 @@ cma_tym/current/grib2/orig
 ```
 
 Use `--config-dir` to set a custom config file directory.
+
+### checker
+
+`nwpc_data_checker local` polls local data paths for a list of forecast times and optionally runs a command once each file becomes stable. It is typically used in operational workflows to wait for model output and then trigger downstream processing.
+
+Forecast times are read from `stdin`, one per line or whitespace-separated token, in the form `FFFh` or `FFFhMMm` (for example `000h`, `024h`, `003h10m`).
+
+```bash
+nwpc_data_checker local \
+    --data-type some/data/type \
+    --start-time YYYYMMDDHH \
+    --location-level runtime,archive
+```
+
+The checker will, for each forecast time:
+
+1. Wait a short staggered delay (`--delay-time`, default `0s`).
+2. Repeatedly check the resolved path until the file exists.
+3. Continue polling until the file size stops changing, which indicates the file is no longer being written.
+4. Run `--execute-command` if one is configured.
+
+If the file is not found or does not stabilize before `--max-check-count` is reached, the checker exits with an error.
+
+A complete example: wait for CMA-GFS GMF GRIB2 original output and print the path once it is stable.
+
+```bash
+printf "000h\n024h\n" | nwpc_data_checker local \
+    --data-type=cma_gfs_gmf/current/grib2/orig \
+    --start-time 2025052900 \
+    --location-level runtime \
+    --execute-command "echo found {FilePath}"
+```
+
+The `--execute-command` template supports the same variables as configuration files (see [Configuration file](#configuration-file)) plus `FilePath`, which is set to the resolved file path. Use `{` and `}` as delimiters, for example `{FilePath}` or `{.Year}{.Month}{.Day}{.Hour}`.
+
+Common flags:
+
+| Flag | Description | Default |
+|------|-------------|---------|
+| `--data-type` | Data type used to locate the config file in the config dir. | (required if `--data-config-file` is not set) |
+| `--data-config-dir` | Custom config directory, same as `nwpc_data_client local`. | embedded configs |
+| `--data-config-file` | Path to a single config file; if set, `--data-config-dir` and `--data-type` are ignored. | - |
+| `--location-level` | Comma-separated location levels, such as `runtime,archive`. | all levels |
+| `--max-check-count` | Maximum number of check rounds for one forecast time. | `2880` |
+| `--check-interval` | Polling interval, as a Go duration (`30s`, `1m`, ...). | `5s` |
+| `--delay-time` | Stagger delay between forecast times, as a Go duration. | `0s` |
+| `--execute-command` | Go template command to run when the file is stable. | - |
+| `--debug` | Enable debug logging. | `false` |
+
+## Configuration file
+
+Data types are described by YAML configuration files. When no `--config-dir`/`--data-config-dir` is given, `nwpc_data_client` and `nwpc_data_checker` use the configs embedded in the binary at build time (see `make generate`). A custom directory can be used during development or for site-specific overrides.
+
+### File format
+
+A configuration file is a single YAML document with the following fields:
+
+```yaml
+default: NOTFOUND
+
+file_name: gmf.gra.{.Year}{.Month}{.Day}{.Hour}{.ForecastHour}.grb2
+file_names: []
+
+paths:
+  - type: local
+    level: runtime
+    path: /some/dir/{.Year}{.Month}{.Day}{.Hour}/
+
+  - type: local
+    level: archive
+    path: /another/dir/{.Year}{.Month}{.Day}{.Hour}/
+```
+
+| Field | Description |
+|-------|-------------|
+| `default` | Value returned when no file is found. Defaults to `NOTFOUND` in most configs. |
+| `file_name` | Single filename template. Either `file_name` or `file_names` must be set. |
+| `file_names` | List of filename templates. They are tried in order after the optional `file_name`. Useful when the same data may be stored under several names. |
+| `paths` | List of directory entries to search. Each entry is checked in order; the first existing file wins. |
+
+Each entry in `paths` has:
+
+| Field | Description |
+|-------|-------------|
+| `type` | Path type. For `nwpc_data_client local` and `nwpc_data_checker` this is `local`. |
+| `level` | Location level, such as `runtime`, `archive`, or `all`. Use `--location-level` to restrict the search to specific levels. An empty level or `all` matches any filter. |
+| `path` | Directory template. The resolved filename is joined to this directory. |
+
+### Template variables
+
+The config file is executed as a Go template with `{` and `}` delimiters. The following variables are available:
+
+| Variable | Type | Example | Description |
+|----------|------|---------|-------------|
+| `.StartTime` | `time.Time` | - | Parsed start time. |
+| `.ForecastTime` | `time.Duration` | - | Parsed forecast time. |
+| `.Year` | string | `2025` | Four-digit year of start time. |
+| `.Month` | string | `05` | Zero-padded month of start time. |
+| `.Day` | string | `29` | Zero-padded day of start time. |
+| `.Hour` | string | `00` | Zero-padded hour of start time. |
+| `.ForecastHour` | string | `024` | Zero-padded forecast hour, three digits. |
+| `.ForecastMinute` | string | `00` | Zero-padded forecast minute, two digits. |
+| `.Member` | string | - | Ensemble member, when applicable. |
+
+Template helper functions are also available for use in more complex expressions:
+
+```yaml
+file_name: gmf.gra.{generateStartTime .StartTime}{getForecastHour .ForecastTime}.grb2
+```
+
+| Function | Description |
+|----------|-------------|
+| `generateStartTime` | Format start time as `YYYYMMDDHH`. |
+| `getYear` | Extract the year. |
+| `getMonth` | Extract the month. |
+| `getDay` | Extract the day. |
+| `getHour` | Extract the hour. |
+| `generateForecastTime` | Format forecast time as `FFFhMMm`. |
+| `getForecastHour` | Extract the forecast hour. |
+| `getForecastMinute` | Extract the forecast minute. |
+
+### How resolution works
+
+1. The YAML content is loaded from the embedded config, custom config directory, or a single config file.
+2. `nwpc_data_client`/`nwpc_data_checker` parse the YAML as a Go template with the start time, forecast time, and optional member.
+3. The resolved directory and filename templates are joined.
+4. Each resulting path is checked in order; the first existing file is returned, or `default` if none are found.
+
+### Example
+
+```yaml
+# conf/local/cma_gfs_gmf/current/grib2/orig.yaml
+default: NOTFOUND
+
+file_name: gmf.gra.{.Year}{.Month}{.Day}{.Hour}{.ForecastHour}.grb2
+
+paths:
+  - type: local
+    level: runtime
+    path: /g2/op_post/OPER/WORKDIR/NWP_CMA_GFS_GMF_POST_DATA/{.Year}{.Month}{.Day}{.Hour}/data/output/grib2_orig/
+
+  - type: local
+    level: archive
+    path: /g3/COMMONDATA/OPER/CEMC/GFS_GMF/Prod-grib/{.Year}{.Month}{.Day}{.Hour}/ORIG
+```
+
+For start time `2025052900` and forecast time `024h`, the first path resolves to:
+
+```text
+/g2/op_post/OPER/WORKDIR/NWP_CMA_GFS_GMF_POST_DATA/2025052900/data/output/grib2_orig/gmf.gra.2025052900024.grb2
+```
+
+If the file does not exist in `runtime`, the tool falls back to the `archive` path.
 
 ## Test
 

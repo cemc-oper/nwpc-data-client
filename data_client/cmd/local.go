@@ -19,6 +19,9 @@ func init() {
 	localCmd.Flags().StringVar(&configDir, "config-dir", "",
 		"Config dir.")
 
+	localCmd.Flags().StringVar(&configFile, "data-config-file", "",
+		"Data config file path. If set, --config-dir and --data-type are ignored.")
+
 	localCmd.Flags().StringVar(&dataType, "data-type", "",
 		"Data type used to locate config file path in config dir.")
 
@@ -53,7 +56,9 @@ var localCmd = &cobra.Command{
 			return nil
 		}
 
-		cmd.MarkFlagRequired("data-type")
+		if configFile == "" {
+			cmd.MarkFlagRequired("data-type")
+		}
 		cmd.MarkFlagRequired("start-time")
 		cmd.MarkFlagRequired("forecast-time")
 
@@ -87,11 +92,15 @@ func findLocalFile(cmd *cobra.Command, args []string) {
 
 	levels := strings.Split(locationLevels, ",")
 
-	if len(configDir) == 0 {
-		dataType = localCommandName + "/" + dataType
+	var configContent string
+	if configFile != "" {
+		configContent, err = common.LoadConfigContentFromFile(configFile)
+	} else {
+		if len(configDir) == 0 {
+			dataType = localCommandName + "/" + dataType
+		}
+		configContent, err = common.LoadConfigContent(configDir, dataType)
 	}
-
-	configContent, err := common.LoadConfigContent(configDir, dataType)
 	if err != nil {
 		log.Fatalf("load config failed: %v", err)
 		return

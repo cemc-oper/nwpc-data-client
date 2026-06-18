@@ -10,7 +10,7 @@ import (
 
 	"github.com/cemc-oper/nwpc-data-client/common/config"
 	log "github.com/sirupsen/logrus"
-	"gopkg.in/yaml.v2"
+	"gopkg.in/yaml.v3"
 )
 
 const ConfigFileBasename = ".yaml"
@@ -53,12 +53,16 @@ func loadContentFromLocal(configDir string, dataType string) (string, error) {
 		return "", fmt.Errorf("model data type config is not found: %v", err)
 	}
 
+	return LoadConfigContentFromFile(configFilePath)
+}
+
+// LoadConfigContentFromFile read config content from a config file path.
+func LoadConfigContentFromFile(configFilePath string) (string, error) {
 	data, err := os.ReadFile(configFilePath)
-	content := string(data)
 	if err != nil {
 		return "", err
 	}
-	return content, nil
+	return string(data), nil
 }
 
 // ParseConfigContent parse config content template with start time and forecast time.

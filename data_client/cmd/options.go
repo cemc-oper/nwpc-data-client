@@ -6,6 +6,7 @@ import (
 
 var (
 	configDir      = ""
+	configFile     = ""
 	dataType       = ""
 	locationLevels = ""
 
