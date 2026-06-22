@@ -3,7 +3,7 @@ include build.mk
 BIN_NAMES := $(foreach bin,$(BINARIES),$(word 1,$(subst :, ,$(bin))))
 BIN_TARGETS := $(addprefix $(BIN_PATH)/,$(BIN_NAMES))
 
-.PHONY: all command generate test clean
+.PHONY: all command generate test test-integration clean
 all: command
 
 command: $(BIN_TARGETS)
@@ -19,7 +19,10 @@ generate:
 	cd common/config/generate && go generate
 
 test:
-	cd tests/bats && ./run_bats.sh
+	go test ./...
+
+test-integration: $(BIN_PATH)/nwpc_data_client
+	go test -tags=integration -count=1 -v ./tests/integration/...
 
 clean:
 	rm -rf $(BIN_PATH)

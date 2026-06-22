@@ -3,12 +3,12 @@
 
 default: NOTFOUND
 
-file_name: model.ctl_{.Year}{.Month}{.Day}{.Hour}{.ForecastHour}{.ForecastMinute}
+file_name: model.ctl_{.Year}{.Month}{.Day}{.Hour}00000
 
 paths:
   - type: local
     level: runtime
-    path: /g2/op_meso/OPER/WORKDIR/NWP_CMA_TYM_DATA/grapes_d01/dat
+    path: /g2/op_meso/OPER/WORKDIR/NWP_CMA_TYM_V4_DATA/DATABAK/cold/{.Year}{.Month}{.Day}{.Hour}
 
   # - type: local
   #   level: archive

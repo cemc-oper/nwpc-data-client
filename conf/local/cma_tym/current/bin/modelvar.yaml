@@ -8,7 +8,7 @@ file_name: modelvar{.Year}{.Month}{.Day}{.Hour}{.ForecastHour}{.ForecastMinute}
 paths:
   - type: local
     level: runtime
-    path: /g2/op_meso/OPER/WORKDIR/NWP_CMA_TYM_DATA/grapes_d01/dat
+    path: /g2/op_meso/OPER/WORKDIR/NWP_CMA_TYM_V4_DATA/DATABAK/cold/{.Year}{.Month}{.Day}{.Hour}
 
   # - type: local
   #   level: archive

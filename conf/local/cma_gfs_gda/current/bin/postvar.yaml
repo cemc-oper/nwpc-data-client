@@ -11,7 +11,7 @@ file_name: "postvar{ getYear $gdaStartTime}{ getMonth $gdaStartTime }{ getDay $g
 paths:
   - type: local
     level: runtime
-    path: /g2/op_gfs/CMA-GFS/CMA-GFS4.2_DATA/MODEL/GRAPES_EN4DVAR/{.Hour}/output
+    path: /g2/op_gfs/CMA-GFS/CMA-GFS4.2.3_DATA/MODEL/GRAPES_EN4DVAR/{.Hour}/output
 
   - type: local
     level: archive

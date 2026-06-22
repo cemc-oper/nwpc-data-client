@@ -26,7 +26,7 @@ file_name: "modelvar{ getYear $gdaStartTime }{getMonth $gdaStartTime }{ getDay $
 paths:
   - type: local
     level: runtime
-    path: /g2/op_gfs/CMA-GFS/CMA-GFS4.2_DATA/MODEL/GRAPES_EN4DVAR/{.Hour}/output
+    path: /g2/op_gfs/CMA-GFS/CMA-GFS4.2.3_DATA/MODEL/GRAPES_EN4DVAR/{.Hour}/output
 
   - type: local
     level: archive
@@ -44,7 +44,7 @@ file_name: "postvar{ getYear $gdaStartTime}{ getMonth $gdaStartTime }{ getDay $g
 paths:
   - type: local
     level: runtime
-    path: /g2/op_gfs/CMA-GFS/CMA-GFS4.2_DATA/MODEL/GRAPES_EN4DVAR/{.Hour}/output
+    path: /g2/op_gfs/CMA-GFS/CMA-GFS4.2.3_DATA/MODEL/GRAPES_EN4DVAR/{.Hour}/output
 
   - type: local
     level: archive
@@ -94,7 +94,7 @@ file_names:
 paths:
   - type: local
     level: runtime
-    path: /g2/op_gfs/CMA-GFS/CMA-GFS4.2_DATA/MODEL/GRAPES_GMFS/{.Hour}/output
+    path: /g2/op_gfs/CMA-GFS/CMA-GFS4.2.3_DATA/MODEL/GRAPES_GMFS/{.Hour}/output
 
   - type: local
     level: archive
@@ -112,11 +112,11 @@ file_names:
 paths:
   - type: local
     level: runtime
-    path: /g2/op_gfs/CMA-GFS/CMA-GFS4.2_DATA/MODEL/GRAPES_GMFS/{.Hour}/output
+    path: /g2/op_gfs/CMA-GFS/CMA-GFS4.2.3_DATA/MODEL/GRAPES_GMFS/{.Hour}/output
 
-  - type: local
-    level: archive
-    path:  /g3/COMMONDATA/OPER/CEMC/GFS_GMF/Fcst-long/{.Year}{.Month}{.Day}{.Hour}`},
+#  - type: local
+#    level: archive
+#    path:  /g3/COMMONDATA/OPER/CEMC/GFS_GMF/Fcst-long/{.Year}{.Month}{.Day}{.Hour}`},
 	{`local/cma_gfs_gmf/current/grib2/modelvar`, `# cma-gfs gmf
 #   grib2 modelvar
 
@@ -447,7 +447,7 @@ file_name: modelvar{.Year}{.Month}{.Day}{.Hour}{.ForecastHour}{.ForecastMinute}
 paths:
   - type: local
     level: runtime
-    path: /g2/op_meso/OPER/WORKDIR/NWP_CMA_TYM_DATA/grapes_d01/dat
+    path: /g2/op_meso/OPER/WORKDIR/NWP_CMA_TYM_V4_DATA/DATABAK/cold/{.Year}{.Month}{.Day}{.Hour}
 
   # - type: local
   #   level: archive
@@ -457,12 +457,12 @@ paths:
 
 default: NOTFOUND
 
-file_name: model.ctl_{.Year}{.Month}{.Day}{.Hour}{.ForecastHour}{.ForecastMinute}
+file_name: model.ctl_{.Year}{.Month}{.Day}{.Hour}00000
 
 paths:
   - type: local
     level: runtime
-    path: /g2/op_meso/OPER/WORKDIR/NWP_CMA_TYM_DATA/grapes_d01/dat
+    path: /g2/op_meso/OPER/WORKDIR/NWP_CMA_TYM_V4_DATA/DATABAK/cold/{.Year}{.Month}{.Day}{.Hour}
 
   # - type: local
   #   level: archive
@@ -477,7 +477,7 @@ file_name: postvar{.Year}{.Month}{.Day}{.Hour}{.ForecastHour}{.ForecastMinute}
 paths:
   - type: local
     level: runtime
-    path: /g2/op_meso/OPER/WORKDIR/NWP_CMA_TYM_DATA/grapes_d01/dat
+    path: /g2/op_meso/OPER/WORKDIR/NWP_CMA_TYM_V4_DATA/DATABAK/cold/{.Year}{.Month}{.Day}{.Hour}
 
   - type: local
     level: archive
@@ -487,12 +487,12 @@ paths:
 
 default: NOTFOUND
 
-file_name: post.ctl_{.Year}{.Month}{.Day}{.Hour}
+file_name: post.ctl_{.Year}{.Month}{.Day}{.Hour}00000
 
 paths:
   - type: local
     level: runtime
-    path: /g2/op_meso/OPER/WORKDIR/NWP_CMA_TYM_DATA/grapes_d01/dat
+    path: /g2/op_meso/OPER/WORKDIR/NWP_CMA_TYM_V4_DATA/DATABAK/cold/{.Year}{.Month}{.Day}{.Hour}
 
   - type: local
     level: archive
