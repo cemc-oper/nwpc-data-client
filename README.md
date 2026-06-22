@@ -91,11 +91,13 @@ nwpc_data_client local --show-types
 Results may be like:
 
 ```text
+cma_geps/current/grib2/orig
 cma_gfs_gda/current/bin/modelvar
 cma_gfs_gda/current/bin/postvar
 cma_gfs_gda/current/grib2/modelvar
 cma_gfs_gda/current/grib2/orig
 cma_gfs_gmf/current/bin/modelvar
+cma_gfs_gmf/current/bin/postvar
 cma_gfs_gmf/current/grib2/modelvar
 cma_gfs_gmf/current/grib2/ne
 cma_gfs_gmf/current/grib2/orig
@@ -115,6 +117,7 @@ cma_meso_3km/current/bin/postvar_ctl.cold
 cma_meso_3km/current/bin/postvar_ctl
 cma_meso_3km/current/grib2/orig.cold
 cma_meso_3km/current/grib2/orig
+cma_reps/current/grib2/orig
 cma_tym/current/bin/modelvar
 cma_tym/current/bin/modelvar_ctl
 cma_tym/current/bin/postvar
@@ -126,14 +129,16 @@ Use `--config-dir` to set a custom config file directory.
 
 ### checker
 
-`nwpc_data_checker local` polls local data paths for a list of forecast times and optionally runs a command once each file becomes stable. It is typically used in operational workflows to wait for model output and then trigger downstream processing.
+`nwpc_data_checker local` polls local data paths for a list of forecast times and optionally runs commands once each file becomes stable. It is typically used in operational workflows to wait for model output and then trigger downstream processing.
 
-Forecast times are read from `stdin`, one per line or whitespace-separated token, in the form `FFFh` or `FFFhMMm` (for example `000h`, `024h`, `003h10m`).
+Forecast times can be provided in two ways:
+
+1. From `stdin`, one per line or whitespace-separated token, in the form `FFFh` or `FFFhMMm` (for example `000h`, `024h`, `003h10m`). This is the original behavior and remains supported.
+2. From a YAML runtime config file passed with `--checker-config`. This is the recommended approach for complex command pipelines.
 
 ```bash
-nwpc_data_checker local \
+nwpc_data_checker local YYYYMMDDHH \
     --data-type some/data/type \
-    --start-time YYYYMMDDHH \
     --location-level runtime,archive
 ```
 
@@ -149,19 +154,57 @@ If the file is not found or does not stabilize before `--max-check-count` is rea
 A complete example: wait for CMA-GFS GMF GRIB2 original output and print the path once it is stable.
 
 ```bash
-printf "000h\n024h\n" | nwpc_data_checker local \
+printf "000h\n024h\n" | nwpc_data_checker local 2025052900 \
     --data-type=cma_gfs_gmf/current/grib2/orig \
-    --start-time 2025052900 \
     --location-level runtime \
-    --execute-command "echo found {FilePath}"
+    --execute-command 'echo found {.FilePath}'
 ```
 
-The `--execute-command` template supports the same variables as configuration files (see [Configuration file](#configuration-file)) plus `FilePath`, which is set to the resolved file path. Use `{` and `}` as delimiters, for example `{FilePath}` or `{.Year}{.Month}{.Day}{.Hour}`.
+The `--execute-command` template supports the same variables as configuration files (see [Configuration file](#configuration-file)) plus `.FilePath`, which is set to the resolved file path. Use `{` and `}` as delimiters, for example `{.FilePath}` or `{.Year}{.Month}{.Day}{.Hour}`.
+
+### Checker runtime config
+
+For workflows with long command strings or multiple downstream steps, use a YAML runtime config file via `--checker-config` (or `-c`). All flags except `start_time` can be moved into this file, and any flag given on the command line overrides the file value.
+
+```yaml
+# checker-config.yaml
+data_type: cma_gfs_gmf/current/grib2/orig
+location_levels: runtime
+max_check_count: 2880
+check_interval: 5s
+delay_time: 0s
+debug: false
+
+forecast_times:
+  - 000h
+  - 024h
+  - 048h
+
+# Use either execute_command (single command) or execute_commands (list), not both.
+execute_commands:
+  - 'echo "found {.FilePath}"'
+  - '/app/postprocess.sh {.FilePath}'
+```
+
+Run it with:
+
+```bash
+nwpc_data_checker local 2025052900 --checker-config checker-config.yaml
+```
+
+If `forecast_times` is omitted from the config file, forecast times are still read from `stdin` as in the original behavior.
+
+The `execute_command` field accepts a single Go template string. The `execute_commands` field accepts a list of template strings, which are executed in order after each file stabilizes. If any command fails, the checker exits with an error.
+
+> **Note:** 
+> Some YAML parsers (including the one used by `nwpc_data_checker`) have trouble with double-quoted scalars that contain a colon followed by a space, 
+> such as `"echo file path: {.FilePath}"`. To avoid parse errors, wrap command strings in single quotes, for example `'echo "file path: {.FilePath}"'`.
 
 Common flags:
 
 | Flag | Description | Default |
 |------|-------------|---------|
+| `--checker-config` | Path to a YAML runtime config file. CLI flags override file values. | - |
 | `--data-type` | Data type used to locate the config file in the config dir. | (required if `--data-config-file` is not set) |
 | `--data-config-dir` | Custom config directory, same as `nwpc_data_client local`. | embedded configs |
 | `--data-config-file` | Path to a single config file; if set, `--data-config-dir` and `--data-type` are ignored. | - |
@@ -279,18 +322,32 @@ If the file does not exist in `runtime`, the tool falls back to the `archive` pa
 
 ## Test
 
-Run `make test` to run all tests. 
+Run unit tests:
 
-> NOTE:
->
-> Tests in `tests/bats` should run in CMA-HPC2023.
->
+```bash
+make test
+```
 
-Tests in `tests/bats` use the following projects embedded as git submodules:
+This runs `go test ./...`.
 
-- [bats-core](https://github.com/bats-core/bats-core)
-- [bats-support](https://github.com/bats-core/bats-support)
-- [bats-assert](https://github.com/bats-core/bats-assert)
+Integration tests live under `tests/integration/` and use the `integration` build tag
+(`//go:build integration`). They invoke `bin/nwpc_data_client` via `os/exec` and check
+for real operational files on CMA HPC paths, skipping when data is unavailable.
+`make test-integration` builds the binary automatically and runs them:
+
+```bash
+make test-integration
+```
+
+Run a single integration test:
+
+```bash
+go test -tags=integration -run TestCMA_GFS_GMF ./tests/integration/...
+```
+
+The integration test helper honors `NWPC_DATA_CLIENT_PROGRAM` and
+`NWPC_DATA_CLIENT_CONFIG_DIR` when set, otherwise defaults to `./bin/nwpc_data_client`
+and `./conf`.
 
 ## License
 
