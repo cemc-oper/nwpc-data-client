@@ -5,15 +5,10 @@ import (
 )
 
 var (
-	configDir                    = ""
-	configFile                   = ""
-	dataType                     = ""
-	locationLevels               = ""
-	maxCheckCount                = 2880
-	checkInterval                = "5s"
-	executeCommand               = ""
-	delayTimeForEachForecastTime = "0s"
-	debugMode                    = false
+	// flagConfig holds values bound directly from CLI flags.
+	flagConfig CheckerConfig
+	// checkerConfigFile is the path to the optional YAML runtime config file.
+	checkerConfigFile = ""
 
 	startTime time.Time
 )
