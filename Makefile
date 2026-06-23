@@ -8,12 +8,11 @@ all: command
 
 command: $(BIN_TARGETS)
 
-$(BIN_PATH)/nwpc_data_client: data_client/main.go
-$(BIN_PATH)/nwpc_data_checker: data_checker/main.go
+$(BIN_PATH)/nwpc_data_client: main.go
 
 $(BIN_TARGETS):
 	@mkdir -p $(BIN_PATH)
-	CGO_ENABLED=0 go build -ldflags "$(LDFLAGS)" -o $@ $<
+	CGO_ENABLED=0 go build -ldflags "$(LDFLAGS)" -o $@ .
 
 generate:
 	cd common/config/generate && go generate

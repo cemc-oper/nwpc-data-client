@@ -2,14 +2,15 @@ package cmd
 
 import (
 	"fmt"
-	"github.com/spf13/cobra"
 	"os"
+
+	"github.com/spf13/cobra"
 )
 
 var rootCmd = &cobra.Command{
-	Use:   "nwpc_data_checker",
-	Short: "Check data for operation systems in NWPC.",
-	Long:  "Check data for operation systems in NWPC.",
+	Use:   "nwpc_data_client",
+	Short: "Data client for NWPC.",
+	Long:  "A data client for GRAPES models in NWPC.",
 	Run: func(cmd *cobra.Command, args []string) {
 		cmd.Help()
 	},

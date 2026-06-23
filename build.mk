@@ -11,5 +11,4 @@ LDFLAGS := -X "github.com/cemc-oper/nwpc-data-client/common.Version=$(VERSION)" 
            -X "github.com/cemc-oper/nwpc-data-client/common.GitCommit=$(GIT_COMMIT)"
 
 # binary_name:source_dir
-BINARIES := nwpc_data_client:data_client \
-            nwpc_data_checker:data_checker
+BINARIES := nwpc_data_client:.

@@ -2,13 +2,14 @@ package cmd
 
 import (
 	"fmt"
+	"os"
+	"path/filepath"
+	"strings"
+
 	"github.com/cemc-oper/nwpc-data-client/common"
 	"github.com/cemc-oper/nwpc-data-client/common/config"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
-	"os"
-	"path/filepath"
-	"strings"
 )
 
 func init() {
@@ -16,29 +17,29 @@ func init() {
 
 	localCmd.Flags().SortFlags = false
 
-	localCmd.Flags().StringVar(&configDir, "config-dir", "",
+	localCmd.Flags().StringVar(&localConfigDir, "config-dir", "",
 		"Config dir.")
 
-	localCmd.Flags().StringVar(&configFile, "data-config-file", "",
+	localCmd.Flags().StringVar(&localConfigFile, "data-config-file", "",
 		"Data config file path. If set, --config-dir and --data-type are ignored.")
 
-	localCmd.Flags().StringVar(&dataType, "data-type", "",
+	localCmd.Flags().StringVar(&localDataType, "data-type", "",
 		"Data type used to locate config file path in config dir.")
 
-	localCmd.Flags().StringVar(&locationLevels, "location-level", "",
+	localCmd.Flags().StringVar(&localLocationLevels, "location-level", "",
 		"Location levels, split by ',', such as 'runtime,archive'.")
 
-	localCmd.Flags().StringVar(&startTimeSting, "start-time", "",
+	localCmd.Flags().StringVar(&localStartTimeString, "start-time", "",
 		"start time, YYYYMMDDHH, such as 2020021400")
-	localCmd.Flags().StringVar(&forecastTimeString, "forecast-time", "",
+	localCmd.Flags().StringVar(&localForecastTimeString, "forecast-time", "",
 		"forecast time, FFFh, such as 0h, 120h")
-	localCmd.Flags().StringVar(&member, "member", "",
+	localCmd.Flags().StringVar(&localMember, "member", "",
 		"ensemble member, MMM, such as 000, 014")
 
-	localCmd.Flags().BoolVar(&showTypes, "show-types", false,
+	localCmd.Flags().BoolVar(&localShowTypes, "show-types", false,
 		"Show supported data types defined in config dir and exit.")
 
-	localCmd.Flags().BoolVar(&debugMode, "debug", false, "debug mode")
+	localCmd.Flags().BoolVar(&localDebugMode, "debug", false, "debug mode")
 }
 
 const localCommandName = "local"
@@ -52,11 +53,11 @@ var localCmd = &cobra.Command{
 	Short: "Find local data path.",
 	Long:  localCommandDocString,
 	Args: func(cmd *cobra.Command, args []string) error {
-		if showTypes {
+		if localShowTypes {
 			return nil
 		}
 
-		if configFile == "" {
+		if localConfigFile == "" {
 			cmd.MarkFlagRequired("data-type")
 		}
 		cmd.MarkFlagRequired("start-time")
@@ -65,11 +66,11 @@ var localCmd = &cobra.Command{
 		return nil
 	},
 	Run: func(cmd *cobra.Command, args []string) {
-		if debugMode {
+		if localDebugMode {
 			log.Info("Running in debug mode")
 			log.SetLevel(log.DebugLevel)
 		}
-		if showTypes {
+		if localShowTypes {
 			showDataTypes(cmd, args)
 		} else {
 			findLocalFile(cmd, args)
@@ -78,49 +79,52 @@ var localCmd = &cobra.Command{
 }
 
 func findLocalFile(cmd *cobra.Command, args []string) {
-	startTime, err := common.ParseStartTime(startTimeSting)
+	startTime, err := common.ParseStartTime(localStartTimeString)
 	if err != nil {
 		log.Errorf("check startTime failed: %s", err)
 		return
 	}
+	localStartTime = startTime
 
-	forecastTime, err = common.ParseForecastTime(forecastTimeString)
+	forecastTime, err := common.ParseForecastTime(localForecastTimeString)
 	if err != nil {
 		log.Errorf("check forecastTime failed: %s", err)
 		return
 	}
+	localForecastTime = forecastTime
 
-	levels := strings.Split(locationLevels, ",")
+	levels := strings.Split(localLocationLevels, ",")
 
 	var configContent string
-	if configFile != "" {
-		configContent, err = common.LoadConfigContentFromFile(configFile)
+	if localConfigFile != "" {
+		configContent, err = common.LoadConfigContentFromFile(localConfigFile)
 	} else {
-		if len(configDir) == 0 {
+		dataType := localDataType
+		if len(localConfigDir) == 0 {
 			dataType = localCommandName + "/" + dataType
 		}
-		configContent, err = common.LoadConfigContent(configDir, dataType)
+		configContent, err = common.LoadConfigContent(localConfigDir, dataType)
 	}
 	if err != nil {
 		log.Fatalf("load config failed: %v", err)
 		return
 	}
 
-	dataConfig, err := common.ParseConfigContent(configContent, startTime, forecastTime, member)
+	dataConfig, err := common.ParseConfigContent(configContent, localStartTime, localForecastTime, localMember)
 	if err != nil {
 		log.Fatalf("load config from content has error: %s", err)
 		return
 	}
 
-	pathItem := common.FindLocalFile(dataConfig, levels, startTime, forecastTime)
+	pathItem := common.FindLocalFile(dataConfig, levels, localStartTime, localForecastTime)
 	fmt.Printf("%s\n", pathItem.Path)
 }
 
 func showDataTypes(cmd *cobra.Command, args []string) {
-	if len(configDir) == 0 {
+	if len(localConfigDir) == 0 {
 		showEmbeddedDataTypes()
 	} else {
-		showLocalDataTypes(configDir)
+		showLocalDataTypes(localConfigDir)
 	}
 }
 

@@ -2,7 +2,7 @@
 .SYNOPSIS
     Cross-compile nwpc-data-client binaries for a target Linux architecture.
 .DESCRIPTION
-    Builds nwpc_data_client and nwpc_data_checker for the specified GOARCH.
+    Builds nwpc_data_client for the specified GOARCH.
     Intended as a Windows fallback when GoReleaser is not available.
 .PARAMETER Arch
     Target architecture: amd64 or arm64. Default: amd64.
@@ -28,8 +28,7 @@ $OUT_DIR = Join-Path $BIN_PATH "bin_linux_$Arch"
 New-Item -ItemType Directory -Force -Path $OUT_DIR | Out-Null
 
 $Binaries = @(
-    @{ Name = "nwpc_data_client";  Source = "data_client/main.go" },
-    @{ Name = "nwpc_data_checker"; Source = "data_checker/main.go" }
+    @{ Name = "nwpc_data_client"; Source = "." }
 )
 
 foreach ($bin in $Binaries) {

@@ -147,7 +147,7 @@ func TestMergeCheckerConfigMissingDataSource(t *testing.T) {
 
 func newTestLocalCommand(t *testing.T) *cobra.Command {
 	t.Helper()
-	cmd := &cobra.Command{Use: "local"}
+	cmd := &cobra.Command{Use: "check-local"}
 	cmd.Flags().String("data-config-dir", "", "")
 	cmd.Flags().String("data-config-file", "", "")
 	cmd.Flags().String("checker-config", "", "")

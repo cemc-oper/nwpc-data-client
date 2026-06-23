@@ -16,24 +16,9 @@ before:
 #    - go generate ./common/config/generate
 
 builds:
-  - id: data_client
-    main: './data_client'
+  - id: nwpc_data_client
+    main: '.'
     binary: 'nwpc_data_client'
-    env:
-      - CGO_ENABLED=0
-    goos:
-      - linux
-      - windows
-    goarch:
-      - amd64
-      - arm64
-    ldflags:
-      - -X "github.com/cemc-oper/nwpc-data-client/common.Version={{ .Version }}"
-      - -X "github.com/cemc-oper/nwpc-data-client/common.BuildTime={{ .Date }}"
-      - -X "github.com/cemc-oper/nwpc-data-client/common.GitCommit={{ .ShortCommit }}"
-  - id: data_checker
-    main: './data_checker'
-    binary: 'nwpc_data_checker'
     env:
       - CGO_ENABLED=0
     goos:
