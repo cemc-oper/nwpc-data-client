@@ -21,15 +21,15 @@ func TestParseConfigContent(t *testing.T) {
 			content: `# cma-gfs
 # grib2 orig
 default: NOTFOUND
-file_name: gmf.gra.{.Year}{.Month}{.Day}{.Hour}{.ForecastHour}.grb2
+file_name: gmf.gra.{{.Year}}{{.Month}}{{.Day}}{{.Hour}}{{.ForecastHour}}.grb2
 paths:
   - type: local
     level: runtime
-    path: /g2/op_post/OPER/WORKDIR/NWP_CMA_GFS_GMF_POST_DATA/{.Year}{.Month}{.Day}{.Hour}/data/output/grib2_orig/
+    path: /g2/op_post/OPER/WORKDIR/NWP_CMA_GFS_GMF_POST_DATA/{{.Year}}{{.Month}}{{.Day}}{{.Hour}}/data/output/grib2_orig/
 
   - type: local
     level: archive
-    path: /g3/COMMONDATA/OPER/CEMC/GFS_GMF/Prod-grib/{.Year}{.Month}{.Day}{.Hour}/ORIG
+    path: /g3/COMMONDATA/OPER/CEMC/GFS_GMF/Prod-grib/{{.Year}}{{.Month}}{{.Day}}{{.Hour}}/ORIG
 `,
 			startTime:    time.Date(2026, 6, 17, 0, 0, 0, 0, time.UTC),
 			forecastTime: 24 * time.Hour,

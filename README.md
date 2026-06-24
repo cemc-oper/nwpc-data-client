@@ -178,13 +178,14 @@ When no `--checker-config` is provided, forecast times are read from `stdin`, on
 A complete example: wait for CMA-GFS GMF GRIB2 original output and print the path once it is stable.
 
 ```bash
-printf "000h\n024h\n" | nwpc_data_client check local 2025052900 \
+seq 0 3 240 | awk '{b=$1"h"; print b}' |
+    nwpc_data_client check local 2026062312 \
     --data-type=cma_gfs_gmf/current/grib2/orig \
     --location-level runtime \
-    --execute-command 'echo found {.FilePath}'
+    --execute-command 'echo found {{.FilePath}}'
 ```
 
-The `--execute-command` template supports the same variables as configuration files (see [Template variables](#template-variables)) plus `.FilePath`, which is set to the resolved file path. Use `{` and `}` as delimiters, for example `{.FilePath}` or `{.Year}{.Month}{.Day}{.Hour}`.
+The `--execute-command` template supports the same variables as configuration files (see [Template variables](#template-variables)) plus `.FilePath`, which is set to the resolved file path. Use `{{` and `}}` as delimiters, for example `{{.FilePath}}` or `{{.Year}}{{.Month}}{{.Day}}{{.Hour}}`.
 
 ### Common flags
 
@@ -224,8 +225,8 @@ forecast_times:
 
 # Use either execute_command (single command) or execute_commands (list), not both.
 execute_commands:
-  - 'echo "found {.FilePath}"'
-  - '/app/postprocess.sh {.FilePath}'
+  - 'echo "found {{.FilePath}}"'
+  - '/app/postprocess.sh {{.FilePath}}'
 ```
 
 Run it with:
@@ -247,8 +248,8 @@ If any command fails, the checker exits with an error.
 > **YAML quoting note**
 >
 > Some YAML parsers (including the one used by `nwpc_data_client check`) have trouble with double-quoted scalars that contain a colon followed by a space, 
-> such as `"echo file path: {.FilePath}"`. 
-> To avoid parse errors, wrap command strings in single quotes, for example `'echo "file path: {.FilePath}"'`.
+> such as `"echo file path: {{.FilePath}}"`. 
+> To avoid parse errors, wrap command strings in single quotes, for example `'echo "file path: {{.FilePath}}"'`.
 
 ## Configuration
 
@@ -261,17 +262,17 @@ A configuration file is a single YAML document with the following fields:
 ```yaml
 default: NOTFOUND
 
-file_name: gmf.gra.{.Year}{.Month}{.Day}{.Hour}{.ForecastHour}.grb2
+file_name: gmf.gra.{{.Year}}{{.Month}}{{.Day}}{{.Hour}}{{.ForecastHour}}.grb2
 file_names: []
 
 paths:
   - type: local
     level: runtime
-    path: /some/dir/{.Year}{.Month}{.Day}{.Hour}/
+    path: /some/dir/{{.Year}}{{.Month}}{{.Day}}{{.Hour}}/
 
   - type: local
     level: archive
-    path: /another/dir/{.Year}{.Month}{.Day}{.Hour}/
+    path: /another/dir/{{.Year}}{{.Month}}{{.Day}}{{.Hour}}/
 ```
 
 | Field | Description |
@@ -291,7 +292,7 @@ Each entry in `paths` has:
 
 ### Template variables
 
-The config file is executed as a Go template with `{` and `}` delimiters. The following variables are available:
+The config file is executed as a Go template with `{{` and `}}` delimiters. The following variables are available:
 
 | Variable | Type | Example | Description |
 |----------|------|---------|-------------|
@@ -310,7 +311,7 @@ The config file is executed as a Go template with `{` and `}` delimiters. The fo
 Template helper functions are also available for use in more complex expressions:
 
 ```yaml
-file_name: gmf.gra.{generateStartTime .StartTime}{getForecastHour .ForecastTime}.grb2
+file_name: gmf.gra.{{generateStartTime .StartTime}}{{getForecastHour .ForecastTime}}.grb2
 ```
 
 | Function | Description |
@@ -337,16 +338,16 @@ file_name: gmf.gra.{generateStartTime .StartTime}{getForecastHour .ForecastTime}
 # conf/local/cma_gfs_gmf/current/grib2/orig.yaml
 default: NOTFOUND
 
-file_name: gmf.gra.{.Year}{.Month}{.Day}{.Hour}{.ForecastHour}.grb2
+file_name: gmf.gra.{{.Year}}{{.Month}}{{.Day}}{{.Hour}}{{.ForecastHour}}.grb2
 
 paths:
   - type: local
     level: runtime
-    path: /g2/op_post/OPER/WORKDIR/NWP_CMA_GFS_GMF_POST_DATA/{.Year}{.Month}{.Day}{.Hour}/data/output/grib2_orig/
+    path: /g2/op_post/OPER/WORKDIR/NWP_CMA_GFS_GMF_POST_DATA/{{.Year}}{{.Month}}{{.Day}}{{.Hour}}/data/output/grib2_orig/
 
   - type: local
     level: archive
-    path: /g3/COMMONDATA/OPER/CEMC/GFS_GMF/Prod-grib/{.Year}{.Month}{.Day}{.Hour}/ORIG
+    path: /g3/COMMONDATA/OPER/CEMC/GFS_GMF/Prod-grib/{{.Year}}{{.Month}}{{.Day}}{{.Hour}}/ORIG
 ```
 
 For start time `2025052900` and forecast time `024h`, the first path resolves to:

@@ -400,7 +400,7 @@ func buildCommandTemplates(command string, commands []string) ([]*template.Templ
 
 	var templates []*template.Template
 	for i, s := range sources {
-		t, err := template.New(fmt.Sprintf("command-%d", i)).Funcs(funcMap).Delims("{", "}").Parse(s)
+		t, err := template.New(fmt.Sprintf("command-%d", i)).Funcs(funcMap).Parse(s)
 		if err != nil {
 			return nil, fmt.Errorf("parse execute command failed: %v", err)
 		}

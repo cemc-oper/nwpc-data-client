@@ -3,13 +3,13 @@
 
 default: NOTFOUND
 
-file_name: model.ctl_{.Year}{.Month}{.Day}{.Hour}00000
+file_name: model.ctl_{{.Year}}{{.Month}}{{.Day}}{{.Hour}}00000
 
 paths:
   - type: local
     level: runtime
-    path: /g2/op_meso/OPER/WORKDIR/NWP_CMA_TYM_V4_DATA/DATABAK/cold/{.Year}{.Month}{.Day}{.Hour}
+    path: /g2/op_meso/OPER/WORKDIR/NWP_CMA_TYM_V4_DATA/DATABAK/cold/{{.Year}}{{.Month}}{{.Day}}{{.Hour}}
 
   # - type: local
   #   level: archive
-  #   path: /g3/COMMONDATA/OPER/CEMC/TYM/Fcst-main/{.Year}{.Month}{.Day}{.Hour}
+  #   path: /g3/COMMONDATA/OPER/CEMC/TYM/Fcst-main/{{.Year}}{{.Month}}{{.Day}}{{.Hour}}

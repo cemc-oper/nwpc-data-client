@@ -82,7 +82,7 @@ func ParseConfigContent(content string, startTime time.Time, forecastTime time.D
 		"generateForecastTime": GenerateForecastTime,
 		"getForecastHour":      GetForecastHour,
 		"getForecastMinute":    GetForecastMinute,
-	}).Delims("{", "}").Parse(content))
+	}).Parse(content))
 	var configBuilder strings.Builder
 	err := contentTemplate.Execute(&configBuilder, tpVar)
 	if err != nil {

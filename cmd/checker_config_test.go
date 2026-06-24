@@ -32,8 +32,8 @@ forecast_times:
   - 6h
   - 12h
 execute_commands:
-  - echo "found {.FilePath}"
-  - /app/postprocess.sh {.FilePath}
+  - echo "found {{.FilePath}}"
+  - /app/postprocess.sh {{.FilePath}}
 `
 	dir := t.TempDir()
 	configPath := filepath.Join(dir, "checker.yaml")
@@ -50,7 +50,7 @@ execute_commands:
 	assert.True(t, cfg.Debug)
 	assert.Equal(t, []string{"0h", "6h", "12h"}, cfg.ForecastTimes)
 	assert.Equal(t, "", cfg.ExecuteCommand)
-	assert.Equal(t, []string{`echo "found {.FilePath}"`, `/app/postprocess.sh {.FilePath}`}, cfg.ExecuteCommands)
+	assert.Equal(t, []string{`echo "found {{.FilePath}}"`, `/app/postprocess.sh {{.FilePath}}`}, cfg.ExecuteCommands)
 }
 
 func TestMergeCheckerConfigDefaults(t *testing.T) {
@@ -206,19 +206,19 @@ func TestCheckerConfigParseForecastTimesInvalid(t *testing.T) {
 }
 
 func TestBuildCommandTemplatesSingle(t *testing.T) {
-	templates, err := buildCommandTemplates("echo {.FilePath}", nil)
+	templates, err := buildCommandTemplates("echo {{.FilePath}}", nil)
 	require.NoError(t, err)
 	assert.Len(t, templates, 1)
 }
 
 func TestBuildCommandTemplatesList(t *testing.T) {
-	templates, err := buildCommandTemplates("", []string{"echo {.FilePath}", "cat {.FilePath}"})
+	templates, err := buildCommandTemplates("", []string{"echo {{.FilePath}}", "cat {{.FilePath}}"})
 	require.NoError(t, err)
 	assert.Len(t, templates, 2)
 }
 
 func TestBuildCommandTemplatesMutualExclusion(t *testing.T) {
-	_, err := buildCommandTemplates("echo {.FilePath}", []string{"cat {.FilePath}"})
+	_, err := buildCommandTemplates("echo {{.FilePath}}", []string{"cat {{.FilePath}}"})
 	assert.Error(t, err)
 }
 

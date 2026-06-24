@@ -3,13 +3,13 @@
 
 default: NOTFOUND
 
-file_name: modelvar{.Year}{.Month}{.Day}{.Hour}{.ForecastHour}{.ForecastMinute}
+file_name: modelvar{{.Year}}{{.Month}}{{.Day}}{{.Hour}}{{.ForecastHour}}{{.ForecastMinute}}
 
 paths:
   - type: local
     level: runtime
-    path: /g2/op_meso/OPER/WORKDIR/NWP_CMA_TYM_V4_DATA/DATABAK/cold/{.Year}{.Month}{.Day}{.Hour}
+    path: /g2/op_meso/OPER/WORKDIR/NWP_CMA_TYM_V4_DATA/DATABAK/cold/{{.Year}}{{.Month}}{{.Day}}{{.Hour}}
 
   # - type: local
   #   level: archive
-  #   path: /g3/COMMONDATA/OPER/NWPC/GRAPES_TYM/Fcst-main/{.Year}{.Month}{.Day}{.Hour}
+  #   path: /g3/COMMONDATA/OPER/NWPC/GRAPES_TYM/Fcst-main/{{.Year}}{{.Month}}{{.Day}}{{.Hour}}

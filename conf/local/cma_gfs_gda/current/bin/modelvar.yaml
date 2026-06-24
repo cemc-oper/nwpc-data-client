@@ -3,16 +3,16 @@
 
 default: NOTFOUND
 
-  { $gdaStartTime := generateStartTime .StartTime -3 }
-  { $gdaForecastTime := generateForecastTime .ForecastTime "3h" }
+  {{ $gdaStartTime := generateStartTime .StartTime -3 }}
+  {{ $gdaForecastTime := generateForecastTime .ForecastTime "3h" }}
 
-file_name: "modelvar{ getYear $gdaStartTime }{getMonth $gdaStartTime }{ getDay $gdaStartTime }{ getHour $gdaStartTime}_{ getForecastHour $gdaForecastTime | printf "%03d"}"
+file_name: "modelvar{{ getYear $gdaStartTime }}{{getMonth $gdaStartTime }}{{ getDay $gdaStartTime }}{{ getHour $gdaStartTime}}_{{ getForecastHour $gdaForecastTime | printf "%03d"}}"
 
 paths:
   - type: local
     level: runtime
-    path: /g2/op_gfs/CMA-GFS/CMA-GFS4.2.3_DATA/MODEL/GRAPES_EN4DVAR/{.Hour}/output
+    path: /g2/op_gfs/CMA-GFS/CMA-GFS4.2.3_DATA/MODEL/GRAPES_EN4DVAR/{{.Hour}}/output
 
   - type: local
     level: archive
-    path:  /g3/COMMONDATA/OPER/CEMC/GFS_GDA/GRAPES_EN4DVAR/Fcst-9h/{.Year}{.Month}{.Day}{.Hour}
+    path:  /g3/COMMONDATA/OPER/CEMC/GFS_GDA/GRAPES_EN4DVAR/Fcst-9h/{{.Year}}{{.Month}}{{.Day}}{{.Hour}}
