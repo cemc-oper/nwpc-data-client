@@ -10,9 +10,10 @@ func init() {
 }
 
 var versionCmd = &cobra.Command{
-	Use:   "version",
-	Short: "Print version information",
-	Long:  "Print version information",
+	Use:     "version",
+	Short:   "Print version information.",
+	Long:    "Print version, build time, and git commit baked into the binary.",
+	Example: "  nwpc_data_client version",
 	Run: func(cmd *cobra.Command, args []string) {
 		common.PrintVersionInformation()
 	},

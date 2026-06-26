@@ -17,47 +17,71 @@ func init() {
 
 	localCmd.Flags().SortFlags = false
 
-	localCmd.Flags().StringVar(&localConfigDir, "config-dir", "",
-		"Config dir.")
-
-	localCmd.Flags().StringVar(&localConfigFile, "data-config-file", "",
-		"Data config file path. If set, --config-dir and --data-type are ignored.")
-
+	localCmd.Flags().StringVar(&localDataConfigDir, "data-config-dir", "",
+		"Directory holding data config files. Optional; uses embedded configs when empty.")
 	localCmd.Flags().StringVar(&localDataType, "data-type", "",
-		"Data type used to locate config file path in config dir.")
+		"Data type used to locate the config (embedded as local/<data-type>, or <dir>/<data-type>.yaml).")
+	localCmd.Flags().StringVar(&localDataConfigFile, "data-config-file", "",
+		"Path to a single data config file. If set, --data-config-dir and --data-type are ignored.")
 
 	localCmd.Flags().StringVar(&localLocationLevels, "location-level", "",
-		"Location levels, split by ',', such as 'runtime,archive'.")
-
+		"Location levels to search, split by ',', such as 'runtime,archive'. Empty searches all.")
 	localCmd.Flags().StringVar(&localStartTimeString, "start-time", "",
-		"start time, YYYYMMDDHH, such as 2020021400")
+		"Start time, YYYYMMDDHH, such as 2026062400. (required)")
 	localCmd.Flags().StringVar(&localForecastTimeString, "forecast-time", "",
-		"forecast time, FFFh, such as 0h, 120h")
+		"Forecast time, such as 0h, 24h, 120h. (required)")
 	localCmd.Flags().StringVar(&localMember, "member", "",
-		"ensemble member, MMM, such as 000, 014")
+		"Ensemble member, MMM, such as 000, 014.")
 
 	localCmd.Flags().BoolVar(&localShowTypes, "show-types", false,
-		"Show supported data types defined in config dir and exit.")
-
-	localCmd.Flags().BoolVar(&localDebugMode, "debug", false, "debug mode")
+		"List the supported data types and exit. Honors --data-config-dir when set.")
+	localCmd.Flags().BoolVar(&localDebugMode, "debug", false, "Enable debug logging.")
 }
 
 const localCommandName = "local"
 
-const localCommandDocString = `nwpc_data_client local
-Find local data path using config files in config dir.
-`
+const localCommandDocString = `Find a local data file through multiple directories and print the file path when found.
+
+The path is computed by applying --start-time and --forecast-time to a YAML
+config template. The config is chosen in one of three ways:
+
+  * --data-type            Use an embedded config named "local/<data-type>".
+  * --data-type combined with --data-config-dir  Load a user defined config from "<data-config-dir>/<data-type>.yaml".
+  * --data-config-file     Load a user defined config directly from "<data-config-file>".
+
+If a matching file exists it is printed; otherwise the config's "default" value
+(usually NOTFOUND) is printed. Use --location-level to restrict which path
+entries are searched (for example "runtime" or "runtime,archive").
+
+Run with --show-types to list the available data types (embedded, or from
+--data-config-dir) and exit.`
+
+const localCommandExample = `  # Use an embedded config for CMA-GFS grib2 data.
+  nwpc_data_client local --data-type=cma_gfs_gmf/current/grib2/orig \
+      --start-time=2026062400 --forecast-time=24h
+
+  # Use a config directory and only search runtime locations.
+  nwpc_data_client local --data-config-dir=./config --data-type=cma_meso_1km/bin/modelvar \
+      --start-time=2026062400 --forecast-time=24h --location-level=runtime
+
+  # Use a single config file directly.
+  nwpc_data_client local --data-config-file=./my_config.yaml \
+      --start-time=2026062400 --forecast-time=3h
+
+  # List available embedded data types.
+  nwpc_data_client local --show-types`
 
 var localCmd = &cobra.Command{
-	Use:   localCommandName,
-	Short: "Find local data path.",
-	Long:  localCommandDocString,
+	Use:     localCommandName,
+	Short:   "Find the local file path for model output data.",
+	Long:    localCommandDocString,
+	Example: localCommandExample,
 	Args: func(cmd *cobra.Command, args []string) error {
 		if localShowTypes {
 			return nil
 		}
 
-		if localConfigFile == "" {
+		if localDataConfigFile == "" {
 			cmd.MarkFlagRequired("data-type")
 		}
 		cmd.MarkFlagRequired("start-time")
@@ -96,14 +120,14 @@ func findLocalFile(cmd *cobra.Command, args []string) {
 	levels := strings.Split(localLocationLevels, ",")
 
 	var configContent string
-	if localConfigFile != "" {
-		configContent, err = common.LoadConfigContentFromFile(localConfigFile)
+	if localDataConfigFile != "" {
+		configContent, err = common.LoadConfigContentFromFile(localDataConfigFile)
 	} else {
 		dataType := localDataType
-		if len(localConfigDir) == 0 {
+		if len(localDataConfigDir) == 0 {
 			dataType = localCommandName + "/" + dataType
 		}
-		configContent, err = common.LoadConfigContent(localConfigDir, dataType)
+		configContent, err = common.LoadConfigContent(localDataConfigDir, dataType)
 	}
 	if err != nil {
 		log.Fatalf("load config failed: %v", err)
@@ -121,10 +145,10 @@ func findLocalFile(cmd *cobra.Command, args []string) {
 }
 
 func showDataTypes(cmd *cobra.Command, args []string) {
-	if len(localConfigDir) == 0 {
+	if len(localDataConfigDir) == 0 {
 		showEmbeddedDataTypes()
 	} else {
-		showLocalDataTypes(localConfigDir)
+		showLocalDataTypes(localDataConfigDir)
 	}
 }
 

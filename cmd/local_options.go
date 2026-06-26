@@ -5,8 +5,8 @@ import (
 )
 
 var (
-	localConfigDir          = ""
-	localConfigFile         = ""
+	localDataConfigDir      = ""
+	localDataConfigFile     = ""
 	localDataType           = ""
 	localLocationLevels     = ""
 	localStartTimeString    = ""

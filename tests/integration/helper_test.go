@@ -79,7 +79,7 @@ func runTestCase(t *testing.T, tc TestCase) {
 		"--forecast-time=" + tc.ForecastTime,
 	}
 	if tc.ConfigDir != "" {
-		args = append(args, "--config-dir="+getConfigDir(t, tc.ConfigDir))
+		args = append(args, "--data-config-dir="+getConfigDir(t, tc.ConfigDir))
 	}
 
 	cmd := exec.Command(binPath, args...)

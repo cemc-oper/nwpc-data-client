@@ -1,5 +1,7 @@
 # NWPC Data Client
 
+[![CI](https://github.com/cemc-oper/nwpc-data-client/actions/workflows/ci.yml/badge.svg)](https://github.com/cemc-oper/nwpc-data-client/actions/workflows/ci.yml)
+
 A data finder CLI tool for operational systems in CEMC/CMA.
 
 ## Features
@@ -17,12 +19,6 @@ Use `make` to build the binary (`nwpc_data_client`) into the `bin/` directory:
 
 ```bash
 make
-```
-
-Build a single binary:
-
-```bash
-make nwpc_data_client
 ```
 
 ### Cross-compile from Windows (PowerShell)
@@ -89,8 +85,8 @@ All flags for `nwpc_data_client local`:
 
 | Flag | Description | Default |
 |------|-------------|---------|
-| `--config-dir` | Config directory. | embedded configs |
-| `--data-config-file` | Path to a single config file; if set, `--config-dir` and `--data-type` are ignored. | - |
+| `--data-config-dir` | Config directory. | embedded configs |
+| `--data-config-file` | Path to a single config file; if set, `--data-config-dir` and `--data-type` are ignored. | - |
 | `--data-type` | Data type used to locate the config file in the config dir. | required* |
 | `--location-level` | Comma-separated location levels, such as `runtime,archive`. | all levels |
 | `--start-time` | Start time, `YYYYMMDDHH`. | required |
@@ -116,11 +112,11 @@ nwpc_data_client local \
 
 #### Find with custom configs
 
-Use `--config-dir` to load YAML configs from a custom directory instead of the embedded configs:
+Use `--data-config-dir` to load YAML configs from a custom directory instead of the embedded configs:
 
 ```bash
 nwpc_data_client local \
-  --config-dir=/g1/u/op_post/OPER/UTIL/nwpc_data_client/config/local_hpc2023 \
+  --data-config-dir=/g1/u/op_post/OPER/UTIL/nwpc_data_client/config/local_hpc2023 \
   --data-type=cma_gfs_gmf/v4.2.3/oper/bin/modelvar \
   --location-level=all \
   --start-time=2026062300 \
@@ -129,13 +125,13 @@ nwpc_data_client local \
 
 #### Find with a single config file
 
-Use a single data config file directly (this ignores `--config-dir` and `--data-type`):
+Use a single data config file directly (this ignores `--data-config-dir` and `--data-type`):
 
 ```bash
 nwpc_data_client local \
     --data-config-file /path/to/config.yaml \
-    --start-time 2025052900 \
-    --forecast-time 000h
+    --start-time 2026062300 \
+    --forecast-time 48h
 ```
 
 #### Listing available data types
@@ -150,7 +146,7 @@ To list all data types available in the configured directory, run:
 
 ```bash
 nwpc_data_client local --show-types \
-  --config-dir /g1/u/op_post/OPER/UTIL/nwpc_data_client/config/local_hpc2023 
+  --data-config-dir /g1/u/op_post/OPER/UTIL/nwpc_data_client/config/local_hpc2023 
 ```
 
 ## Data Checker
@@ -185,7 +181,8 @@ seq 0 3 240 | awk '{b=$1"h"; print b}' |
     --execute-command 'echo found {{.FilePath}}'
 ```
 
-The `--execute-command` template supports the same variables as configuration files (see [Template variables](#template-variables)) plus `.FilePath`, which is set to the resolved file path. Use `{{` and `}}` as delimiters, for example `{{.FilePath}}` or `{{.Year}}{{.Month}}{{.Day}}{{.Hour}}`.
+The `--execute-command` template supports the same variables as configuration files (see [Template variables](#template-variables)) plus `.FilePath`, which is set to the resolved file path. 
+Use `{{` and `}}` as delimiters, for example `{{.FilePath}}` or `{{.Year}}{{.Month}}{{.Day}}{{.Hour}}`.
 
 ### Common flags
 
@@ -253,7 +250,9 @@ If any command fails, the checker exits with an error.
 
 ## Configuration
 
-Data types are described by YAML configuration files. When no `--config-dir` / `--data-config-dir` is given, `nwpc_data_client` uses the configs embedded in the binary at build time (see [Regenerating embedded configs](#regenerating-embedded-configs)). A custom directory can be used during development or for site-specific overrides.
+Data types are described by YAML configuration files. 
+When no `--data-config-dir` is given, `nwpc_data_client` uses the configs embedded in the binary at build time (see [Regenerating embedded configs](#regenerating-embedded-configs)). 
+A custom directory can be used during development or for site-specific overrides.
 
 ### File format
 
