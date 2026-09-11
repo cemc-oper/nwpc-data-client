@@ -1,5 +1,6 @@
 # NWPC Data Client
 
+[![Maturity-Incubating](https://img.shields.io/badge/Maturity-Incubating-56B4E9)](https://github.com/cemc-oper/nwpc-data-client)
 [![CI](https://github.com/cemc-oper/nwpc-data-client/actions/workflows/ci.yml/badge.svg)](https://github.com/cemc-oper/nwpc-data-client/actions/workflows/ci.yml)
 
 面向 CMA 超算平台开发的 CEMC/CMA 数值天气预报业务系统数据查找命令行工具。
