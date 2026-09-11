@@ -1,9 +1,11 @@
 # CMA-MESO 3KM
 #   postvar
 
+_config_version: 3
+
 default: NOTFOUND
 
-file_name: post.ctl_{{.Year}}{{.Month}}{{.Day}}{{.Hour}}{{.Forecast}}00
+file_name: post.ctl_{{.Year}}{{.Month}}{{.Day}}{{.Hour}}{{.ForecastHour}}00
 
 paths:
   - type: local

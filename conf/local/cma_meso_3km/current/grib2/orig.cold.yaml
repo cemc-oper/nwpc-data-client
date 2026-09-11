@@ -1,6 +1,8 @@
 # CMA-MESO 3KM
 #   grib2 orig cold
 
+_config_version: 3
+
 default: NOTFOUND
 
 file_name: rmf.hgra.{{.Year}}{{.Month}}{{.Day}}{{.Hour}}{{.ForecastHour}}.grb2

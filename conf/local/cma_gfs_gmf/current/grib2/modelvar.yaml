@@ -1,6 +1,8 @@
 # cma-gfs gmf
 #   grib2 modelvar
 
+_config_version: 3
+
 default: NOTFOUND
 
 file_name: modelvar{{.Year}}{{.Month}}{{.Day}}{{.Hour}}{{.ForecastHour}}.grb2

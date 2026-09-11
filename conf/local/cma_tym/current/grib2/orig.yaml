@@ -1,6 +1,8 @@
 # CMA-TYM
 #   grib2 orig
 
+_config_version: 3
+
 default: NOTFOUND
 
 file_name: rmf.tcgra.{{.Year}}{{.Month}}{{.Day}}{{.Hour}}{{.ForecastHour}}.grb2

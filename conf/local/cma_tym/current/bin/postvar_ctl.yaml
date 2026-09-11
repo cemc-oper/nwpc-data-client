@@ -1,6 +1,8 @@
 # CMA-TYM
 #   postvar_ctl
 
+_config_version: 3
+
 default: NOTFOUND
 
 file_name: post.ctl_{{.Year}}{{.Month}}{{.Day}}{{.Hour}}00000

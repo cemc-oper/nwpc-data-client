@@ -1,6 +1,8 @@
 # CMA-TYM
 #   postvar
 
+_config_version: 3
+
 default: NOTFOUND
 
 file_name: postvar{{.Year}}{{.Month}}{{.Day}}{{.Hour}}{{.ForecastHour}}{{.ForecastMinute}}

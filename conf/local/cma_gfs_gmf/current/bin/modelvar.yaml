@@ -2,6 +2,8 @@
 #   modelvar
 #   version >= v0.8.0
 
+_config_version: 3
+
 default: NOTFOUND
 
 file_names:

@@ -1,6 +1,8 @@
 # cma-gfs gmf
 #   grib2 ne
 
+_config_version: 3
+
 default: NOTFOUND
 
 file_name: ne_gmf.gra.{{.Year}}{{.Month}}{{.Day}}{{.Hour}}{{.ForecastHour}}.grb2

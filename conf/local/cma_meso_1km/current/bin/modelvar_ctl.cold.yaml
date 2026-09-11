@@ -1,6 +1,8 @@
 # CMA-MESO 1KM
 #   modelvar_ctl cold
 
+_config_version: 3
+
 default: NOTFOUND
 
 file_names:

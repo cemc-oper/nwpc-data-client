@@ -5,6 +5,8 @@ var EmbeddedConfigs = [][2]string{
 	{`local/cma_geps/current/grib2/orig`, `# cma-reps
 #   grib2 orig
 
+_config_version: 3
+
 default: NOTFOUND
 
 file_name: gef.gra.{{.Member}}.{{.Year}}{{.Month}}{{.Day}}{{.Hour}}{{.ForecastHour}}.grb2
@@ -12,9 +14,12 @@ file_name: gef.gra.{{.Member}}.{{.Year}}{{.Month}}{{.Day}}{{.Hour}}{{.ForecastHo
 paths:
   - type: local
     level: archive
-    path: /g3/COMMONDATA/OPER/CEMC/GEPS/Prod-grib/{{.Year}}{{.Month}}{{.Day}}{{.Hour}}/grib2`},
+    path: /g3/COMMONDATA/OPER/CEMC/GEPS/Prod-grib/{{.Year}}{{.Month}}{{.Day}}{{.Hour}}/grib2
+`},
 	{`local/cma_gfs_gda/current/bin/modelvar`, `# cma-gfs
 #   modelvar
+
+_config_version: 3
 
 default: NOTFOUND
 
@@ -30,9 +35,12 @@ paths:
 
   - type: local
     level: archive
-    path:  /g3/COMMONDATA/OPER/CEMC/GFS_GDA/GRAPES_EN4DVAR/Fcst-9h/{{.Year}}{{.Month}}{{.Day}}{{.Hour}}`},
+    path:  /g3/COMMONDATA/OPER/CEMC/GFS_GDA/GRAPES_EN4DVAR/Fcst-9h/{{.Year}}{{.Month}}{{.Day}}{{.Hour}}
+`},
 	{`local/cma_gfs_gda/current/bin/postvar`, `# CMA-GFS gda
 #   postvar
+
+_config_version: 3
 
 default: NOTFOUND
 
@@ -53,6 +61,8 @@ paths:
 	{`local/cma_gfs_gda/current/grib2/modelvar`, `# CMA-GFS gda
 #   grib2 modelvar
 
+_config_version: 3
+
 default: NOTFOUND
 
 file_name: modelvar{{.Year}}{{.Month}}{{.Day}}{{.Hour}}{{.ForecastHour}}.grb2
@@ -64,9 +74,12 @@ paths:
 
   - type: local
     level: archive
-    path: /g3/COMMONDATA/OPER/CEMC/GFS_GDA/Prod-grib/{{.Year}}{{.Month}}{{.Day}}{{.Hour}}/MODELVAR`},
+    path: /g3/COMMONDATA/OPER/CEMC/GFS_GDA/Prod-grib/{{.Year}}{{.Month}}{{.Day}}{{.Hour}}/MODELVAR
+`},
 	{`local/cma_gfs_gda/current/grib2/orig`, `# CMA-GFS gda
 #   grib2 orig
+
+_config_version: 3
 
 default: NOTFOUND
 
@@ -85,6 +98,8 @@ paths:
 #   modelvar
 #   version >= v0.8.0
 
+_config_version: 3
+
 default: NOTFOUND
 
 file_names:
@@ -98,11 +113,14 @@ paths:
 
   - type: local
     level: archive
-    path:  /g3/COMMONDATA/OPER/CEMC/GFS_GMF/Fcst-long/{{.Year}}{{.Month}}{{.Day}}{{.Hour}}`},
+    path:  /g3/COMMONDATA/OPER/CEMC/GFS_GMF/Fcst-long/{{.Year}}{{.Month}}{{.Day}}{{.Hour}}
+`},
 	{`local/cma_gfs_gmf/current/bin/postvar`, `# cma-gfs
 #   postvar
 #   version >= v0.8.0
 
+
+_config_version: 3
 
 default: NOTFOUND
 
@@ -116,9 +134,12 @@ paths:
 
 #  - type: local
 #    level: archive
-#    path:  /g3/COMMONDATA/OPER/CEMC/GFS_GMF/Fcst-long/{{.Year}}{{.Month}}{{.Day}}{{.Hour}}`},
+#    path:  /g3/COMMONDATA/OPER/CEMC/GFS_GMF/Fcst-long/{{.Year}}{{.Month}}{{.Day}}{{.Hour}}
+`},
 	{`local/cma_gfs_gmf/current/grib2/modelvar`, `# cma-gfs gmf
 #   grib2 modelvar
+
+_config_version: 3
 
 default: NOTFOUND
 
@@ -133,9 +154,12 @@ paths:
   # archive dir
   - type: local
     level: archive
-    path: /g3/COMMONDATA/OPER/CEMC/GFS_GMF/Prod-grib/{{.Year}}{{.Month}}{{.Day}}{{.Hour}}/MODELVAR`},
+    path: /g3/COMMONDATA/OPER/CEMC/GFS_GMF/Prod-grib/{{.Year}}{{.Month}}{{.Day}}{{.Hour}}/MODELVAR
+`},
 	{`local/cma_gfs_gmf/current/grib2/ne`, `# cma-gfs gmf
 #   grib2 ne
+
+_config_version: 3
 
 default: NOTFOUND
 
@@ -148,9 +172,12 @@ paths:
 
   - type: local
     level: archive
-    path: /g3/COMMONDATA/OPER/CEMC/GFS_GMF/Prod-grib/{{.Year}}{{.Month}}{{.Day}}{{.Hour}}/CMACAST`},
+    path: /g3/COMMONDATA/OPER/CEMC/GFS_GMF/Prod-grib/{{.Year}}{{.Month}}{{.Day}}{{.Hour}}/CMACAST
+`},
 	{`local/cma_gfs_gmf/current/grib2/orig`, `# cma-gfs
 #   grib2 orig
+
+_config_version: 3
 
 default: NOTFOUND
 
@@ -163,9 +190,12 @@ paths:
 
   - type: local
     level: archive
-    path: /g3/COMMONDATA/OPER/CEMC/GFS_GMF/Prod-grib/{{.Year}}{{.Month}}{{.Day}}{{.Hour}}/ORIG`},
+    path: /g3/COMMONDATA/OPER/CEMC/GFS_GMF/Prod-grib/{{.Year}}{{.Month}}{{.Day}}{{.Hour}}/ORIG
+`},
 	{`local/cma_meso_1km/current/bin/modelvar.cold`, `# CMA-MESO 1KM
 #   modelvar cold
+
+_config_version: 3
 
 default: NOTFOUND
 
@@ -175,9 +205,12 @@ file_names:
 paths:
   - type: local
     level: runtime
-    path: /g2/op_meso/OPER/WORKDIR/cma_meso_1km/cold/{{.Hour}}/fcst/grapes_model/run`},
+    path: /g2/op_meso/OPER/WORKDIR/cma_meso_1km/cold/{{.Hour}}/fcst/grapes_model/run
+`},
 	{`local/cma_meso_1km/current/bin/modelvar`, `# CMA-MESO 1KM
 #   modelvar warm
+
+_config_version: 3
 
 default: NOTFOUND
 
@@ -192,6 +225,8 @@ paths:
 	{`local/cma_meso_1km/current/bin/modelvar_ctl.cold`, `# CMA-MESO 1KM
 #   modelvar_ctl cold
 
+_config_version: 3
+
 default: NOTFOUND
 
 file_names:
@@ -200,9 +235,12 @@ file_names:
 paths:
   - type: local
     level: runtime
-    path: /g2/op_meso/OPER/WORKDIR/cma_meso_1km/cold/{{.Hour}}/fcst/grapes_model/run`},
+    path: /g2/op_meso/OPER/WORKDIR/cma_meso_1km/cold/{{.Hour}}/fcst/grapes_model/run
+`},
 	{`local/cma_meso_1km/current/bin/modelvar_ctl`, `# CMA-MESO 1KM
 #   modelvar_ctl warm
+
+_config_version: 3
 
 default: NOTFOUND
 
@@ -217,6 +255,8 @@ paths:
 	{`local/cma_meso_1km/current/grib2/orig.cold`, `# CMA-MESO 1KM
 #   grib2_orig cold
 
+_config_version: 3
+
 default: NOTFOUND
 
 file_name: rmf.hgra.{{.Year}}{{.Month}}{{.Day}}{{.Hour}}{{.ForecastHour}}.grb2
@@ -228,10 +268,13 @@ paths:
 
   - type: local
     level: archive
-    path: /g3/COMMONDATA/OPER/CEMC/MESO_1KM/Prod-grib/{{.Year}}{{.Month}}{{.Day}}{{.Hour}}/ORIG`},
+    path: /g3/COMMONDATA/OPER/CEMC/MESO_1KM/Prod-grib/{{.Year}}{{.Month}}{{.Day}}{{.Hour}}/ORIG
+`},
 	{`local/cma_meso_1km/current/grib2/orig`, `# CMA-MESO 1KM
 #   grib2_orig warm
 
+_config_version: 3
+
 default: NOTFOUND
 
 file_name: rmf.hgra.{{.Year}}{{.Month}}{{.Day}}{{.Hour}}{{.ForecastHour}}.grb2
@@ -243,10 +286,13 @@ paths:
 
   - type: local
     level: archive
-    path: /g3/COMMONDATA/OPER/CEMC/MESO_1KM/Prod-grib/{{.Year}}{{.Month}}{{.Day}}{{.Hour}}/ORIG`},
+    path: /g3/COMMONDATA/OPER/CEMC/MESO_1KM/Prod-grib/{{.Year}}{{.Month}}{{.Day}}{{.Hour}}/ORIG
+`},
 	{`local/cma_meso_3km/current/bin/modelvar.cold`, `# CMA-MESO 3KM
 #   modelvar cold
 
+_config_version: 3
+
 default: NOTFOUND
 
 file_name: modelvar{{.Year}}{{.Month}}{{.Day}}{{.Hour}}{{.ForecastHour}}{{.ForecastMinute}}
@@ -262,10 +308,13 @@ paths:
 
   - type: local
     level: archive
-    path: /g3/COMMONDATA/OPER/CEMC/MESO_3KM/Fcst-main/{{.Year}}{{.Month}}{{.Day}}{{.Hour}}`},
+    path: /g3/COMMONDATA/OPER/CEMC/MESO_3KM/Fcst-main/{{.Year}}{{.Month}}{{.Day}}{{.Hour}}
+`},
 	{`local/cma_meso_3km/current/bin/modelvar`, `# CMA-MESO 3KM
 #   modelvar warm
 
+_config_version: 3
+
 default: NOTFOUND
 
 file_name: modelvar{{.Year}}{{.Month}}{{.Day}}{{.Hour}}{{.ForecastHour}}{{.ForecastMinute}}
@@ -281,10 +330,13 @@ paths:
 
   - type: local
     level: archive
-    path: /g3/COMMONDATA/OPER/CEMC/MESO_3KM/Fcst-main/{{.Year}}{{.Month}}{{.Day}}{{.Hour}}`},
+    path: /g3/COMMONDATA/OPER/CEMC/MESO_3KM/Fcst-main/{{.Year}}{{.Month}}{{.Day}}{{.Hour}}
+`},
 	{`local/cma_meso_3km/current/bin/modelvar_ctl.cold`, `# CMA-MESO 3KM
 #   modelvar_ctl cold
 
+_config_version: 3
+
 default: NOTFOUND
 
 file_name: modelvar.ctl_{{.Year}}{{.Month}}{{.Day}}{{.Hour}}00000
@@ -300,10 +352,13 @@ paths:
 
   - type: local
     level: archive
-    path: /g3/COMMONDATA/OPER/CEMC/MESO_3KM/Fcst-main/{{.Year}}{{.Month}}{{.Day}}{{.Hour}}`},
+    path: /g3/COMMONDATA/OPER/CEMC/MESO_3KM/Fcst-main/{{.Year}}{{.Month}}{{.Day}}{{.Hour}}
+`},
 	{`local/cma_meso_3km/current/bin/modelvar_ctl`, `# CMA-MESO 3KM
 #   modelvar_ctl warm
 
+_config_version: 3
+
 default: NOTFOUND
 
 file_name: modelvar.ctl_{{.Year}}{{.Month}}{{.Day}}{{.Hour}}00000
@@ -319,9 +374,12 @@ paths:
 
   - type: local
     level: archive
-    path: /g3/COMMONDATA/OPER/CEMC/MESO_3KM/Fcst-main/{{.Year}}{{.Month}}{{.Day}}{{.Hour}}`},
+    path: /g3/COMMONDATA/OPER/CEMC/MESO_3KM/Fcst-main/{{.Year}}{{.Month}}{{.Day}}{{.Hour}}
+`},
 	{`local/cma_meso_3km/current/bin/postvar.cold`, `# CMA-MESO 3KM
 #   postvar cold
+
+_config_version: 3
 
 default: NOTFOUND
 
@@ -338,9 +396,12 @@ paths:
 
   - type: local
     level: archive
-    path: /g3/COMMONDATA/OPER/CEMC/MESO_3KM/Fcst-main/{{.Year}}{{.Month}}{{.Day}}{{.Hour}}`},
+    path: /g3/COMMONDATA/OPER/CEMC/MESO_3KM/Fcst-main/{{.Year}}{{.Month}}{{.Day}}{{.Hour}}
+`},
 	{`local/cma_meso_3km/current/bin/postvar`, `# CMA-MESO 3KM
 #   postvar warm
+
+_config_version: 3
 
 default: NOTFOUND
 
@@ -357,9 +418,12 @@ paths:
 
   - type: local
     level: archive
-    path: /g3/COMMONDATA/OPER/CEMC/MESO_3KM/Fcst-main/{{.Year}}{{.Month}}{{.Day}}{{.Hour}}`},
+    path: /g3/COMMONDATA/OPER/CEMC/MESO_3KM/Fcst-main/{{.Year}}{{.Month}}{{.Day}}{{.Hour}}
+`},
 	{`local/cma_meso_3km/current/bin/postvar_ctl.cold`, `# CMA-MESO 3KM
 #   postvar_ctl cold
+
+_config_version: 3
 
 default: NOTFOUND
 
@@ -376,13 +440,16 @@ paths:
 
   - type: local
     level: archive
-    path: /g3/COMMONDATA/OPER/CEMC/MESO_3KM/Fcst-main/{{.Year}}{{.Month}}{{.Day}}{{.Hour}}`},
+    path: /g3/COMMONDATA/OPER/CEMC/MESO_3KM/Fcst-main/{{.Year}}{{.Month}}{{.Day}}{{.Hour}}
+`},
 	{`local/cma_meso_3km/current/bin/postvar_ctl`, `# CMA-MESO 3KM
 #   postvar
 
+_config_version: 3
+
 default: NOTFOUND
 
-file_name: post.ctl_{{.Year}}{{.Month}}{{.Day}}{{.Hour}}{{.Forecast}}00
+file_name: post.ctl_{{.Year}}{{.Month}}{{.Day}}{{.Hour}}{{.ForecastHour}}00
 
 paths:
   - type: local
@@ -395,10 +462,13 @@ paths:
 
   - type: local
     level: archive
-    path: /g3/COMMONDATA/OPER/CEMC/MESO_3KM/Fcst-main/{{.Year}}{{.Month}}{{.Day}}{{.Hour}}`},
+    path: /g3/COMMONDATA/OPER/CEMC/MESO_3KM/Fcst-main/{{.Year}}{{.Month}}{{.Day}}{{.Hour}}
+`},
 	{`local/cma_meso_3km/current/grib2/orig.cold`, `# CMA-MESO 3KM
 #   grib2 orig cold
 
+_config_version: 3
+
 default: NOTFOUND
 
 file_name: rmf.hgra.{{.Year}}{{.Month}}{{.Day}}{{.Hour}}{{.ForecastHour}}.grb2
@@ -410,10 +480,13 @@ paths:
 
   - type: local
     level: archive
-    path: /g3/COMMONDATA/OPER/CEMC/MESO_3KM/Prod-grib/{{.Year}}{{.Month}}{{.Day}}{{.Hour}}/ORIG`},
+    path: /g3/COMMONDATA/OPER/CEMC/MESO_3KM/Prod-grib/{{.Year}}{{.Month}}{{.Day}}{{.Hour}}/ORIG
+`},
 	{`local/cma_meso_3km/current/grib2/orig`, `# CMA-MESO 3KM
 #   grib2 orig
 
+_config_version: 3
+
 default: NOTFOUND
 
 file_name: rmf.hgra.{{.Year}}{{.Month}}{{.Day}}{{.Hour}}{{.ForecastHour}}.grb2
@@ -425,9 +498,12 @@ paths:
 
   - type: local
     level: archive
-    path: /g3/COMMONDATA/OPER/CEMC/MESO_3KM/Prod-grib/{{.Year}}{{.Month}}{{.Day}}{{.Hour}}/ORIG`},
+    path: /g3/COMMONDATA/OPER/CEMC/MESO_3KM/Prod-grib/{{.Year}}{{.Month}}{{.Day}}{{.Hour}}/ORIG
+`},
 	{`local/cma_reps/current/grib2/orig`, `# cma-reps
 #   grib2 orig
+
+_config_version: 3
 
 default: NOTFOUND
 
@@ -436,9 +512,12 @@ file_name: mef.gra.{{.Member}}.{{.Year}}{{.Month}}{{.Day}}{{.Hour}}{{.ForecastHo
 paths:
   - type: local
     level: archive
-    path: /g3/COMMONDATA/OPER/CEMC/REPS/Prod-grib/{{.Year}}{{.Month}}{{.Day}}{{.Hour}}/grib2`},
+    path: /g3/COMMONDATA/OPER/CEMC/REPS/Prod-grib/{{.Year}}{{.Month}}{{.Day}}{{.Hour}}/grib2
+`},
 	{`local/cma_tym/current/bin/modelvar`, `# CMA-TYM
 #   modelvar
+
+_config_version: 3
 
 default: NOTFOUND
 
@@ -451,9 +530,12 @@ paths:
 
   # - type: local
   #   level: archive
-  #   path: /g3/COMMONDATA/OPER/NWPC/GRAPES_TYM/Fcst-main/{{.Year}}{{.Month}}{{.Day}}{{.Hour}}`},
+  #   path: /g3/COMMONDATA/OPER/NWPC/GRAPES_TYM/Fcst-main/{{.Year}}{{.Month}}{{.Day}}{{.Hour}}
+`},
 	{`local/cma_tym/current/bin/modelvar_ctl`, `# CMA-TYM
 #   modelvar_ctl
+
+_config_version: 3
 
 default: NOTFOUND
 
@@ -466,9 +548,12 @@ paths:
 
   # - type: local
   #   level: archive
-  #   path: /g3/COMMONDATA/OPER/CEMC/TYM/Fcst-main/{{.Year}}{{.Month}}{{.Day}}{{.Hour}}`},
+  #   path: /g3/COMMONDATA/OPER/CEMC/TYM/Fcst-main/{{.Year}}{{.Month}}{{.Day}}{{.Hour}}
+`},
 	{`local/cma_tym/current/bin/postvar`, `# CMA-TYM
 #   postvar
+
+_config_version: 3
 
 default: NOTFOUND
 
@@ -481,9 +566,12 @@ paths:
 
   - type: local
     level: archive
-    path: /g3/COMMONDATA/OPER/CEMC/TYM/Fcst-main/{{.Year}}{{.Month}}{{.Day}}{{.Hour}}`},
+    path: /g3/COMMONDATA/OPER/CEMC/TYM/Fcst-main/{{.Year}}{{.Month}}{{.Day}}{{.Hour}}
+`},
 	{`local/cma_tym/current/bin/postvar_ctl`, `# CMA-TYM
 #   postvar_ctl
+
+_config_version: 3
 
 default: NOTFOUND
 
@@ -496,9 +584,12 @@ paths:
 
   - type: local
     level: archive
-    path: /g3/COMMONDATA/OPER/CEMC/TYM/Fcst-main/{{.Year}}{{.Month}}{{.Day}}{{.Hour}}`},
+    path: /g3/COMMONDATA/OPER/CEMC/TYM/Fcst-main/{{.Year}}{{.Month}}{{.Day}}{{.Hour}}
+`},
 	{`local/cma_tym/current/grib2/orig`, `# CMA-TYM
 #   grib2 orig
+
+_config_version: 3
 
 default: NOTFOUND
 

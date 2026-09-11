@@ -1,6 +1,8 @@
 # cma-reps
 #   grib2 orig
 
+_config_version: 3
+
 default: NOTFOUND
 
 file_name: mef.gra.{{.Member}}.{{.Year}}{{.Month}}{{.Day}}{{.Hour}}{{.ForecastHour}}.grb2

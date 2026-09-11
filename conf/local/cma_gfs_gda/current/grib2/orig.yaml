@@ -1,6 +1,8 @@
 # CMA-GFS gda
 #   grib2 orig
 
+_config_version: 3
+
 default: NOTFOUND
 
 file_name: gda.gra.{{.Year}}{{.Month}}{{.Day}}{{.Hour}}{{.ForecastHour}}.grb2

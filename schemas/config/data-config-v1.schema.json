@@ -1,0 +1,64 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://cemc-oper.github.io/nwpc-data-client/schemas/config/data-config-v1.schema.json",
+  "title": "nwpc-data-client data config (v1 raw file)",
+  "description": "Field-level schema for RAW v1 (client <= 0.8) config files. v1 files are plain YAML with field-level templates using \"{...}\" delimiters, so they can be validated directly (e.g. IDE live hints via `# yaml-language-server: $schema=...`). This is a lightweight check only; the authoritative validation is `nwpc_data_client config lint`. v2/v3 raw files are whole-file Go templates and can NOT be validated with JSON Schema.",
+  "type": "object",
+  "required": ["paths"],
+  "additionalProperties": false,
+  "definitions": {
+    "v1Variable": {
+      "type": "string",
+      "enum": [
+        "Year", "Month", "Day", "Hour", "Forecast",
+        "Year4DV", "Month4DV", "Day4DV", "Hour4DV",
+        "Year1HR", "Month1HR", "Day1HR", "Hour1HR", "Forecast1HR"
+      ]
+    },
+    "v1VariablePattern": {
+      "type": "string",
+      "pattern": "\\{\\.(Year|Month|Day|Hour|Forecast|Year4DV|Month4DV|Day4DV|Hour4DV|Year1HR|Month1HR|Day1HR|Hour1HR|Forecast1HR)\\}"
+    }
+  },
+  "properties": {
+    "_config_version": {
+      "const": 1,
+      "description": "Optional for v1 files: a missing field means v1. If present, it must be 1."
+    },
+    "default": { "type": "string" },
+    "file_name": {
+      "type": "string",
+      "pattern": "^([^{]|\\{\\.(Year|Month|Day|Hour|Forecast|Year4DV|Month4DV|Day4DV|Hour4DV|Year1HR|Month1HR|Day1HR|Hour1HR|Forecast1HR|StartTime|ForecastTime)([\\s|][^}]*)?\\}|\\{(generateStartTime|getYear|getMonth|getDay|getHour|generateForecastTime|getForecastHour|getForecastMinute)[^}]*\\})*$",
+      "description": "Every template action must be either a whitelisted v1 variable action ({.Year}, {.Forecast}, the 4DV/1HR families, or the StartTime/ForecastTime raw objects, optionally piped) or a call to one of the 8 registered functions (functions ARE available in file_name/file_names in v1)."
+    },
+    "file_names": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "pattern": "^([^{]|\\{\\.(Year|Month|Day|Hour|Forecast|Year4DV|Month4DV|Day4DV|Hour4DV|Year1HR|Month1HR|Day1HR|Hour1HR|Forecast1HR|StartTime|ForecastTime)([\\s|][^}]*)?\\}|\\{(generateStartTime|getYear|getMonth|getDay|getHour|generateForecastTime|getForecastHour|getForecastMinute)[^}]*\\})*$"
+      }
+    },
+    "paths": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": ["type", "level", "path"],
+        "additionalProperties": false,
+        "properties": {
+          "type":  { "enum": ["local"] },
+          "level": {
+            "type": "string",
+            "pattern": "^(runtime|archive|storage)(/(runtime|archive|storage))*$"
+          },
+          "path": {
+            "type": "string",
+            "minLength": 1,
+            "pattern": "^([^{]|\\{\\.(Year|Month|Day|Hour|Forecast|Year4DV|Month4DV|Day4DV|Hour4DV|Year1HR|Month1HR|Day1HR|Hour1HR|Forecast1HR)([\\s|][^}]*)?\\})*$",
+            "description": "Whitelisted v1 variables only (optionally piped). In v1 the paths[].path template has NO FuncMap registered (v0.8.1 common/local.go), so actions starting with a function call are forbidden here. Note: this is a lightweight pattern check and cannot reject custom functions appearing mid-pipeline; `config lint` is the authoritative validation."
+          }
+        }
+      }
+    }
+  }
+}

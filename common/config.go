@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"regexp"
 	"strings"
 	"text/template"
 	"time"
@@ -22,18 +23,26 @@ type PathItem struct {
 }
 
 type DataConfig struct {
-	Default   string     `yaml:"default"`
-	FileName  string     `yaml:"file_name"`
-	FileNames []string   `yaml:"file_names"`
-	Paths     []PathItem `yaml:"paths"`
+	// ConfigVersion is the reserved "_config_version" field declaring the
+	// config format version. It is not used for path resolution; it exists
+	// so that the field survives YAML parsing and strict structural checks.
+	ConfigVersion int        `yaml:"_config_version,omitempty"`
+	Default       string     `yaml:"default"`
+	FileName      string     `yaml:"file_name"`
+	FileNames     []string   `yaml:"file_names"`
+	Paths         []PathItem `yaml:"paths"`
 }
 
 // LoadConfigContent read config content from a local file or from embedded config strings.
+// The content is checked against the config format version this binary supports.
 func LoadConfigContent(configDir string, dataType string) (string, error) {
 	if len(configDir) == 0 {
 		content, err := loadContentFromEmbedded(dataType)
 		if err != nil {
 			return "", fmt.Errorf("find embedded config for data type %s has error: %v", dataType, err)
+		}
+		if err := CheckConfigVersion(content); err != nil {
+			return "", fmt.Errorf("embedded config for data type %s: %v", dataType, err)
 		}
 		return content, nil
 	}
@@ -57,12 +66,19 @@ func loadContentFromLocal(configDir string, dataType string) (string, error) {
 }
 
 // LoadConfigContentFromFile read config content from a config file path.
+// The content is checked against the config format version this binary supports.
+// Tools that must accept every format version (such as "config lint") should
+// read the file directly instead.
 func LoadConfigContentFromFile(configFilePath string) (string, error) {
 	data, err := os.ReadFile(configFilePath)
 	if err != nil {
 		return "", err
 	}
-	return string(data), nil
+	content := string(data)
+	if err := CheckConfigVersion(content); err != nil {
+		return "", fmt.Errorf("%s: %v", configFilePath, err)
+	}
+	return content, nil
 }
 
 // ParseConfigContent parse config content template with start time and forecast time.
@@ -73,16 +89,7 @@ func ParseConfigContent(content string, startTime time.Time, forecastTime time.D
 	forecastTimeStr := FormatForecastTimeShort(forecastTime)
 	currentLog := log.WithFields(log.Fields{"forecastTime": forecastTimeStr})
 
-	contentTemplate := template.Must(template.New("dataConfig").Funcs(template.FuncMap{
-		"generateStartTime":    GenerateStartTime,
-		"getYear":              GetYear,
-		"getMonth":             GetMonth,
-		"getDay":               GetDay,
-		"getHour":              GetHour,
-		"generateForecastTime": GenerateForecastTime,
-		"getForecastHour":      GetForecastHour,
-		"getForecastMinute":    GetForecastMinute,
-	}).Parse(content))
+	contentTemplate := template.Must(template.New("dataConfig").Funcs(ConfigTemplateFuncMap()).Parse(content))
 	var configBuilder strings.Builder
 	err := contentTemplate.Execute(&configBuilder, tpVar)
 	if err != nil {
@@ -117,6 +124,48 @@ func LoadDataConfigFromContent(content string) (DataConfig, error) {
 		return dataConfig, err
 	}
 	return dataConfig, nil
+}
+
+// locationLevelPattern allows a single level ("runtime") or a combined level
+// ("runtime/archive") as used by existing configs.
+var locationLevelPattern = regexp.MustCompile(`^(runtime|archive|storage)(/(runtime|archive|storage))*$`)
+
+// ValidateDataConfig validates the structure of a rendered (template-free)
+// config document: strict YAML decoding (unknown fields are rejected) plus
+// field-level checks. It mirrors schemas/config/data-config.schema.json.
+func ValidateDataConfig(content string) error {
+	dataConfig := DataConfig{}
+	decoder := yaml.NewDecoder(strings.NewReader(content))
+	decoder.KnownFields(true)
+	if err := decoder.Decode(&dataConfig); err != nil {
+		return fmt.Errorf("yaml parse: %v", err)
+	}
+	return ValidateDataConfigStruct(dataConfig)
+}
+
+// ValidateDataConfigStruct checks the structural rules of a parsed DataConfig.
+func ValidateDataConfigStruct(dataConfig DataConfig) error {
+	if len(dataConfig.Paths) == 0 {
+		return fmt.Errorf("paths is required and must not be empty")
+	}
+	for i, item := range dataConfig.Paths {
+		if item.PathType == "" {
+			return fmt.Errorf("paths[%d]: type is required", i)
+		}
+		if item.PathType != "local" {
+			return fmt.Errorf("paths[%d]: unsupported type %q (only \"local\" is supported)", i, item.PathType)
+		}
+		if item.LevelType == "" {
+			return fmt.Errorf("paths[%d]: level is required", i)
+		}
+		if !locationLevelPattern.MatchString(item.LevelType) {
+			return fmt.Errorf("paths[%d]: invalid level %q (allowed: runtime, archive, storage, or a \"/\"-joined combination)", i, item.LevelType)
+		}
+		if item.Path == "" {
+			return fmt.Errorf("paths[%d]: path is required", i)
+		}
+	}
+	return nil
 }
 
 func inLocationLevelTypes(locationLevelTypes []string, locationLevelType string) bool {

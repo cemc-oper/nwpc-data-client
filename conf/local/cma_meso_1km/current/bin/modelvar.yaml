@@ -1,6 +1,8 @@
 # CMA-MESO 1KM
 #   modelvar warm
 
+_config_version: 3
+
 default: NOTFOUND
 
 file_names:

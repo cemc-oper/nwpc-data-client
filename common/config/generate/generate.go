@@ -56,7 +56,7 @@ var EmbeddedConfigs = [][2]string{
 `)
 
 	for _, item := range configList {
-		fmt.Fprint(file, "    ", item, " ,\n")
+		fmt.Fprintf(file, "\t%s,\n", item)
 	}
 
 	fmt.Fprintf(file, "}\n")

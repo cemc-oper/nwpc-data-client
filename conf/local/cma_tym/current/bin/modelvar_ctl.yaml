@@ -1,6 +1,8 @@
 # CMA-TYM
 #   modelvar_ctl
 
+_config_version: 3
+
 default: NOTFOUND
 
 file_name: model.ctl_{{.Year}}{{.Month}}{{.Day}}{{.Hour}}00000

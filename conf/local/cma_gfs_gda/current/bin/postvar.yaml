@@ -1,6 +1,8 @@
 # CMA-GFS gda
 #   postvar
 
+_config_version: 3
+
 default: NOTFOUND
 
   {{ $gdaStartTime := generateStartTime .StartTime -3 }}
