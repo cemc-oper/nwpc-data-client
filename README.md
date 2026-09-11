@@ -296,6 +296,12 @@ nwpc_data_client check local 2025052900 --checker-config checker-config.yaml
 
 配置文件带 `_config_version` 字段声明格式版本（当前为 v3）；老版本格式（v1/v2）的配置可以用 `config migrate` 迁移、`config lint` 校验，参见 [docs/config-migration.md](docs/config-migration.md)。
 
+注意：`--data-config-dir` 会**全量替代**内置配置（外部目录中缺失的数据类型直接报错）。内置配置可以用 `config export <dir>` 完整导出为目录树（与 `conf/` 内容一致），部署时可将导出基线与增量配置合并后下发：
+
+```bash
+nwpc_data_client config export ./exported_conf
+```
+
 ### 文件格式
 
 配置文件是 YAML 格式文档，并支持 Go 模板语法，包含以下字段：
