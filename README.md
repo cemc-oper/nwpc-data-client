@@ -294,6 +294,8 @@ nwpc_data_client check local 2025052900 --checker-config checker-config.yaml
 当未提供 `--data-config-dir` 时，`nwpc_data_client` 使用构建时嵌入二进制中的配置（见[重新生成内置配置](#重新生成内置配置)）。
 实际应用时推荐在自定义目录中定义数据配置文件。
 
+配置文件带 `_config_version` 字段声明格式版本（当前为 v3）；老版本格式（v1/v2）的配置可以用 `config migrate` 迁移、`config lint` 校验，参见 [docs/config-migration.md](docs/config-migration.md)。
+
 ### 文件格式
 
 配置文件是 YAML 格式文档，并支持 Go 模板语法，包含以下字段：

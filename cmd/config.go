@@ -7,13 +7,15 @@ import (
 func init() {
 	rootCmd.AddCommand(configCmd)
 	configCmd.AddCommand(configLintCmd)
+	configCmd.AddCommand(configMigrateCmd)
 }
 
 const configCommandName = "config"
 
 const configCommandDocString = `Manage data config files.
 
-Use "nwpc_data_client config lint --help" for detailed help.`
+Use "nwpc_data_client config lint --help" and
+"nwpc_data_client config migrate --help" for detailed help.`
 
 var configCmd = &cobra.Command{
 	Use:   configCommandName,
