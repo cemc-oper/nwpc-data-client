@@ -1,16 +1,19 @@
-include build.mk
+VERSION    := $(shell sh scripts/version.sh 2>/dev/null || echo "dev")
+BUILD_TIME := $(shell date -u '+%Y-%m-%dT%H:%M:%SZ' 2>/dev/null || echo "unknown")
+GIT_COMMIT := $(shell git rev-parse --short HEAD 2>/dev/null || echo "unknown")
 
-BIN_NAMES := $(foreach bin,$(BINARIES),$(word 1,$(subst :, ,$(bin))))
-BIN_TARGETS := $(addprefix $(BIN_PATH)/,$(BIN_NAMES))
+BIN_PATH := $(shell pwd)/bin
+
+LDFLAGS := -X "github.com/cemc-oper/nwpc-data-client/common.Version=$(VERSION)" \
+           -X "github.com/cemc-oper/nwpc-data-client/common.BuildTime=$(BUILD_TIME)" \
+           -X "github.com/cemc-oper/nwpc-data-client/common.GitCommit=$(GIT_COMMIT)"
 
 .PHONY: all command generate test test-integration clean
 all: command
 
-command: $(BIN_TARGETS)
+command: $(BIN_PATH)/nwpc_data_client
 
 $(BIN_PATH)/nwpc_data_client: main.go
-
-$(BIN_TARGETS):
 	@mkdir -p $(BIN_PATH)
 	CGO_ENABLED=0 go build -ldflags "$(LDFLAGS)" -o $@ .
 

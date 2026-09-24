@@ -19,6 +19,16 @@ jobs:
           # GoReleaser needs the full history and tags to build the changelog.
           fetch-depth: 0
 
+      - name: Verify VERSION matches tag
+        # The VERSION file declares the next release version; refuse to
+        # release if the pushed tag disagrees with it.
+        run: |
+          vf=$(tr -d '[:space:]' < VERSION)
+          if [ "${GITHUB_REF_NAME}" != "v${vf}" ]; then
+            echo "::error::tag ${GITHUB_REF_NAME} does not match VERSION (${vf})"
+            exit 1
+          fi
+
       - name: Set up Go
         uses: actions/setup-go@v5
         with:

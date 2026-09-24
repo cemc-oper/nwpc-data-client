@@ -32,6 +32,12 @@ builds:
       - -X "github.com/cemc-oper/nwpc-data-client/common.BuildTime={{ .Date }}"
       - -X "github.com/cemc-oper/nwpc-data-client/common.GitCommit={{ .ShortCommit }}"
 
+# Snapshot (non-release) builds derive their version from the latest git tag,
+# e.g. 0.10.1-dev+gc266a65. Independent of scripts/version.sh, which only
+# serves `make` builds.
+snapshot:
+  version_template: "{{ incpatch .Version }}-dev+{{ .ShortCommit }}"
+
 archives:
   - formats: [tar.gz]
     # this name template makes the OS and Arch compatible with the results of `uname`.

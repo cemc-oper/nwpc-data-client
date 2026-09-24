@@ -24,27 +24,28 @@ make
 
 ### 发布构建 (GoReleaser)
 
-使用 GoReleaser 实现交叉编译，需要安装 GoReleaser 工具：
+使用 GoReleaser 实现交叉编译与归档，需要安装 GoReleaser 工具（Windows 上可用 `scoop install goreleaser`）：
 
 ```bash
-# 快照构建 (不需要 tag)
-goreleaser build --snapshot --clean
+# 快照构建 (不需要 tag)，所有平台产物在 dist/ 目录
+goreleaser release --snapshot --clean
 
-# 发布构建 (需要 git tag)
+# 仅编译当前平台的二进制文件（本机构建最快方式）
+goreleaser build --snapshot --clean --single-target
+
+# 发布构建 (需要 git tag，由 CI 执行)
 goreleaser release --clean
 ```
 
-### Windows 交叉编译 (PowerShell)
+### 版本号规则
 
-Windows 如果未安装 GoReleaser，可使用备用脚本实现交叉编译：
+`VERSION` 文件记录下一个发布版本（如 `0.11.0`）。`make` 构建的版本号由 `scripts/version.sh` 计算：
 
-```powershell
-# Linux amd64
-.\build_cross.ps1 -Arch amd64
+- 当前提交正好在 `v$(cat VERSION)` 标签上 → 正式版本号（如 `0.11.0`）
+- 其他提交 → `0.11.0-dev.N+g<sha>`（N 为距上一标签的提交数）
+- 无 git（源码 tarball）→ `0.11.0-dev`
 
-# Linux arm64
-.\build_cross.ps1 -Arch arm64
-```
+GoReleaser 快照构建的版本号由 GoReleaser 根据最近的 git 标签推导（`<上一标签>-dev+<sha>`）。发布工作流会校验标签与 `VERSION` 一致，不一致则拒绝发布。
 
 ## 快速开始
 
