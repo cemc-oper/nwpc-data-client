@@ -1,44 +1,13 @@
-package cmd
+package checker
 
 import (
 	"os"
 	"path/filepath"
-	"strings"
 	"testing"
 	"time"
 
 	"github.com/stretchr/testify/assert"
 )
-
-func TestReadForecastTimesFromStdinHourLevel(t *testing.T) {
-	input := "000h 001h 010h 120h"
-	reader := strings.NewReader(input)
-
-	expected := []string{"000h", "001h", "010h", "120h"}
-
-	result := readForecastTimesFromStdin(reader)
-
-	assert.Equal(t, expected, result)
-}
-
-func TestReadForecastTimesFromStdinMinuteLevel(t *testing.T) {
-	input := "000h00m 000h10m 001h00m 001h10m"
-	reader := strings.NewReader(input)
-
-	expected := []string{"000h00m", "000h10m", "001h00m", "001h10m"}
-
-	result := readForecastTimesFromStdin(reader)
-
-	assert.Equal(t, expected, result)
-}
-
-func TestReadForecastTimesFromStdinEmpty(t *testing.T) {
-	reader := strings.NewReader("")
-
-	result := readForecastTimesFromStdin(reader)
-
-	assert.Empty(t, result)
-}
 
 func TestWaitForStableFileAlreadyStable(t *testing.T) {
 	filePath := filepath.Join(t.TempDir(), "data.grb2")
@@ -126,24 +95,6 @@ func TestWaitForStableFileMissing(t *testing.T) {
 	filePath := filepath.Join(t.TempDir(), "not-exist.grb2")
 
 	_, err := waitForStableFile(filePath, 10*time.Millisecond, 5)
-
-	assert.Error(t, err)
-}
-
-func TestBuildCommandTemplatesFilePathTemplate(t *testing.T) {
-	templates, err := buildCommandTemplates("echo {{.FilePath}}", nil)
-
-	assert.NoError(t, err)
-	assert.Len(t, templates, 1)
-
-	var builder strings.Builder
-	err = templates[0].Execute(&builder, CheckerTemplateVariable{FilePath: "/some/data.grb2"})
-	assert.NoError(t, err)
-	assert.Equal(t, "echo /some/data.grb2", builder.String())
-}
-
-func TestBuildCommandTemplatesInvalidTemplate(t *testing.T) {
-	_, err := buildCommandTemplates("echo {{.FilePath", nil)
 
 	assert.Error(t, err)
 }

@@ -1,20 +1,12 @@
 package cmd
 
 import (
-	"bufio"
 	"errors"
 	"fmt"
-	"io"
 	"os"
-	"os/signal"
-	"strings"
-	"syscall"
-	"text/template"
-	"time"
 
+	"github.com/cemc-oper/nwpc-data-client/internal/checker"
 	"github.com/cemc-oper/nwpc-data-client/internal/dataconfig"
-	"github.com/cemc-oper/nwpc-data-client/internal/finder"
-	"github.com/commander-cli/cmd"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 )
@@ -54,7 +46,7 @@ func init() {
 
 const checkLocalCommandName = "local"
 
-const checkLocalCommandDocString = `Wait for a list of data files with different forecast times and 
+const checkLocalCommandDocString = `Wait for a list of data files with different forecast times and
 run command(s) when each file is found.
 
 For each forecast time, this command repeatedly looks up the data file (using
@@ -66,7 +58,7 @@ a staggered --delay-time.
 Config resolution mirrors the local command:
 
   * --data-type            Use an embedded config named "local/<data-type>".
-  * --data-type combined with --data-config-dir  
+  * --data-type combined with --data-config-dir
 		Load a user defined config from "<data-config-dir>/<data-type>.yaml".
   * --data-config-file     Load a user defined config directly from "<data-config-file>".
 
@@ -102,367 +94,31 @@ var checkLocalCmd = &cobra.Command{
 		if len(args) != 1 {
 			return errors.New("requires one arguments")
 		}
-		var err error
-		checkStartTime, err = dataconfig.ParseStartTime(args[0])
-		if err != nil {
+		if _, err := dataconfig.ParseStartTime(args[0]); err != nil {
 			return fmt.Errorf("check startTime failed: %s", err)
 		}
 		return nil
 	},
 	Run: func(cmd *cobra.Command, args []string) {
+		// Args already validated the format, so this parse cannot fail.
+		startTime, _ := dataconfig.ParseStartTime(args[0])
+
 		// Load checker runtime config from YAML if provided, otherwise start empty.
-		fileConfig := CheckerConfig{}
+		fileConfig := checker.CheckerConfig{}
 		if checkConfigFile != "" {
 			var err error
-			fileConfig, err = LoadCheckerConfig(checkConfigFile)
+			fileConfig, err = checker.LoadCheckerConfig(checkConfigFile)
 			if err != nil {
 				log.Fatalf("load checker config failed: %v", err)
 			}
 		}
 
 		// Merge YAML config with CLI flags into a single config object.
-		config, err := MergeCheckerConfig(fileConfig, checkFlagConfig, cmd)
+		config, err := checker.MergeCheckerConfig(fileConfig, checkFlagConfig, cmd)
 		if err != nil {
 			log.Fatalf("invalid checker config: %v", err)
 		}
 
-		// debug
-		if config.Debug {
-			log.SetLevel(log.DebugLevel)
-		}
-
-		// location levels
-		levels := strings.Split(config.LocationLevels, ",")
-
-		// check duration
-		checkDuration, err := time.ParseDuration(config.CheckInterval)
-		if err != nil {
-			log.Fatalf("parse check-interval failed: %v", err)
-		}
-
-		// delay time
-		delayTime, err := time.ParseDuration(config.DelayTime)
-		if err != nil {
-			log.Fatalf("parse delay-time failed: %v", err)
-		}
-
-		// command templates
-		commandTemplates, err := buildCommandTemplates(config.ExecuteCommand, config.ExecuteCommands)
-		if err != nil {
-			log.Fatalf("build command templates failed: %v", err)
-		}
-
-		// forecast times: YAML config takes precedence, otherwise stdin.
-		// The final string list is stored in config.ForecastTimes so the config
-		// object remains the single source of truth.
-		if len(config.ForecastTimes) == 0 {
-			config.ForecastTimes = readForecastTimesFromStdin(os.Stdin)
-		}
-		if len(config.ForecastTimes) == 0 {
-			log.Fatalf("no forecast times provided: set forecast_times in checker config or pipe forecast times to stdin")
-		}
-
-		forecastTimeList, err := config.ParseForecastTimes()
-		if err != nil {
-			log.Fatalf("parse forecast times failed: %v", err)
-		}
-		logForecastTimeList(forecastTimeList)
-
-		// data config dir, data type
-		var configContent string
-		if config.DataConfigFile != "" {
-			configContent, err = dataconfig.LoadConfigContentFromFile(config.DataConfigFile)
-		} else {
-			dataType := config.DataType
-			if len(config.DataConfigDir) == 0 {
-				dataType = checkLocalCommandName + "/" + dataType
-			}
-			configContent, err = dataconfig.LoadConfigContent(config.DataConfigDir, dataType)
-		}
-		if err != nil {
-			log.Fatalf("load config content failed: %v\n", err)
-			return
-		}
-
-		checkDataFile(
-			config,
-			configContent,
-			levels,
-			checkDuration,
-			commandTemplates,
-			delayTime,
-			forecastTimeList)
-
-		log.Infof("exiting")
+		checker.Run(config, startTime, os.Stdin)
 	},
-}
-
-func checkDataFile(
-	config CheckerConfig,
-	configContent string,
-	levels []string,
-	checkDuration time.Duration,
-	commandTemplates []*template.Template,
-	delayTime time.Duration,
-	forecastTimeList []time.Duration) {
-	ch := make(chan CheckResult)
-
-	member := ""
-
-	for index, oneTime := range forecastTimeList {
-		go func(currentIndex int, forecastTime time.Duration) {
-			sleepTime := delayTime * time.Duration(currentIndex)
-			forecastTimeString := dataconfig.FormatForecastTimeShort(forecastTime)
-			log.WithFields(log.Fields{"forecast_time": forecastTimeString}).
-				Infof("sleeping before check...%v", sleepTime)
-			time.Sleep(sleepTime)
-			log.WithFields(log.Fields{"forecast_time": forecastTimeString}).
-				Infof("checking begin...")
-			checkForOneTime(config, ch, configContent, levels, forecastTime, member, checkDuration)
-		}(index, oneTime)
-	}
-
-	done := make(chan bool, 1)
-
-	sigs := make(chan os.Signal, 1)
-	signal.Notify(sigs, syscall.SIGHUP, syscall.SIGINT, syscall.SIGTERM, syscall.SIGQUIT)
-
-	go func() {
-		sig := <-sigs
-		log.Infof("catching signal: %v\n", sig)
-		os.Exit(3)
-	}()
-
-	go func() {
-		for _ = range forecastTimeList {
-			result := <-ch
-			forecastTimeString := dataconfig.FormatForecastTimeShort(result.ForecastTime)
-			currentLog := log.WithFields(log.Fields{"forecast_time": forecastTimeString})
-			if result.Error != nil {
-				currentLog.Fatalf("check failed: %v", result.Error)
-			} else {
-				currentLog.Infof("file is available, run command...")
-
-				if len(commandTemplates) == 0 {
-					currentLog.Debugf("ignore execute command because of empty command")
-					continue
-				}
-
-				err := runCommands(commandTemplates, checkStartTime, result.ForecastTime, member, result.FilePath)
-				if err != nil {
-					currentLog.Fatalf("run command failed: %v", err)
-				} else {
-					currentLog.Infof("run command success")
-				}
-			}
-		}
-		done <- true
-	}()
-
-	<-done
-}
-
-type CheckResult struct {
-	ForecastTime time.Duration
-	FilePath     string
-	Error        error
-}
-
-func checkForOneTime(
-	config CheckerConfig,
-	ch chan CheckResult,
-	configContent string,
-	levels []string,
-	forecastTime time.Duration,
-	member string,
-	checkDuration time.Duration) {
-	foundData := false
-	roundNumber := 0
-	forecastTimeString := dataconfig.FormatForecastTimeShort(forecastTime)
-	currentLog := log.WithFields(log.Fields{"forecast_time": forecastTimeString})
-
-	dataConfig, err := dataconfig.ParseConfigContent(configContent, checkStartTime, forecastTime, member)
-	if err != nil {
-		ch <- CheckResult{
-			ForecastTime: forecastTime,
-			Error:        fmt.Errorf("parse config content failed: %v", err),
-		}
-		return
-	}
-
-	filePath := dataConfig.Default
-
-	for roundNumber < config.MaxCheckCount {
-		currentLog.Infof("checking... %d/%d", roundNumber, config.MaxCheckCount)
-		filePath = findLocalFileForCheck(dataConfig, levels, forecastTime)
-		if filePath == dataConfig.Default {
-			currentLog.Infof("checking exist...not found")
-		} else {
-			currentLog.Infof("checking exist...success: %s", filePath)
-			// The size checks share the same budget of remaining checks.
-			_, err := waitForStableFile(filePath, checkDuration, config.MaxCheckCount-roundNumber)
-			if err != nil {
-				currentLog.Warnf("checking size...failed: %v", err)
-			} else {
-				foundData = true
-			}
-			break
-		}
-		time.Sleep(checkDuration)
-		roundNumber += 1
-	}
-
-	result := CheckResult{
-		ForecastTime: forecastTime,
-		FilePath:     filePath,
-		Error:        nil,
-	}
-
-	if !foundData {
-		result.Error = fmt.Errorf("too many times")
-	}
-	ch <- result
-}
-
-// readForecastTimesFromStdin reads whitespace-separated forecast time tokens
-// from r (usually os.Stdin) and returns them as strings, such as "000h" or
-// "003h10m". The caller is responsible for parsing and logging.
-func readForecastTimesFromStdin(r io.Reader) []string {
-	scanner := bufio.NewScanner(r)
-	scanner.Split(bufio.ScanWords)
-	var forecastTimeStrings []string
-	for scanner.Scan() {
-		forecastTimeStrings = append(forecastTimeStrings, scanner.Text())
-	}
-	if err := scanner.Err(); err != nil {
-		log.Fatal(err)
-	}
-	return forecastTimeStrings
-}
-
-func findLocalFileForCheck(config dataconfig.DataConfig, levels []string, forecastTime time.Duration) string {
-	pathItem := finder.FindLocalFile(config, levels, checkStartTime, forecastTime)
-	return pathItem.Path
-}
-
-func getFileSize(filePath string) (int64, error) {
-	fileInfo, err := os.Stat(filePath)
-	if err != nil {
-		return -100, fmt.Errorf("get file info has error:%v", err)
-	}
-	return fileInfo.Size(), nil
-}
-
-// waitForStableFile polls path until its size is non-zero and unchanged
-// between two consecutive checks, and returns the final size. It gives up
-// with an error after maxCount checks.
-func waitForStableFile(path string, interval time.Duration, maxCount int) (int64, error) {
-	var lastSize int64 = -1
-	for i := 0; i < maxCount; i++ {
-		currentSize, err := getFileSize(path)
-		if err != nil {
-			log.Warnf("checking size...get file size failed: %v", err)
-			lastSize = -1
-		} else if currentSize > 0 && currentSize == lastSize {
-			log.Infof("checking size...success %d/%d", i, maxCount)
-			return currentSize, nil
-		} else if currentSize == 0 {
-			log.Warnf("get size 0, continue to wait for a valid data size %d/%d", i, maxCount)
-			lastSize = currentSize
-		} else {
-			log.Infof("checking size...changed %d/%d", i, maxCount)
-			lastSize = currentSize
-		}
-		time.Sleep(interval)
-	}
-	return 0, fmt.Errorf("file is not stable after %d checks: %s", maxCount, path)
-}
-
-type CheckerTemplateVariable struct {
-	dataconfig.ConfigTemplateVariable
-	FilePath string
-}
-
-func runCommand(commandTemplate *template.Template, startTime time.Time, forecastTime time.Duration, member string, filePath string) error {
-	tpVar := dataconfig.GenerateConfigTemplateVariable(startTime, forecastTime, member)
-	var checkerVar CheckerTemplateVariable
-	checkerVar.ConfigTemplateVariable = tpVar
-	checkerVar.FilePath = filePath
-
-	var commandBuilder strings.Builder
-	err := commandTemplate.Execute(&commandBuilder, checkerVar)
-	if err != nil {
-		return fmt.Errorf("command template execute has error: %v", err)
-	}
-
-	commandString := commandBuilder.String()
-
-	forecastTimeString := dataconfig.FormatForecastTimeShort(forecastTime)
-	log.WithFields(log.Fields{
-		"forecast_time": forecastTimeString,
-	}).Infof("running command <%s> ...", commandString)
-
-	c := cmd.NewCommand(
-		commandString,
-		cmd.WithStandardStreams,
-		cmd.WithInheritedEnvironment(nil))
-	err = c.Execute()
-	if err != nil {
-		return fmt.Errorf("run command <%s> has error: %v", commandString, err)
-	} else if c.ExitCode() != 0 {
-		return fmt.Errorf("run command <%s> exit code is not 0: %d", commandString, c.ExitCode())
-	}
-
-	return nil
-}
-
-func runCommands(commandTemplates []*template.Template, startTime time.Time, forecastTime time.Duration, member string, filePath string) error {
-	for _, commandTemplate := range commandTemplates {
-		if err := runCommand(commandTemplate, startTime, forecastTime, member, filePath); err != nil {
-			return err
-		}
-	}
-	return nil
-}
-
-func buildCommandTemplates(command string, commands []string) ([]*template.Template, error) {
-	if command != "" && len(commands) > 0 {
-		return nil, fmt.Errorf("execute-command and execute-commands are mutually exclusive")
-	}
-
-	funcMap := template.FuncMap{
-		"generateStartTime":    dataconfig.GenerateStartTime,
-		"getYear":              dataconfig.GetYear,
-		"getMonth":             dataconfig.GetMonth,
-		"getDay":               dataconfig.GetDay,
-		"getHour":              dataconfig.GetHour,
-		"generateForecastTime": dataconfig.GenerateForecastTime,
-		"getForecastHour":      dataconfig.GetForecastHour,
-		"getForecastMinute":    dataconfig.GetForecastMinute,
-	}
-
-	var sources []string
-	if command != "" {
-		sources = []string{command}
-	} else {
-		sources = commands
-	}
-
-	var templates []*template.Template
-	for i, s := range sources {
-		t, err := template.New(fmt.Sprintf("command-%d", i)).Funcs(funcMap).Parse(s)
-		if err != nil {
-			return nil, fmt.Errorf("parse execute command failed: %v", err)
-		}
-		templates = append(templates, t)
-	}
-	return templates, nil
-}
-
-func logForecastTimeList(forecastTimeList []time.Duration) {
-	startTimeString := checkStartTime.Format("2006010215")
-	for _, forecastTime := range forecastTimeList {
-		forecastTimeString := dataconfig.FormatForecastTimeShort(forecastTime)
-		log.Infof("got check task for %s + %s", startTimeString, forecastTimeString)
-	}
 }

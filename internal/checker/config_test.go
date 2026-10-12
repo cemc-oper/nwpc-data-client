@@ -1,4 +1,4 @@
-package cmd
+package checker
 
 import (
 	"os"
@@ -203,27 +203,4 @@ func TestCheckerConfigParseForecastTimesInvalid(t *testing.T) {
 	cfg := CheckerConfig{ForecastTimes: []string{"not-a-duration"}}
 	_, err := cfg.ParseForecastTimes()
 	assert.Error(t, err)
-}
-
-func TestBuildCommandTemplatesSingle(t *testing.T) {
-	templates, err := buildCommandTemplates("echo {{.FilePath}}", nil)
-	require.NoError(t, err)
-	assert.Len(t, templates, 1)
-}
-
-func TestBuildCommandTemplatesList(t *testing.T) {
-	templates, err := buildCommandTemplates("", []string{"echo {{.FilePath}}", "cat {{.FilePath}}"})
-	require.NoError(t, err)
-	assert.Len(t, templates, 2)
-}
-
-func TestBuildCommandTemplatesMutualExclusion(t *testing.T) {
-	_, err := buildCommandTemplates("echo {{.FilePath}}", []string{"cat {{.FilePath}}"})
-	assert.Error(t, err)
-}
-
-func TestBuildCommandTemplatesEmpty(t *testing.T) {
-	templates, err := buildCommandTemplates("", nil)
-	require.NoError(t, err)
-	assert.Empty(t, templates)
 }

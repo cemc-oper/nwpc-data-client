@@ -1,14 +1,12 @@
 package cmd
 
 import (
-	"time"
+	"github.com/cemc-oper/nwpc-data-client/internal/checker"
 )
 
 var (
 	// checkFlagConfig holds values bound directly from CLI flags.
-	checkFlagConfig CheckerConfig
+	checkFlagConfig checker.CheckerConfig
 	// checkConfigFile is the path to the optional YAML runtime config file.
 	checkConfigFile = ""
-
-	checkStartTime time.Time
 )
