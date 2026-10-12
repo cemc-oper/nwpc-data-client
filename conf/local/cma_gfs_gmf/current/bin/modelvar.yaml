@@ -4,6 +4,9 @@
 
 _config_version: 3
 
+# Forecast files are produced in forecast-time order as the model integrates.
+_arrival_order: sequential
+
 default: NOTFOUND
 
 file_names:

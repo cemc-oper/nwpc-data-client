@@ -7,6 +7,9 @@ var EmbeddedConfigs = [][2]string{
 
 _config_version: 3
 
+# Forecast files are produced in forecast-time order as the model integrates.
+_arrival_order: sequential
+
 default: NOTFOUND
 
 file_name: gef.gra.{{.Member}}.{{.Year}}{{.Month}}{{.Day}}{{.Hour}}{{.ForecastHour}}.grb2
@@ -20,6 +23,9 @@ paths:
 #   modelvar
 
 _config_version: 3
+
+# Forecast files are produced in forecast-time order as the model integrates.
+_arrival_order: sequential
 
 default: NOTFOUND
 
@@ -42,6 +48,9 @@ paths:
 
 _config_version: 3
 
+# Forecast files are produced in forecast-time order as the model integrates.
+_arrival_order: sequential
+
 default: NOTFOUND
 
   {{ $gdaStartTime := generateStartTime .StartTime -3 }}
@@ -63,6 +72,9 @@ paths:
 
 _config_version: 3
 
+# Forecast files are produced in forecast-time order as the model integrates.
+_arrival_order: sequential
+
 default: NOTFOUND
 
 file_name: modelvar{{.Year}}{{.Month}}{{.Day}}{{.Hour}}{{.ForecastHour}}.grb2
@@ -80,6 +92,9 @@ paths:
 #   grib2 orig
 
 _config_version: 3
+
+# Forecast files are produced in forecast-time order as the model integrates.
+_arrival_order: sequential
 
 default: NOTFOUND
 
@@ -99,6 +114,9 @@ paths:
 #   version >= v0.8.0
 
 _config_version: 3
+
+# Forecast files are produced in forecast-time order as the model integrates.
+_arrival_order: sequential
 
 default: NOTFOUND
 
@@ -122,6 +140,9 @@ paths:
 
 _config_version: 3
 
+# Forecast files are produced in forecast-time order as the model integrates.
+_arrival_order: sequential
+
 default: NOTFOUND
 
 file_names:
@@ -140,6 +161,9 @@ paths:
 #   grib2 modelvar
 
 _config_version: 3
+
+# Forecast files are produced in forecast-time order as the model integrates.
+_arrival_order: sequential
 
 default: NOTFOUND
 
@@ -161,6 +185,9 @@ paths:
 
 _config_version: 3
 
+# Forecast files are produced in forecast-time order as the model integrates.
+_arrival_order: sequential
+
 default: NOTFOUND
 
 file_name: ne_gmf.gra.{{.Year}}{{.Month}}{{.Day}}{{.Hour}}{{.ForecastHour}}.grb2
@@ -178,6 +205,9 @@ paths:
 #   grib2 orig
 
 _config_version: 3
+
+# Forecast files are produced in forecast-time order as the model integrates.
+_arrival_order: sequential
 
 default: NOTFOUND
 
@@ -197,6 +227,9 @@ paths:
 
 _config_version: 3
 
+# Forecast files are produced in forecast-time order as the model integrates.
+_arrival_order: sequential
+
 default: NOTFOUND
 
 file_names:
@@ -211,6 +244,9 @@ paths:
 #   modelvar warm
 
 _config_version: 3
+
+# Forecast files are produced in forecast-time order as the model integrates.
+_arrival_order: sequential
 
 default: NOTFOUND
 
@@ -227,6 +263,9 @@ paths:
 
 _config_version: 3
 
+# Forecast files are produced in forecast-time order as the model integrates.
+_arrival_order: sequential
+
 default: NOTFOUND
 
 file_names:
@@ -242,6 +281,9 @@ paths:
 
 _config_version: 3
 
+# Forecast files are produced in forecast-time order as the model integrates.
+_arrival_order: sequential
+
 default: NOTFOUND
 
 file_names:
@@ -256,6 +298,9 @@ paths:
 #   grib2_orig cold
 
 _config_version: 3
+
+# Forecast files are produced in forecast-time order as the model integrates.
+_arrival_order: sequential
 
 default: NOTFOUND
 
@@ -275,6 +320,9 @@ paths:
 
 _config_version: 3
 
+# Forecast files are produced in forecast-time order as the model integrates.
+_arrival_order: sequential
+
 default: NOTFOUND
 
 file_name: rmf.hgra.{{.Year}}{{.Month}}{{.Day}}{{.Hour}}{{.ForecastHour}}.grb2
@@ -292,6 +340,9 @@ paths:
 #   modelvar cold
 
 _config_version: 3
+
+# Forecast files are produced in forecast-time order as the model integrates.
+_arrival_order: sequential
 
 default: NOTFOUND
 
@@ -315,6 +366,9 @@ paths:
 
 _config_version: 3
 
+# Forecast files are produced in forecast-time order as the model integrates.
+_arrival_order: sequential
+
 default: NOTFOUND
 
 file_name: modelvar{{.Year}}{{.Month}}{{.Day}}{{.Hour}}{{.ForecastHour}}{{.ForecastMinute}}
@@ -336,6 +390,9 @@ paths:
 #   modelvar_ctl cold
 
 _config_version: 3
+
+# Forecast files are produced in forecast-time order as the model integrates.
+_arrival_order: sequential
 
 default: NOTFOUND
 
@@ -359,6 +416,9 @@ paths:
 
 _config_version: 3
 
+# Forecast files are produced in forecast-time order as the model integrates.
+_arrival_order: sequential
+
 default: NOTFOUND
 
 file_name: modelvar.ctl_{{.Year}}{{.Month}}{{.Day}}{{.Hour}}00000
@@ -380,6 +440,9 @@ paths:
 #   postvar cold
 
 _config_version: 3
+
+# Forecast files are produced in forecast-time order as the model integrates.
+_arrival_order: sequential
 
 default: NOTFOUND
 
@@ -403,6 +466,9 @@ paths:
 
 _config_version: 3
 
+# Forecast files are produced in forecast-time order as the model integrates.
+_arrival_order: sequential
+
 default: NOTFOUND
 
 file_name: postvar{{.Year}}{{.Month}}{{.Day}}{{.Hour}}{{.ForecastHour}}{{.ForecastMinute}}
@@ -424,6 +490,9 @@ paths:
 #   postvar_ctl cold
 
 _config_version: 3
+
+# Forecast files are produced in forecast-time order as the model integrates.
+_arrival_order: sequential
 
 default: NOTFOUND
 
@@ -447,6 +516,9 @@ paths:
 
 _config_version: 3
 
+# Forecast files are produced in forecast-time order as the model integrates.
+_arrival_order: sequential
+
 default: NOTFOUND
 
 file_name: post.ctl_{{.Year}}{{.Month}}{{.Day}}{{.Hour}}{{.ForecastHour}}00
@@ -469,6 +541,9 @@ paths:
 
 _config_version: 3
 
+# Forecast files are produced in forecast-time order as the model integrates.
+_arrival_order: sequential
+
 default: NOTFOUND
 
 file_name: rmf.hgra.{{.Year}}{{.Month}}{{.Day}}{{.Hour}}{{.ForecastHour}}.grb2
@@ -486,6 +561,9 @@ paths:
 #   grib2 orig
 
 _config_version: 3
+
+# Forecast files are produced in forecast-time order as the model integrates.
+_arrival_order: sequential
 
 default: NOTFOUND
 
@@ -505,6 +583,9 @@ paths:
 
 _config_version: 3
 
+# Forecast files are produced in forecast-time order as the model integrates.
+_arrival_order: sequential
+
 default: NOTFOUND
 
 file_name: mef.gra.{{.Member}}.{{.Year}}{{.Month}}{{.Day}}{{.Hour}}{{.ForecastHour}}.grb2
@@ -518,6 +599,9 @@ paths:
 #   modelvar
 
 _config_version: 3
+
+# Forecast files are produced in forecast-time order as the model integrates.
+_arrival_order: sequential
 
 default: NOTFOUND
 
@@ -537,6 +621,9 @@ paths:
 
 _config_version: 3
 
+# Forecast files are produced in forecast-time order as the model integrates.
+_arrival_order: sequential
+
 default: NOTFOUND
 
 file_name: model.ctl_{{.Year}}{{.Month}}{{.Day}}{{.Hour}}00000
@@ -554,6 +641,9 @@ paths:
 #   postvar
 
 _config_version: 3
+
+# Forecast files are produced in forecast-time order as the model integrates.
+_arrival_order: sequential
 
 default: NOTFOUND
 
@@ -573,6 +663,9 @@ paths:
 
 _config_version: 3
 
+# Forecast files are produced in forecast-time order as the model integrates.
+_arrival_order: sequential
+
 default: NOTFOUND
 
 file_name: post.ctl_{{.Year}}{{.Month}}{{.Day}}{{.Hour}}00000
@@ -590,6 +683,9 @@ paths:
 #   grib2 orig
 
 _config_version: 3
+
+# Forecast files are produced in forecast-time order as the model integrates.
+_arrival_order: sequential
 
 default: NOTFOUND
 
