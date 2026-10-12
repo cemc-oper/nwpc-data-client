@@ -105,3 +105,44 @@ nwpc_data_client check local 2026062400 --checker-config=./checker.yaml \
   时间（如默认 2880 × 5s = 4 小时）；超时未稳定该任务报错，整体以
   非零码退出；
 - `--delay-time` 避免所有时效在同一时刻集中访问存储。
+
+## 批量轮询模式（batched）
+
+默认的 `per_time` 模式为每个预报时效起一个协程独立轮询，时效很多时
+（如逐 10 分钟、上百个时效）会产生大量重复的目录访问。批量轮询模式把
+所有待等时效收敛到**单一轮询循环**：每轮对每个目录只做一次 `readdir`，
+在内存中按 `paths` 顺序完成优先级匹配。
+
+启用方式（YAML 与 CLI 均可）：
+
+```yaml
+# checker.yaml
+check_mode: batched
+data_type: cma_gfs_gmf/current/grib2/orig
+forecast_times: ["0h", "3h", "6h"]
+execute_command: "echo ready: {{.FilePath}}"
+```
+
+```bash
+nwpc_data_client check local 2026062400 --check-mode=batched ...
+```
+
+与 `per_time` 的差异：
+
+- **目录访问量**：每轮每目录一次 `readdir`，与失效数量无关；`per_time`
+  为每时效每轮一次或多次 `stat`；
+- **发现时刻**：各时效的发现对齐到统一轮询周期边界，不再有逐时效的
+  `--delay-time` 错峰——**`--delay-time` 在 batched 模式下不适用**（无
+  逐协程错峰，设置后会被忽略）；进程内错相由统一循环承担，进程间错相
+  由 [jitter](../reference/checker-config.md#抖动jitter) 承担；
+- **稳定观察并发上限**：同时处于大小稳定观察的文件数受
+  `max_concurrent_stable_checks`（默认 4）约束，超出的命中时效排到下一
+  轮；`per_time` 模式各协程天然独立，不适用此上限；
+- **检查次数预算**：`max_check_count` 仍按时效独立计数，语义不变；
+  超时未等到同样以非零码退出；
+- **路径优先级**：`paths` 顺序优先（runtime 优先于 archive）在内存匹配
+  中完全保持，目录扫描顺序不影响结果。
+
+适用场景：大批量时效、业务化部署。时效少（几个）时两种模式差别不大，
+保持默认 `per_time` 即可。
+
