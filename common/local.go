@@ -1,14 +1,16 @@
 package common
 
 import (
-	log "github.com/sirupsen/logrus"
 	"os"
 	"path/filepath"
 	"time"
+
+	"github.com/cemc-oper/nwpc-data-client/internal/dataconfig"
+	log "github.com/sirupsen/logrus"
 )
 
-func FindLocalFile(config DataConfig, locationLevels []string, startTime time.Time, forecastTime time.Duration) PathItem {
-	forecastTimeStr := FormatForecastTimeShort(forecastTime)
+func FindLocalFile(config dataconfig.DataConfig, locationLevels []string, startTime time.Time, forecastTime time.Duration) dataconfig.PathItem {
+	forecastTimeStr := dataconfig.FormatForecastTimeShort(forecastTime)
 	currentLog := log.WithFields(log.Fields{"forecastTime": forecastTimeStr})
 
 	var fileNames []string
@@ -37,7 +39,7 @@ func FindLocalFile(config DataConfig, locationLevels []string, startTime time.Ti
 
 			if CheckLocalFile(filePath) {
 				currentLog.Debugf("check file path success: %s", filePath)
-				return PathItem{
+				return dataconfig.PathItem{
 					Path:     filePath,
 					PathType: pathType,
 				}
@@ -47,7 +49,7 @@ func FindLocalFile(config DataConfig, locationLevels []string, startTime time.Ti
 		}
 	}
 
-	return PathItem{
+	return dataconfig.PathItem{
 		Path:     config.Default,
 		PathType: config.Default,
 	}
@@ -63,4 +65,19 @@ func CheckLocalFile(filePath string) bool {
 func PrepareLocalDir(filePath string) {
 	localFileDir := filepath.Dir(filePath)
 	_ = os.MkdirAll(localFileDir, 0755)
+}
+
+func inLocationLevelTypes(locationLevelTypes []string, locationLevelType string) bool {
+	if len(locationLevelTypes) == 0 {
+		return true
+	}
+	for _, item := range locationLevelTypes {
+		if item == "" || item == "all" {
+			return true
+		}
+		if item == locationLevelType {
+			return true
+		}
+	}
+	return false
 }

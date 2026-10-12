@@ -2,7 +2,7 @@ package main
 
 import (
 	"fmt"
-	"github.com/cemc-oper/nwpc-data-client/common"
+	"github.com/cemc-oper/nwpc-data-client/internal/dataconfig"
 	log "github.com/sirupsen/logrus"
 	"os"
 	"path/filepath"
@@ -31,7 +31,7 @@ func main() {
 		if info.IsDir() {
 			return nil
 		}
-		if filepath.Ext(path) != common.ConfigFileBasename {
+		if filepath.Ext(path) != dataconfig.ConfigFileBasename {
 			return nil
 		}
 

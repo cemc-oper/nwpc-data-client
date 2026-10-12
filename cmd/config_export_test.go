@@ -5,7 +5,7 @@ import (
 	"path/filepath"
 	"testing"
 
-	"github.com/cemc-oper/nwpc-data-client/common"
+	"github.com/cemc-oper/nwpc-data-client/internal/dataconfig"
 	"github.com/cemc-oper/nwpc-data-client/internal/embedded"
 	"github.com/stretchr/testify/require"
 )
@@ -26,7 +26,7 @@ func TestExportEmbeddedConfigs_MatchesConfDir(t *testing.T) {
 		if err != nil {
 			return err
 		}
-		if info.IsDir() || filepath.Ext(path) != common.ConfigFileBasename {
+		if info.IsDir() || filepath.Ext(path) != dataconfig.ConfigFileBasename {
 			return nil
 		}
 		confCount++
@@ -41,7 +41,7 @@ func TestExportEmbeddedConfigs_MatchesConfDir(t *testing.T) {
 		require.NoError(t, err, "exported file missing: %s", relPath)
 		require.Equal(t, string(expected), string(exported), "exported content differs: %s", relPath)
 
-		require.NoError(t, common.LintConfigFile(exportedPath), "exported file does not pass lint: %s", relPath)
+		require.NoError(t, dataconfig.LintConfigFile(exportedPath), "exported file does not pass lint: %s", relPath)
 		return nil
 	})
 	require.NoError(t, err)

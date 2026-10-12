@@ -1,4 +1,4 @@
-package common
+package dataconfig
 
 import (
 	"fmt"
@@ -166,21 +166,6 @@ func ValidateDataConfigStruct(dataConfig DataConfig) error {
 		}
 	}
 	return nil
-}
-
-func inLocationLevelTypes(locationLevelTypes []string, locationLevelType string) bool {
-	if len(locationLevelTypes) == 0 {
-		return true
-	}
-	for _, item := range locationLevelTypes {
-		if item == "" || item == "all" {
-			return true
-		}
-		if item == locationLevelType {
-			return true
-		}
-	}
-	return false
 }
 
 func findLocalConfig(configDir string, dataType string) (string, error) {

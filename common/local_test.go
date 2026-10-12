@@ -6,6 +6,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/cemc-oper/nwpc-data-client/internal/dataconfig"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -30,10 +31,10 @@ func TestFindLocalFileFirstPathHit(t *testing.T) {
 	secondDir := t.TempDir()
 	expected := writeLocalTestFile(t, firstDir, "data.grb2")
 
-	config := DataConfig{
+	config := dataconfig.DataConfig{
 		Default:  "NOTFOUND",
 		FileName: "data.grb2",
-		Paths: []PathItem{
+		Paths: []dataconfig.PathItem{
 			{PathType: "local", LevelType: "runtime", Path: firstDir},
 			{PathType: "local", LevelType: "archive", Path: secondDir},
 		},
@@ -50,10 +51,10 @@ func TestFindLocalFileFallbackToSecondPath(t *testing.T) {
 	secondDir := t.TempDir()
 	expected := writeLocalTestFile(t, secondDir, "data.grb2")
 
-	config := DataConfig{
+	config := dataconfig.DataConfig{
 		Default:  "NOTFOUND",
 		FileName: "data.grb2",
-		Paths: []PathItem{
+		Paths: []dataconfig.PathItem{
 			{PathType: "local", LevelType: "runtime", Path: firstDir},
 			{PathType: "local", LevelType: "archive", Path: secondDir},
 		},
@@ -70,10 +71,10 @@ func TestFindLocalFileFileNamesInOrder(t *testing.T) {
 	// The first name in file_names does not exist, so the second one is used.
 	expected := writeLocalTestFile(t, dir, "second.grb2")
 
-	config := DataConfig{
+	config := dataconfig.DataConfig{
 		Default:   "NOTFOUND",
 		FileNames: []string{"first.grb2", "second.grb2"},
-		Paths: []PathItem{
+		Paths: []dataconfig.PathItem{
 			{PathType: "local", LevelType: "runtime", Path: dir},
 		},
 	}
@@ -88,11 +89,11 @@ func TestFindLocalFileFileNamesTakePrecedenceOverFileName(t *testing.T) {
 	writeLocalTestFile(t, dir, "single.grb2")
 	expected := writeLocalTestFile(t, dir, "listed.grb2")
 
-	config := DataConfig{
+	config := dataconfig.DataConfig{
 		Default:   "NOTFOUND",
 		FileName:  "single.grb2",
 		FileNames: []string{"listed.grb2"},
-		Paths: []PathItem{
+		Paths: []dataconfig.PathItem{
 			{PathType: "local", LevelType: "runtime", Path: dir},
 		},
 	}
@@ -107,10 +108,10 @@ func TestFindLocalFileLocationLevelFilter(t *testing.T) {
 	archiveDir := t.TempDir()
 	expected := writeLocalTestFile(t, archiveDir, "data.grb2")
 
-	config := DataConfig{
+	config := dataconfig.DataConfig{
 		Default:  "NOTFOUND",
 		FileName: "data.grb2",
-		Paths: []PathItem{
+		Paths: []dataconfig.PathItem{
 			{PathType: "local", LevelType: "runtime", Path: runtimeDir},
 			{PathType: "local", LevelType: "archive", Path: archiveDir},
 		},
@@ -131,10 +132,10 @@ func TestFindLocalFileLocationLevelFilter(t *testing.T) {
 }
 
 func TestFindLocalFileNotFoundReturnsDefault(t *testing.T) {
-	config := DataConfig{
+	config := dataconfig.DataConfig{
 		Default:  "NOTFOUND",
 		FileName: "data.grb2",
-		Paths: []PathItem{
+		Paths: []dataconfig.PathItem{
 			{PathType: "local", LevelType: "runtime", Path: t.TempDir()},
 			{PathType: "local", LevelType: "archive", Path: t.TempDir()},
 		},

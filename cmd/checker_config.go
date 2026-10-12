@@ -6,7 +6,7 @@ import (
 	"reflect"
 	"time"
 
-	"github.com/cemc-oper/nwpc-data-client/common"
+	"github.com/cemc-oper/nwpc-data-client/internal/dataconfig"
 	"github.com/spf13/cobra"
 	"gopkg.in/yaml.v3"
 )
@@ -78,7 +78,7 @@ func (c CheckerConfig) ParseForecastTimes() ([]time.Duration, error) {
 	}
 	var result []time.Duration
 	for _, s := range c.ForecastTimes {
-		d, err := common.ParseForecastTime(s)
+		d, err := dataconfig.ParseForecastTime(s)
 		if err != nil {
 			return nil, fmt.Errorf("parse forecast time %q failed: %v", s, err)
 		}

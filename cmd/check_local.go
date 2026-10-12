@@ -13,6 +13,7 @@ import (
 	"time"
 
 	"github.com/cemc-oper/nwpc-data-client/common"
+	"github.com/cemc-oper/nwpc-data-client/internal/dataconfig"
 	"github.com/commander-cli/cmd"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
@@ -102,7 +103,7 @@ var checkLocalCmd = &cobra.Command{
 			return errors.New("requires one arguments")
 		}
 		var err error
-		checkStartTime, err = common.ParseStartTime(args[0])
+		checkStartTime, err = dataconfig.ParseStartTime(args[0])
 		if err != nil {
 			return fmt.Errorf("check startTime failed: %s", err)
 		}
@@ -170,13 +171,13 @@ var checkLocalCmd = &cobra.Command{
 		// data config dir, data type
 		var configContent string
 		if config.DataConfigFile != "" {
-			configContent, err = common.LoadConfigContentFromFile(config.DataConfigFile)
+			configContent, err = dataconfig.LoadConfigContentFromFile(config.DataConfigFile)
 		} else {
 			dataType := config.DataType
 			if len(config.DataConfigDir) == 0 {
 				dataType = checkLocalCommandName + "/" + dataType
 			}
-			configContent, err = common.LoadConfigContent(config.DataConfigDir, dataType)
+			configContent, err = dataconfig.LoadConfigContent(config.DataConfigDir, dataType)
 		}
 		if err != nil {
 			log.Fatalf("load config content failed: %v\n", err)
@@ -211,7 +212,7 @@ func checkDataFile(
 	for index, oneTime := range forecastTimeList {
 		go func(currentIndex int, forecastTime time.Duration) {
 			sleepTime := delayTime * time.Duration(currentIndex)
-			forecastTimeString := common.FormatForecastTimeShort(forecastTime)
+			forecastTimeString := dataconfig.FormatForecastTimeShort(forecastTime)
 			log.WithFields(log.Fields{"forecast_time": forecastTimeString}).
 				Infof("sleeping before check...%v", sleepTime)
 			time.Sleep(sleepTime)
@@ -235,7 +236,7 @@ func checkDataFile(
 	go func() {
 		for _ = range forecastTimeList {
 			result := <-ch
-			forecastTimeString := common.FormatForecastTimeShort(result.ForecastTime)
+			forecastTimeString := dataconfig.FormatForecastTimeShort(result.ForecastTime)
 			currentLog := log.WithFields(log.Fields{"forecast_time": forecastTimeString})
 			if result.Error != nil {
 				currentLog.Fatalf("check failed: %v", result.Error)
@@ -277,10 +278,10 @@ func checkForOneTime(
 	checkDuration time.Duration) {
 	foundData := false
 	roundNumber := 0
-	forecastTimeString := common.FormatForecastTimeShort(forecastTime)
+	forecastTimeString := dataconfig.FormatForecastTimeShort(forecastTime)
 	currentLog := log.WithFields(log.Fields{"forecast_time": forecastTimeString})
 
-	dataConfig, err := common.ParseConfigContent(configContent, checkStartTime, forecastTime, member)
+	dataConfig, err := dataconfig.ParseConfigContent(configContent, checkStartTime, forecastTime, member)
 	if err != nil {
 		ch <- CheckResult{
 			ForecastTime: forecastTime,
@@ -339,7 +340,7 @@ func readForecastTimesFromStdin(r io.Reader) []string {
 	return forecastTimeStrings
 }
 
-func findLocalFileForCheck(config common.DataConfig, levels []string, forecastTime time.Duration) string {
+func findLocalFileForCheck(config dataconfig.DataConfig, levels []string, forecastTime time.Duration) string {
 	pathItem := common.FindLocalFile(config, levels, checkStartTime, forecastTime)
 	return pathItem.Path
 }
@@ -378,12 +379,12 @@ func waitForStableFile(path string, interval time.Duration, maxCount int) (int64
 }
 
 type CheckerTemplateVariable struct {
-	common.ConfigTemplateVariable
+	dataconfig.ConfigTemplateVariable
 	FilePath string
 }
 
 func runCommand(commandTemplate *template.Template, startTime time.Time, forecastTime time.Duration, member string, filePath string) error {
-	tpVar := common.GenerateConfigTemplateVariable(startTime, forecastTime, member)
+	tpVar := dataconfig.GenerateConfigTemplateVariable(startTime, forecastTime, member)
 	var checkerVar CheckerTemplateVariable
 	checkerVar.ConfigTemplateVariable = tpVar
 	checkerVar.FilePath = filePath
@@ -396,7 +397,7 @@ func runCommand(commandTemplate *template.Template, startTime time.Time, forecas
 
 	commandString := commandBuilder.String()
 
-	forecastTimeString := common.FormatForecastTimeShort(forecastTime)
+	forecastTimeString := dataconfig.FormatForecastTimeShort(forecastTime)
 	log.WithFields(log.Fields{
 		"forecast_time": forecastTimeString,
 	}).Infof("running command <%s> ...", commandString)
@@ -430,14 +431,14 @@ func buildCommandTemplates(command string, commands []string) ([]*template.Templ
 	}
 
 	funcMap := template.FuncMap{
-		"generateStartTime":    common.GenerateStartTime,
-		"getYear":              common.GetYear,
-		"getMonth":             common.GetMonth,
-		"getDay":               common.GetDay,
-		"getHour":              common.GetHour,
-		"generateForecastTime": common.GenerateForecastTime,
-		"getForecastHour":      common.GetForecastHour,
-		"getForecastMinute":    common.GetForecastMinute,
+		"generateStartTime":    dataconfig.GenerateStartTime,
+		"getYear":              dataconfig.GetYear,
+		"getMonth":             dataconfig.GetMonth,
+		"getDay":               dataconfig.GetDay,
+		"getHour":              dataconfig.GetHour,
+		"generateForecastTime": dataconfig.GenerateForecastTime,
+		"getForecastHour":      dataconfig.GetForecastHour,
+		"getForecastMinute":    dataconfig.GetForecastMinute,
 	}
 
 	var sources []string
@@ -461,7 +462,7 @@ func buildCommandTemplates(command string, commands []string) ([]*template.Templ
 func logForecastTimeList(forecastTimeList []time.Duration) {
 	startTimeString := checkStartTime.Format("2006010215")
 	for _, forecastTime := range forecastTimeList {
-		forecastTimeString := common.FormatForecastTimeShort(forecastTime)
+		forecastTimeString := dataconfig.FormatForecastTimeShort(forecastTime)
 		log.Infof("got check task for %s + %s", startTimeString, forecastTimeString)
 	}
 }

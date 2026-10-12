@@ -7,6 +7,7 @@ import (
 	"strings"
 
 	"github.com/cemc-oper/nwpc-data-client/common"
+	"github.com/cemc-oper/nwpc-data-client/internal/dataconfig"
 	"github.com/cemc-oper/nwpc-data-client/internal/embedded"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
@@ -103,14 +104,14 @@ var localCmd = &cobra.Command{
 }
 
 func findLocalFile(cmd *cobra.Command, args []string) {
-	startTime, err := common.ParseStartTime(localStartTimeString)
+	startTime, err := dataconfig.ParseStartTime(localStartTimeString)
 	if err != nil {
 		log.Errorf("check startTime failed: %s", err)
 		return
 	}
 	localStartTime = startTime
 
-	forecastTime, err := common.ParseForecastTime(localForecastTimeString)
+	forecastTime, err := dataconfig.ParseForecastTime(localForecastTimeString)
 	if err != nil {
 		log.Errorf("check forecastTime failed: %s", err)
 		return
@@ -121,20 +122,20 @@ func findLocalFile(cmd *cobra.Command, args []string) {
 
 	var configContent string
 	if localDataConfigFile != "" {
-		configContent, err = common.LoadConfigContentFromFile(localDataConfigFile)
+		configContent, err = dataconfig.LoadConfigContentFromFile(localDataConfigFile)
 	} else {
 		dataType := localDataType
 		if len(localDataConfigDir) == 0 {
 			dataType = localCommandName + "/" + dataType
 		}
-		configContent, err = common.LoadConfigContent(localDataConfigDir, dataType)
+		configContent, err = dataconfig.LoadConfigContent(localDataConfigDir, dataType)
 	}
 	if err != nil {
 		log.Fatalf("load config failed: %v", err)
 		return
 	}
 
-	dataConfig, err := common.ParseConfigContent(configContent, localStartTime, localForecastTime, localMember)
+	dataConfig, err := dataconfig.ParseConfigContent(configContent, localStartTime, localForecastTime, localMember)
 	if err != nil {
 		log.Fatalf("load config from content has error: %s", err)
 		return

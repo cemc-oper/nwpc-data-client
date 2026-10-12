@@ -6,7 +6,7 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/cemc-oper/nwpc-data-client/common"
+	"github.com/cemc-oper/nwpc-data-client/internal/dataconfig"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 )
@@ -69,7 +69,7 @@ var configLintCmd = &cobra.Command{
 
 		failedCount := 0
 		for _, configFilePath := range configFilePaths {
-			if err := common.LintConfigFile(configFilePath); err != nil {
+			if err := dataconfig.LintConfigFile(configFilePath); err != nil {
 				failedCount++
 				log.Errorf("%v", err)
 			}

@@ -5,7 +5,7 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/cemc-oper/nwpc-data-client/common"
+	"github.com/cemc-oper/nwpc-data-client/internal/dataconfig"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 )
@@ -16,7 +16,7 @@ func init() {
 	configMigrateCmd.Flags().StringVar(&migrateDataConfigFile, "data-config-file", "",
 		"Path to a single data config file. If set, the config directory argument is ignored.")
 
-	configMigrateCmd.Flags().IntVar(&migrateToVersion, "to-version", common.CurrentConfigVersion,
+	configMigrateCmd.Flags().IntVar(&migrateToVersion, "to-version", dataconfig.CurrentConfigVersion,
 		"Target config format version (2 or 3).")
 
 	configMigrateCmd.Flags().StringVar(&migrateOutputDir, "output-dir", "",
@@ -71,7 +71,7 @@ var configMigrateCmd = &cobra.Command{
 		return nil
 	},
 	Run: func(cmd *cobra.Command, args []string) {
-		if migrateToVersion != common.ConfigVersion2 && migrateToVersion != common.ConfigVersion3 {
+		if migrateToVersion != dataconfig.ConfigVersion2 && migrateToVersion != dataconfig.ConfigVersion3 {
 			log.Fatalf("invalid --to-version %d: migration targets are v2 and v3", migrateToVersion)
 		}
 
@@ -151,7 +151,7 @@ func migrateConfigFile(configFilePath string, toVersion int) (migrated string, s
 	}
 	content := string(data)
 
-	version, err := common.DetectConfigVersion(content)
+	version, err := dataconfig.DetectConfigVersion(content)
 	if err != nil {
 		return "", false, fmt.Errorf("%s: version detect: %v", configFilePath, err)
 	}
@@ -160,7 +160,7 @@ func migrateConfigFile(configFilePath string, toVersion int) (migrated string, s
 		return "", true, nil
 	}
 
-	migrated, err = common.MigrateConfigContent(content, toVersion)
+	migrated, err = dataconfig.MigrateConfigContent(content, toVersion)
 	if err != nil {
 		return "", false, fmt.Errorf("%s: %v", configFilePath, err)
 	}
