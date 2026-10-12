@@ -89,15 +89,39 @@ func Run(config CheckerConfig, startTime time.Time, stdin io.Reader) {
 	log.Infof("startup jitter...sleep %v", jitterSleep)
 	time.Sleep(jitterSleep)
 
-	checkDataFile(
-		config,
-		startTime,
-		configContent,
-		levels,
-		checkDuration,
-		commandTemplates,
-		delayTime,
-		forecastTimeList)
+	// Exit code 3 on termination signals, matching historical behavior.
+	sigs := make(chan os.Signal, 1)
+	signal.Notify(sigs, syscall.SIGHUP, syscall.SIGINT, syscall.SIGTERM, syscall.SIGQUIT)
+	go func() {
+		sig := <-sigs
+		log.Infof("catching signal: %v\n", sig)
+		os.Exit(3)
+	}()
+
+	if config.CheckMode == CheckModeBatched {
+		if config.DelayTime != "" {
+			log.Infof("delay-time is ignored in batched check mode")
+		}
+		exec := newCommandExecutor(len(forecastTimeList), commandTemplates, startTime, "", nil)
+		checkBatched(
+			config,
+			startTime,
+			configContent,
+			levels,
+			checkDuration,
+			forecastTimeList,
+			exec)
+	} else {
+		checkDataFile(
+			config,
+			startTime,
+			configContent,
+			levels,
+			checkDuration,
+			commandTemplates,
+			delayTime,
+			forecastTimeList)
+	}
 
 	log.Infof("exiting")
 }
@@ -129,15 +153,6 @@ func checkDataFile(
 			checkForOneTime(config, startTime, exec, configContent, levels, forecastTime, member, checkDuration)
 		}(index, oneTime)
 	}
-
-	sigs := make(chan os.Signal, 1)
-	signal.Notify(sigs, syscall.SIGHUP, syscall.SIGINT, syscall.SIGTERM, syscall.SIGQUIT)
-
-	go func() {
-		sig := <-sigs
-		log.Infof("catching signal: %v\n", sig)
-		os.Exit(3)
-	}()
 
 	// All producers have submitted (the queue is buffered, so submissions
 	// never block); close the queue and wait until it is drained.

@@ -28,7 +28,7 @@ func FindLocalFile(config dataconfig.DataConfig, locationLevels []string, startT
 		pathType := item.PathType
 		locationLevelType := item.LevelType
 
-		if !inLocationLevelTypes(locationLevels, locationLevelType) {
+		if !InLocationLevelTypes(locationLevels, locationLevelType) {
 			currentLog.Debugf("skip location level type %s for %s", locationLevelType, dirPath)
 			continue
 		}
@@ -67,7 +67,7 @@ func PrepareLocalDir(filePath string) {
 	_ = os.MkdirAll(localFileDir, 0755)
 }
 
-func inLocationLevelTypes(locationLevelTypes []string, locationLevelType string) bool {
+func InLocationLevelTypes(locationLevelTypes []string, locationLevelType string) bool {
 	if len(locationLevelTypes) == 0 {
 		return true
 	}
