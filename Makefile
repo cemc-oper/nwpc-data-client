@@ -8,7 +8,7 @@ LDFLAGS := -X "github.com/cemc-oper/nwpc-data-client/common.Version=$(VERSION)" 
            -X "github.com/cemc-oper/nwpc-data-client/common.BuildTime=$(BUILD_TIME)" \
            -X "github.com/cemc-oper/nwpc-data-client/common.GitCommit=$(GIT_COMMIT)"
 
-.PHONY: all command generate test test-e2e test-integration clean
+.PHONY: all command generate test test-e2e test-integration clean docs-cli docs
 all: command
 
 command: $(BIN_PATH)/nwpc_data_client
@@ -29,5 +29,13 @@ test-e2e: $(BIN_PATH)/nwpc_data_client
 test-integration: $(BIN_PATH)/nwpc_data_client
 	go test -tags=integration -count=1 -v ./tests/integration/...
 
+# Regenerate the CLI reference pages under docs/reference/cli/.
+docs-cli:
+	go run ./tools/gen-cli-docs ./docs/reference/cli
+
+# Build the Sphinx documentation (requires: pip install -r docs/requirements.txt).
+docs: docs-cli
+	sphinx-build -b html docs docs/_build/html
+
 clean:
-	rm -rf $(BIN_PATH)
+	rm -rf $(BIN_PATH) docs/_build

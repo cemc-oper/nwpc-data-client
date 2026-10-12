@@ -34,3 +34,9 @@ func Execute() {
 		os.Exit(1)
 	}
 }
+
+// RootCommand returns the root cobra command. It is used by auxiliary
+// tooling such as the CLI documentation generator in tools/gen-cli-docs.
+func RootCommand() *cobra.Command {
+	return rootCmd
+}
