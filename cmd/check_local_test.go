@@ -125,3 +125,35 @@ func TestWaitForStableFileMissing(t *testing.T) {
 
 	assert.Error(t, err)
 }
+
+func TestBuildCommandTemplatesFilePathTemplate(t *testing.T) {
+	templates, err := buildCommandTemplates("echo {{.FilePath}}", nil)
+
+	assert.NoError(t, err)
+	assert.Len(t, templates, 1)
+
+	var builder strings.Builder
+	err = templates[0].Execute(&builder, CheckerTemplateVariable{FilePath: "/some/data.grb2"})
+	assert.NoError(t, err)
+	assert.Equal(t, "echo /some/data.grb2", builder.String())
+}
+
+func TestBuildCommandTemplatesInvalidTemplate(t *testing.T) {
+	_, err := buildCommandTemplates("echo {{.FilePath", nil)
+
+	assert.Error(t, err)
+}
+
+func TestGetFileSize(t *testing.T) {
+	dir := t.TempDir()
+	filePath := filepath.Join(dir, "data.grb2")
+	content := []byte("some data content")
+	assert.NoError(t, os.WriteFile(filePath, content, 0644))
+
+	size, err := getFileSize(filePath)
+	assert.NoError(t, err)
+	assert.Equal(t, int64(len(content)), size)
+
+	_, err = getFileSize(filepath.Join(dir, "not-exist.grb2"))
+	assert.Error(t, err)
+}
