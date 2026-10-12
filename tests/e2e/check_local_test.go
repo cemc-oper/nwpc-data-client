@@ -21,6 +21,7 @@ type checkerConfig struct {
 	CheckInterval  string   `yaml:"check_interval"`
 	MaxCheckCount  int      `yaml:"max_check_count"`
 	DelayTime      string   `yaml:"delay_time"`
+	CheckMode      string   `yaml:"check_mode,omitempty"`
 	ForecastTimes  []string `yaml:"forecast_times"`
 	ExecuteCommand string   `yaml:"execute_command,omitempty"`
 }
@@ -103,4 +104,91 @@ func TestCheckLocalFileNeverAppears(t *testing.T) {
 	require.Error(t, err, "check local should fail when the file never appears: %s", output)
 	assert.Contains(t, output, "too many times")
 	assert.False(t, strings.Contains(output, "run command success"))
+}
+
+// TestCheckLocalBatchedStable is scenario E9: in batched mode, both data
+// files already exist with stable sizes, so the CLI runs the execute command
+// for each and exits 0.
+func TestCheckLocalBatchedStable(t *testing.T) {
+	rootDir := t.TempDir()
+	var dataFiles []string
+	for _, forecastHour := range []string{"024", "048"} {
+		dataFile := filepath.Join(rootDir, "runtime", "2026101200",
+			"data.2026101200"+forecastHour+".grb2")
+		require.NoError(t, os.MkdirAll(filepath.Dir(dataFile), 0755))
+		require.NoError(t, os.WriteFile(dataFile, []byte("data"), 0644))
+		dataFiles = append(dataFiles, dataFile)
+	}
+
+	configDir := writeConfigWithRoot(t, e2eDemoConfigPath, rootDir)
+	checkerConfigPath := writeCheckerConfig(t, checkerConfig{
+		DataConfigDir:  filepath.ToSlash(configDir),
+		DataType:       e2eDemoDataType,
+		CheckInterval:  "50ms",
+		MaxCheckCount:  20,
+		CheckMode:      "batched",
+		ForecastTimes:  []string{"24h", "48h"},
+		ExecuteCommand: doneCommand,
+	})
+
+	output, err := runCheckLocal(t, checkerConfigPath)
+
+	require.NoError(t, err, "batched check local failed: %s", output)
+	for _, dataFile := range dataFiles {
+		_, statErr := os.Stat(dataFile + ".done")
+		assert.NoError(t, statErr, "execute command did not create the .done file for %s", dataFile)
+	}
+}
+
+// TestCheckLocalBatchedNeverAppears is scenario E10: in batched mode the file
+// never shows up, so the CLI exhausts max_check_count and exits non-zero.
+func TestCheckLocalBatchedNeverAppears(t *testing.T) {
+	rootDir := t.TempDir()
+	configDir := writeConfigWithRoot(t, e2eDemoConfigPath, rootDir)
+	checkerConfigPath := writeCheckerConfig(t, checkerConfig{
+		DataConfigDir: filepath.ToSlash(configDir),
+		DataType:      e2eDemoDataType,
+		CheckInterval: "20ms",
+		MaxCheckCount: 5,
+		CheckMode:     "batched",
+		ForecastTimes: []string{"24h"},
+	})
+
+	output, err := runCheckLocal(t, checkerConfigPath)
+
+	require.Error(t, err, "batched check local should fail when the file never appears: %s", output)
+	assert.Contains(t, output, "too many times")
+	assert.False(t, strings.Contains(output, "run command success"))
+}
+
+// TestCheckLocalBatchedPathPriority is scenario E11: in batched mode the file
+// exists in both the runtime and the archive directory, and the first path in
+// the config (runtime) wins.
+func TestCheckLocalBatchedPathPriority(t *testing.T) {
+	rootDir := t.TempDir()
+	runtimeFile := filepath.Join(rootDir, "runtime", "2026101200", "data.2026101200024.grb2")
+	archiveFile := filepath.Join(rootDir, "archive", "2026101200", "data.2026101200024.grb2")
+	for _, f := range []string{runtimeFile, archiveFile} {
+		require.NoError(t, os.MkdirAll(filepath.Dir(f), 0755))
+		require.NoError(t, os.WriteFile(f, []byte("data"), 0644))
+	}
+
+	configDir := writeConfigWithRoot(t, e2eDemoConfigPath, rootDir)
+	checkerConfigPath := writeCheckerConfig(t, checkerConfig{
+		DataConfigDir:  filepath.ToSlash(configDir),
+		DataType:       e2eDemoDataType,
+		CheckInterval:  "50ms",
+		MaxCheckCount:  20,
+		CheckMode:      "batched",
+		ForecastTimes:  []string{"24h"},
+		ExecuteCommand: doneCommand,
+	})
+
+	output, err := runCheckLocal(t, checkerConfigPath)
+
+	require.NoError(t, err, "batched check local failed: %s", output)
+	_, statErr := os.Stat(runtimeFile + ".done")
+	assert.NoError(t, statErr, "execute command did not run for the runtime file")
+	_, statErr = os.Stat(archiveFile + ".done")
+	assert.True(t, os.IsNotExist(statErr), "archive file must not be used when runtime hits")
 }
