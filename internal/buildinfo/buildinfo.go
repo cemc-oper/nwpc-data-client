@@ -1,4 +1,6 @@
-package common
+// Package buildinfo holds the version, build time, and git commit injected
+// at link time via -ldflags, and prints them for the version command.
+package buildinfo
 
 import "fmt"
 

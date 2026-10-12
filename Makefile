@@ -4,9 +4,9 @@ GIT_COMMIT := $(shell git rev-parse --short HEAD 2>/dev/null || echo "unknown")
 
 BIN_PATH := $(shell pwd)/bin
 
-LDFLAGS := -X "github.com/cemc-oper/nwpc-data-client/common.Version=$(VERSION)" \
-           -X "github.com/cemc-oper/nwpc-data-client/common.BuildTime=$(BUILD_TIME)" \
-           -X "github.com/cemc-oper/nwpc-data-client/common.GitCommit=$(GIT_COMMIT)"
+LDFLAGS := -X "github.com/cemc-oper/nwpc-data-client/internal/buildinfo.Version=$(VERSION)" \
+           -X "github.com/cemc-oper/nwpc-data-client/internal/buildinfo.BuildTime=$(BUILD_TIME)" \
+           -X "github.com/cemc-oper/nwpc-data-client/internal/buildinfo.GitCommit=$(GIT_COMMIT)"
 
 .PHONY: all command generate test test-e2e test-integration clean docs-cli docs
 all: command

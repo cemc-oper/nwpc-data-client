@@ -1,7 +1,7 @@
 package cmd
 
 import (
-	"github.com/cemc-oper/nwpc-data-client/common"
+	"github.com/cemc-oper/nwpc-data-client/internal/buildinfo"
 	"github.com/spf13/cobra"
 )
 
@@ -15,6 +15,6 @@ var versionCmd = &cobra.Command{
 	Long:    "Print version, build time, and git commit baked into the binary.",
 	Example: "  nwpc_data_client version",
 	Run: func(cmd *cobra.Command, args []string) {
-		common.PrintVersionInformation()
+		buildinfo.PrintVersionInformation()
 	},
 }

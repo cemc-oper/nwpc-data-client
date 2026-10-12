@@ -28,9 +28,9 @@ builds:
       - amd64
       - arm64
     ldflags:
-      - -X "github.com/cemc-oper/nwpc-data-client/common.Version={{ .Version }}"
-      - -X "github.com/cemc-oper/nwpc-data-client/common.BuildTime={{ .Date }}"
-      - -X "github.com/cemc-oper/nwpc-data-client/common.GitCommit={{ .ShortCommit }}"
+      - -X "github.com/cemc-oper/nwpc-data-client/internal/buildinfo.Version={{ .Version }}"
+      - -X "github.com/cemc-oper/nwpc-data-client/internal/buildinfo.BuildTime={{ .Date }}"
+      - -X "github.com/cemc-oper/nwpc-data-client/internal/buildinfo.GitCommit={{ .ShortCommit }}"
 
 # Snapshot (non-release) builds derive their version from the latest git tag,
 # e.g. 0.10.1-dev+gc266a65. Independent of scripts/version.sh, which only
