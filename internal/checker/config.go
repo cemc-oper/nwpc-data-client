@@ -29,16 +29,26 @@ type CheckerConfig struct {
 	ForecastTimes   []string `yaml:"forecast_times"`
 	ExecuteCommand  string   `yaml:"execute_command" flag:"execute-command"`
 	ExecuteCommands []string `yaml:"execute_commands"`
+
+	// CheckIntervalJitter is the per-round jitter ratio applied to the
+	// polling interval: each round sleeps interval×(1±j). 0 disables jitter.
+	CheckIntervalJitter float64 `yaml:"check_interval_jitter" flag:"check-interval-jitter"`
+	// MaxConcurrentStableChecks caps how many files may be in size-stability
+	// observation at once. It only applies to batched mode; per-time
+	// goroutines are inherently independent.
+	MaxConcurrentStableChecks int `yaml:"max_concurrent_stable_checks" flag:"max-concurrent-stable-checks"`
 }
 
 // DefaultCheckerConfig returns the default runtime configuration.
 // These values match the CLI flag defaults registered in local.go.
 func DefaultCheckerConfig() CheckerConfig {
 	return CheckerConfig{
-		MaxCheckCount: 2880,
-		CheckInterval: "5s",
-		DelayTime:     "10s",
-		Debug:         false,
+		MaxCheckCount:             2880,
+		CheckInterval:             "5s",
+		DelayTime:                 "10s",
+		Debug:                     false,
+		CheckIntervalJitter:       0.1,
+		MaxConcurrentStableChecks: 4,
 	}
 }
 
@@ -66,6 +76,9 @@ func (c CheckerConfig) Validate() error {
 	}
 	if c.ExecuteCommand != "" && len(c.ExecuteCommands) > 0 {
 		return fmt.Errorf("execute_command and execute_commands are mutually exclusive")
+	}
+	if c.CheckIntervalJitter < 0 || c.CheckIntervalJitter > 0.5 {
+		return fmt.Errorf("check_interval_jitter must be in [0, 0.5], got %v", c.CheckIntervalJitter)
 	}
 	return nil
 }

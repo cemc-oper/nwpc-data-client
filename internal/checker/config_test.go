@@ -17,6 +17,8 @@ func TestDefaultCheckerConfig(t *testing.T) {
 	assert.Equal(t, "5s", cfg.CheckInterval)
 	assert.Equal(t, "10s", cfg.DelayTime)
 	assert.False(t, cfg.Debug)
+	assert.Equal(t, 0.1, cfg.CheckIntervalJitter)
+	assert.Equal(t, 4, cfg.MaxConcurrentStableChecks)
 }
 
 func TestLoadCheckerConfig(t *testing.T) {
@@ -27,6 +29,8 @@ max_check_count: 100
 check_interval: 10s
 delay_time: 5s
 debug: true
+check_interval_jitter: 0.2
+max_concurrent_stable_checks: 8
 forecast_times:
   - 0h
   - 6h
@@ -48,6 +52,8 @@ execute_commands:
 	assert.Equal(t, "10s", cfg.CheckInterval)
 	assert.Equal(t, "5s", cfg.DelayTime)
 	assert.True(t, cfg.Debug)
+	assert.Equal(t, 0.2, cfg.CheckIntervalJitter)
+	assert.Equal(t, 8, cfg.MaxConcurrentStableChecks)
 	assert.Equal(t, []string{"0h", "6h", "12h"}, cfg.ForecastTimes)
 	assert.Equal(t, "", cfg.ExecuteCommand)
 	assert.Equal(t, []string{`echo "found {{.FilePath}}"`, `/app/postprocess.sh {{.FilePath}}`}, cfg.ExecuteCommands)
@@ -177,6 +183,15 @@ func TestCheckerConfigValidate(t *testing.T) {
 		ExecuteCommands: []string{"echo ok"},
 	}
 	assert.Error(t, invalid.Validate())
+
+	negativeJitter := CheckerConfig{DataType: "some/type", CheckIntervalJitter: -0.1}
+	assert.Error(t, negativeJitter.Validate())
+
+	tooLargeJitter := CheckerConfig{DataType: "some/type", CheckIntervalJitter: 0.6}
+	assert.Error(t, tooLargeJitter.Validate())
+
+	boundaryJitter := CheckerConfig{DataType: "some/type", CheckIntervalJitter: 0.5}
+	assert.NoError(t, boundaryJitter.Validate())
 }
 
 func TestCheckerConfigParseForecastTimes(t *testing.T) {
