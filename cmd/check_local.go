@@ -41,6 +41,12 @@ func init() {
 	checkLocalCmd.Flags().StringVar(&checkFlagConfig.DelayTime, "delay-time", "10s",
 		"Stagger delay between consecutive forecast times (duration such as 10s).")
 
+	checkLocalCmd.Flags().Float64Var(&checkFlagConfig.CheckIntervalJitter, "check-interval-jitter", 0.1,
+		"Jitter ratio applied to the polling interval: each round sleeps interval×(1±j). 0 disables jitter. Range [0, 0.5].")
+
+	checkLocalCmd.Flags().IntVar(&checkFlagConfig.MaxConcurrentStableChecks, "max-concurrent-stable-checks", 4,
+		"Maximum number of files in size-stability observation at once (batched check mode only).")
+
 	checkLocalCmd.Flags().BoolVar(&checkFlagConfig.Debug, "debug", false, "Enable debug logging.")
 }
 

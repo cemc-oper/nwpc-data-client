@@ -103,16 +103,22 @@ func TestMergeCheckerConfigCLIOverridesYAML(t *testing.T) {
 	require.NoError(t, cmd.Flags().Set("data-type", "override/type"))
 	require.NoError(t, cmd.Flags().Set("max-check-count", "50"))
 	require.NoError(t, cmd.Flags().Set("check-interval", "20s"))
+	require.NoError(t, cmd.Flags().Set("check-interval-jitter", "0.3"))
+	require.NoError(t, cmd.Flags().Set("max-concurrent-stable-checks", "2"))
 
 	fileConfig := CheckerConfig{
-		DataType:      "original/type",
-		MaxCheckCount: 100,
-		CheckInterval: "10s",
+		DataType:                  "original/type",
+		MaxCheckCount:             100,
+		CheckInterval:             "10s",
+		CheckIntervalJitter:       0.2,
+		MaxConcurrentStableChecks: 8,
 	}
 	flagConfig := CheckerConfig{
-		DataType:      "override/type",
-		MaxCheckCount: 50,
-		CheckInterval: "20s",
+		DataType:                  "override/type",
+		MaxCheckCount:             50,
+		CheckInterval:             "20s",
+		CheckIntervalJitter:       0.3,
+		MaxConcurrentStableChecks: 2,
 	}
 
 	cfg, err := MergeCheckerConfig(fileConfig, flagConfig, cmd)
@@ -121,6 +127,8 @@ func TestMergeCheckerConfigCLIOverridesYAML(t *testing.T) {
 	assert.Equal(t, "override/type", cfg.DataType)
 	assert.Equal(t, 50, cfg.MaxCheckCount)
 	assert.Equal(t, "20s", cfg.CheckInterval)
+	assert.Equal(t, 0.3, cfg.CheckIntervalJitter)
+	assert.Equal(t, 2, cfg.MaxConcurrentStableChecks)
 }
 
 func TestMergeCheckerConfigExecuteCommandOverridesExecuteCommands(t *testing.T) {
@@ -163,6 +171,8 @@ func newTestLocalCommand(t *testing.T) *cobra.Command {
 	cmd.Flags().String("check-interval", "5s", "")
 	cmd.Flags().String("execute-command", "", "")
 	cmd.Flags().String("delay-time", "10s", "")
+	cmd.Flags().Float64("check-interval-jitter", 0.1, "")
+	cmd.Flags().Int("max-concurrent-stable-checks", 4, "")
 	cmd.Flags().Bool("debug", false, "")
 	return cmd
 }
