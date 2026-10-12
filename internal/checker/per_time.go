@@ -83,6 +83,12 @@ func Run(config CheckerConfig, startTime time.Time, stdin io.Reader) {
 		return
 	}
 
+	// Startup jitter: shift this process's polling phase once before entering
+	// the loop, so processes launched at the same moment do not stay aligned.
+	jitterSleep := startupJitter(checkDuration)
+	log.Infof("startup jitter...sleep %v", jitterSleep)
+	time.Sleep(jitterSleep)
+
 	checkDataFile(
 		config,
 		startTime,
@@ -187,7 +193,7 @@ func checkForOneTime(
 			}
 			break
 		}
-		time.Sleep(checkDuration)
+		sleepWithJitter(checkDuration, config.CheckIntervalJitter)
 		roundNumber += 1
 	}
 
