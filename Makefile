@@ -8,7 +8,7 @@ LDFLAGS := -X "github.com/cemc-oper/nwpc-data-client/common.Version=$(VERSION)" 
            -X "github.com/cemc-oper/nwpc-data-client/common.BuildTime=$(BUILD_TIME)" \
            -X "github.com/cemc-oper/nwpc-data-client/common.GitCommit=$(GIT_COMMIT)"
 
-.PHONY: all command generate test test-integration clean
+.PHONY: all command generate test test-e2e test-integration clean
 all: command
 
 command: $(BIN_PATH)/nwpc_data_client
@@ -22,6 +22,9 @@ generate:
 
 test:
 	go test ./...
+
+test-e2e: $(BIN_PATH)/nwpc_data_client
+	go test -count=1 ./tests/e2e/...
 
 test-integration: $(BIN_PATH)/nwpc_data_client
 	go test -tags=integration -count=1 -v ./tests/integration/...
