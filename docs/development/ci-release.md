@@ -11,4 +11,10 @@ GitHub Actions 工作流位于 `.github/workflows/`：
   文档本身由 **Read the Docs** 构建与托管（配置见仓库根目录的
   `.readthedocs.yaml`）。
 
-> 本文档正在编写中：补充发版操作步骤。
+## 发版步骤
+
+1. 确认 `VERSION` 文件为即将发布的版本号（无 `v` 前缀）；
+2. 推送标签 `v$(cat VERSION)`；
+3. `release.yml` 校验标签与 `VERSION` 一致后运行 GoReleaser，
+   产物发布到 GitHub Releases；
+4. 发布后将 `VERSION` 递增为下一个版本号。

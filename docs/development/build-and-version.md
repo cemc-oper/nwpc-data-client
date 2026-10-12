@@ -23,4 +23,5 @@ goreleaser build --snapshot --clean --single-target # 仅本机平台，最快
 与 `scripts/version.sh` 相互独立。无 GoReleaser 或无 git 的环境（如隔离
 HPC）使用 `make`。
 
-> 本文档正在编写中：补充交叉编译矩阵说明。
+发布构建面向 linux 与 windows 的 amd64、arm64 四个平台
+（配置见 `.goreleaser.yaml`）。

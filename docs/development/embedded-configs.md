@@ -14,4 +14,6 @@ make generate
 **注意**：新增或修改 `conf/` 下的 YAML 后必须运行 `make generate` 并提交
 `config.autogen.go`，否则内嵌配置与 `conf/` 不一致。
 
-> 本文档正在编写中：补充内嵌配置的加载优先级说明。
+加载时的优先级：`--data-config-file` > `--data-config-dir` >
+内嵌配置（`config.EmbeddedConfigs`）。详见
+[指南：使用自定义配置](../guide/custom-configs.md)。

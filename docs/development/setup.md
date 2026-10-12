@@ -18,4 +18,13 @@ go vet ./...  # 静态检查（CI 强制）
 gofmt -l .    # 格式检查（CI 强制）
 ```
 
-> 本文档正在编写中：补充 Windows / HPC 环境下的注意事项。
+文档相关：
+
+```bash
+make docs-cli   # 重新生成 CLI 参考页（修改 cmd/ 下命令定义后必须执行）
+make docs       # 构建 Sphinx 文档（需 pip install -r docs/requirements.txt）
+```
+
+Windows 环境请使用 Git Bash 或兼容的 make；HPC 等无 git 环境下
+`make` 仍可构建（版本号带 `-dev` 后缀），但 GoReleaser 快照构建依赖
+git 标签，不可用。

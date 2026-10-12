@@ -25,4 +25,5 @@ make test-integration   # 自动先构建二进制
 make test-e2e
 ```
 
-> 本文档正在编写中：补充测试编写约定。
+位于 `tests/e2e/`，针对真实构建出的二进制运行，不依赖业务数据，
+CI 的 Linux 与 Windows 作业都会执行。
