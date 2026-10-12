@@ -1,6 +1,8 @@
 package common
 
 import (
+	"os"
+	"path/filepath"
 	"testing"
 	"time"
 
@@ -60,4 +62,58 @@ paths:
 			assert.Equal(t, tt.expected, dataConfig)
 		})
 	}
+}
+
+const testLocalConfigContent = `default: NOTFOUND
+file_name: data.grb2
+paths:
+  - type: local
+    level: runtime
+    path: /some/dir
+`
+
+func TestLoadConfigContentFromConfigDir(t *testing.T) {
+	configDir := t.TempDir()
+	dataType := "test_system/current/grib2/orig"
+	configPath := filepath.Join(configDir, filepath.FromSlash(dataType+".yaml"))
+	assert.NoError(t, os.MkdirAll(filepath.Dir(configPath), 0755))
+	assert.NoError(t, os.WriteFile(configPath, []byte(testLocalConfigContent), 0644))
+
+	content, err := LoadConfigContent(configDir, dataType)
+
+	assert.NoError(t, err)
+	assert.Equal(t, testLocalConfigContent, content)
+}
+
+func TestLoadConfigContentRejectsPathEscape(t *testing.T) {
+	configDir := t.TempDir()
+
+	_, err := LoadConfigContent(configDir, "../escape")
+
+	assert.Error(t, err)
+}
+
+func TestLoadConfigContentMissingFileDoesNotFallBackToEmbedded(t *testing.T) {
+	// The data type exists in the embedded configs, but a non-empty config
+	// dir is a full replacement: a missing file is an error, never a
+	// fallback to the embedded configs.
+	configDir := t.TempDir()
+	dataType := "cma_gfs_gmf/current/grib2/orig"
+
+	_, err := LoadConfigContent(configDir, dataType)
+
+	assert.Error(t, err)
+}
+
+func TestLoadConfigContentEmbeddedHit(t *testing.T) {
+	content, err := LoadConfigContent("", "local/cma_gfs_gmf/current/grib2/orig")
+
+	assert.NoError(t, err)
+	assert.NotEmpty(t, content)
+}
+
+func TestLoadConfigContentEmbeddedMiss(t *testing.T) {
+	_, err := LoadConfigContent("", "local/not_exist_system/current/grib2/orig")
+
+	assert.Error(t, err)
 }
