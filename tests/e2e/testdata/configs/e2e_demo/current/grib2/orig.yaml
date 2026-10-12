@@ -1,0 +1,9 @@
+default: NOTFOUND
+file_name: data.{{.Year}}{{.Month}}{{.Day}}{{.Hour}}{{.ForecastHour}}.grb2
+paths:
+  - type: local
+    level: runtime
+    path: '%ROOT%/runtime/{{.Year}}{{.Month}}{{.Day}}{{.Hour}}'
+  - type: local
+    level: archive
+    path: '%ROOT%/archive/{{.Year}}{{.Month}}{{.Day}}{{.Hour}}'
