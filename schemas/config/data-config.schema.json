@@ -2,11 +2,16 @@
   "$schema": "http://json-schema.org/draft-07/schema#",
   "$id": "https://cemc-oper.github.io/nwpc-data-client/schemas/config/data-config.schema.json",
   "title": "nwpc-data-client data config (rendered, format-independent)",
-  "description": "Structural schema for a RENDERED nwpc-data-client data config (all template actions already executed). Raw v2/v3 config files are Go templates and cannot be validated with this schema; use `nwpc_data_client config lint` for them. This schema mirrors the Go-side validation in common.ValidateDataConfig.",
+  "description": "Structural schema for a RENDERED nwpc-data-client data config (all template actions already executed). Raw v2/v3 config files are Go templates and cannot be validated with this schema; use `nwpc_data_client config lint` for them. This schema mirrors the Go-side validation in internal/dataconfig.ValidateDataConfig.",
   "type": "object",
   "required": ["paths"],
   "additionalProperties": false,
   "properties": {
+    "_arrival_order": {
+      "type": "string",
+      "pattern": "^(sequential|unordered)$",
+      "description": "Arrival order of forecast times. sequential gates batched-mode polling to the earliest pending time; unordered (default when absent) disables gating."
+    },
     "_config_version": {
       "type": "integer",
       "enum": [1, 2, 3],

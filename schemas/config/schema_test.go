@@ -87,3 +87,14 @@ func TestV1SchemaLevelPattern(t *testing.T) {
 		require.False(t, pattern.MatchString(bad), "level pattern should reject %q", bad)
 	}
 }
+
+func TestCurrentSchemaArrivalOrderPattern(t *testing.T) {
+	pattern := loadSchemaPattern(t, "data-config.schema.json", "properties", "_arrival_order")
+
+	for _, ok := range []string{"sequential", "unordered"} {
+		require.True(t, pattern.MatchString(ok), "_arrival_order pattern should accept %q", ok)
+	}
+	for _, bad := range []string{"weekly", "", "Sequential"} {
+		require.False(t, pattern.MatchString(bad), "_arrival_order pattern should reject %q", bad)
+	}
+}

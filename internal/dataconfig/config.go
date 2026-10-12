@@ -26,12 +26,23 @@ type DataConfig struct {
 	// ConfigVersion is the reserved "_config_version" field declaring the
 	// config format version. It is not used for path resolution; it exists
 	// so that the field survives YAML parsing and strict structural checks.
-	ConfigVersion int        `yaml:"_config_version,omitempty"`
-	Default       string     `yaml:"default"`
-	FileName      string     `yaml:"file_name"`
-	FileNames     []string   `yaml:"file_names"`
-	Paths         []PathItem `yaml:"paths"`
+	ConfigVersion int `yaml:"_config_version,omitempty"`
+	// ArrivalOrder is the reserved "_arrival_order" field declaring whether
+	// forecast times arrive strictly in order (sequential) or not
+	// (unordered, the default when absent). It is metadata for the batched
+	// check mode's arrival gating and does not affect path resolution.
+	ArrivalOrder string     `yaml:"_arrival_order,omitempty"`
+	Default      string     `yaml:"default"`
+	FileName     string     `yaml:"file_name"`
+	FileNames    []string   `yaml:"file_names"`
+	Paths        []PathItem `yaml:"paths"`
 }
+
+// Arrival order values accepted by the reserved "_arrival_order" field.
+const (
+	ArrivalOrderSequential = "sequential"
+	ArrivalOrderUnordered  = "unordered"
+)
 
 // LoadConfigContent read config content from a local file or from embedded config strings.
 // The content is checked against the config format version this binary supports.
@@ -145,6 +156,12 @@ func ValidateDataConfig(content string) error {
 
 // ValidateDataConfigStruct checks the structural rules of a parsed DataConfig.
 func ValidateDataConfigStruct(dataConfig DataConfig) error {
+	if dataConfig.ArrivalOrder != "" &&
+		dataConfig.ArrivalOrder != ArrivalOrderSequential &&
+		dataConfig.ArrivalOrder != ArrivalOrderUnordered {
+		return fmt.Errorf("_arrival_order must be %q or %q, got %q",
+			ArrivalOrderSequential, ArrivalOrderUnordered, dataConfig.ArrivalOrder)
+	}
 	if len(dataConfig.Paths) == 0 {
 		return fmt.Errorf("paths is required and must not be empty")
 	}

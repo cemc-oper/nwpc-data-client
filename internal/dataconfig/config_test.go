@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func TestParseConfigContent(t *testing.T) {
@@ -116,4 +117,22 @@ func TestLoadConfigContentEmbeddedMiss(t *testing.T) {
 	_, err := LoadConfigContent("", "local/not_exist_system/current/grib2/orig")
 
 	assert.Error(t, err)
+}
+
+func TestValidateDataConfigArrivalOrder(t *testing.T) {
+	validBase := `
+default: NOTFOUND
+file_name: data.grb2
+paths:
+  - type: local
+    level: runtime
+    path: /data
+`
+	assert.NoError(t, ValidateDataConfig(validBase))
+	assert.NoError(t, ValidateDataConfig("_arrival_order: sequential\n"+validBase))
+	assert.NoError(t, ValidateDataConfig("_arrival_order: unordered\n"+validBase))
+
+	err := ValidateDataConfig("_arrival_order: weekly\n" + validBase)
+	require.Error(t, err)
+	assert.Contains(t, err.Error(), "_arrival_order")
 }
