@@ -1,5 +1,5 @@
 // this is a auto generated file.
-package config
+package embedded
 
 var EmbeddedConfigs = [][2]string{
 	{`local/cma_geps/current/grib2/orig`, `# cma-reps

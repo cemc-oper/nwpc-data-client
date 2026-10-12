@@ -5,7 +5,7 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/cemc-oper/nwpc-data-client/common/config"
+	"github.com/cemc-oper/nwpc-data-client/internal/embedded"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 )
@@ -58,7 +58,7 @@ var configExportCmd = &cobra.Command{
 // Existing files are left untouched unless force is true.
 func exportEmbeddedConfigs(outputDir string, force bool) (int, error) {
 	writtenCount := 0
-	for _, item := range config.EmbeddedConfigs {
+	for _, item := range embedded.EmbeddedConfigs {
 		dataType := item[0]
 		content := item[1]
 

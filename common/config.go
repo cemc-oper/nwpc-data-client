@@ -9,7 +9,7 @@ import (
 	"text/template"
 	"time"
 
-	"github.com/cemc-oper/nwpc-data-client/common/config"
+	"github.com/cemc-oper/nwpc-data-client/internal/embedded"
 	log "github.com/sirupsen/logrus"
 	"gopkg.in/yaml.v3"
 )
@@ -108,7 +108,7 @@ func ParseConfigContent(content string, startTime time.Time, forecastTime time.D
 
 // loadContentFromEmbedded find data config string in embedded configs.
 func loadContentFromEmbedded(dataType string) (string, error) {
-	for _, configItem := range config.EmbeddedConfigs {
+	for _, configItem := range embedded.EmbeddedConfigs {
 		if configItem[0] == dataType {
 			return configItem[1], nil
 		}

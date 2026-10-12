@@ -6,7 +6,7 @@ import (
 	"testing"
 
 	"github.com/cemc-oper/nwpc-data-client/common"
-	"github.com/cemc-oper/nwpc-data-client/common/config"
+	"github.com/cemc-oper/nwpc-data-client/internal/embedded"
 	"github.com/stretchr/testify/require"
 )
 
@@ -18,7 +18,7 @@ func TestExportEmbeddedConfigs_MatchesConfDir(t *testing.T) {
 
 	writtenCount, err := exportEmbeddedConfigs(tempDir, false)
 	require.NoError(t, err)
-	require.Equal(t, len(config.EmbeddedConfigs), writtenCount)
+	require.Equal(t, len(embedded.EmbeddedConfigs), writtenCount)
 
 	confDir := filepath.Join("..", "conf")
 	confCount := 0
@@ -60,5 +60,5 @@ func TestExportEmbeddedConfigs_NoOverwriteWithoutForce(t *testing.T) {
 
 	writtenCount, err := exportEmbeddedConfigs(tempDir, true)
 	require.NoError(t, err)
-	require.Equal(t, len(config.EmbeddedConfigs), writtenCount)
+	require.Equal(t, len(embedded.EmbeddedConfigs), writtenCount)
 }

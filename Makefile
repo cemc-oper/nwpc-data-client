@@ -20,7 +20,7 @@ $(BIN_PATH)/nwpc_data_client: $(GO_SOURCES)
 	CGO_ENABLED=0 go build -ldflags "$(LDFLAGS)" -o $@ .
 
 generate:
-	cd common/config/generate && go generate
+	cd internal/embedded/generate && go generate
 
 test:
 	go test ./...

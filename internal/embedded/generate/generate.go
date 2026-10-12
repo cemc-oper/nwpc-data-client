@@ -50,7 +50,7 @@ func main() {
 	})
 
 	fmt.Fprint(file, `// this is a auto generated file.
-package config
+package embedded
 
 var EmbeddedConfigs = [][2]string{
 `)

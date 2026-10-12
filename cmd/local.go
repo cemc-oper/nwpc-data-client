@@ -7,7 +7,7 @@ import (
 	"strings"
 
 	"github.com/cemc-oper/nwpc-data-client/common"
-	"github.com/cemc-oper/nwpc-data-client/common/config"
+	"github.com/cemc-oper/nwpc-data-client/internal/embedded"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 )
@@ -180,7 +180,7 @@ func showLocalDataTypes(configDir string) {
 }
 
 func showEmbeddedDataTypes() {
-	for _, item := range config.EmbeddedConfigs {
+	for _, item := range embedded.EmbeddedConfigs {
 		name := item[0]
 		if strings.HasPrefix(name, "local/") {
 			fmt.Printf("%s\n", name[6:])
