@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 var (
@@ -162,6 +163,6 @@ func TestPrepareLocalDir(t *testing.T) {
 	PrepareLocalDir(filePath)
 
 	info, err := os.Stat(filepath.Dir(filePath))
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	assert.True(t, info.IsDir())
 }
