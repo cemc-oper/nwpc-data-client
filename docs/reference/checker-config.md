@@ -14,6 +14,8 @@ CheckerConfig 是 `check local` 的运行时配置（定义于
 | `location_levels` | `--location-level` | `""` | 逗号分隔的位置级别，空表示搜索全部 |
 | `max_check_count` | `--max-check-count` | `2880` | 每个预报时效的最大检查次数（存在性检查与大小稳定检查共用同一预算） |
 | `check_interval` | `--check-interval` | `5s` | 两次检查的间隔（Go duration 格式） |
+| `check_interval_jitter` | `--check-interval-jitter` | `0.1` | 逐轮抖动比例：每轮实际间隔在 `interval×(1±j)` 内随机，取值 `[0, 0.5]`，`0` 关闭 |
+| `max_concurrent_stable_checks` | `--max-concurrent-stable-checks` | `4` | 同时处于大小稳定观察的文件数上限（仅批量轮询模式生效） |
 | `delay_time` | `--delay-time` | `10s` | 相邻预报时效检查任务之间的错开等待 |
 | `debug` | `--debug` | `false` | 调试日志 |
 | `forecast_times` | —（仅 YAML） | — | 预报时效字符串列表，如 `["0h", "6h", "24h"]`；缺省时从标准输入读取 |
@@ -38,7 +40,19 @@ YAML 与 CLI 按以下优先级合并（`MergeCheckerConfig`）：
 合并完成后校验（任一不满足即报错退出）：
 
 - `data_type` 或 `data_config_file` 必须提供其一；
-- `execute_command` 与 `execute_commands` 不得同时存在。
+- `execute_command` 与 `execute_commands` 不得同时存在；
+- `check_interval_jitter` 必须在 `[0, 0.5]` 内。
+
+## 抖动（jitter）
+
+为避免同一时次批量启动的进程在整点对齐、同步冲击存储元数据服务，轮询
+带有两级随机抖动：
+
+- **启动抖动**：进程进入轮询前随机等待 `0 ~ check_interval`（全量程，
+  不可配置），打散进程间相位；
+- **逐轮抖动**：每轮间隔在 `check_interval×(1±j)` 内随机，`j` 即
+  `check_interval_jitter`（默认 0.1，`0` 关闭）。抖动按比例随间隔联动，
+  额外发现延迟的上界为 `j×check_interval`。
 
 ## 完整示例
 
