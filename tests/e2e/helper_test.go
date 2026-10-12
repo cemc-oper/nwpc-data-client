@@ -2,6 +2,7 @@ package e2e
 
 import (
 	"os"
+	"os/exec"
 	"path/filepath"
 	"runtime"
 	"strings"
@@ -51,6 +52,17 @@ func getRepoRoot(t *testing.T) string {
 	_, file, _, ok := runtime.Caller(0)
 	require.True(t, ok, "failed to get current file path")
 	return filepath.Join(filepath.Dir(file), "..", "..")
+}
+
+// runCLI runs the nwpc_data_client binary with the given arguments, requires
+// a zero exit code, and returns the trimmed combined output.
+func runCLI(t *testing.T, args ...string) string {
+	t.Helper()
+	binPath := getBinaryPath(t)
+	cmd := exec.Command(binPath, args...)
+	output, err := cmd.CombinedOutput()
+	require.NoError(t, err, "CLI failed: %s", string(output))
+	return strings.TrimSpace(string(output))
 }
 
 // writeConfigWithRoot reads the config template at the given slash-separated
