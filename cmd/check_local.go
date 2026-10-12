@@ -282,7 +282,10 @@ func checkForOneTime(
 
 	dataConfig, err := common.ParseConfigContent(configContent, checkStartTime, forecastTime, member)
 	if err != nil {
-		currentLog.Fatalf("parse config content failed: %v", err)
+		ch <- CheckResult{
+			ForecastTime: forecastTime,
+			Error:        fmt.Errorf("parse config content failed: %v", err),
+		}
 		return
 	}
 
@@ -295,25 +298,12 @@ func checkForOneTime(
 			currentLog.Infof("checking exist...not found")
 		} else {
 			currentLog.Infof("checking exist...success: %s", filePath)
-			currentLog.Infof("checking size... %d/%d", roundNumber, config.MaxCheckCount)
-
-			var lastSize int64 = -1
-			for roundNumber < config.MaxCheckCount {
-				currentSize, _ := getFileSize(filePath)
-				if currentSize == 0 {
-					currentLog.Warnf("get size 0, continue to wait for a valid data size %d/%d", roundNumber, config.MaxCheckCount)
-					time.Sleep(checkDuration)
-					lastSize = currentSize
-				} else if currentSize == lastSize {
-					currentLog.Infof("checking size...success %d/%d", roundNumber, config.MaxCheckCount)
-					foundData = true
-					break
-				} else {
-					currentLog.Infof("checking size...changed %d/%d", roundNumber, config.MaxCheckCount)
-					time.Sleep(checkDuration)
-					lastSize = currentSize
-				}
-				roundNumber += 1
+			// The size checks share the same budget of remaining checks.
+			_, err := waitForStableFile(filePath, checkDuration, config.MaxCheckCount-roundNumber)
+			if err != nil {
+				currentLog.Warnf("checking size...failed: %v", err)
+			} else {
+				foundData = true
 			}
 			break
 		}
@@ -360,6 +350,31 @@ func getFileSize(filePath string) (int64, error) {
 		return -100, fmt.Errorf("get file info has error:%v", err)
 	}
 	return fileInfo.Size(), nil
+}
+
+// waitForStableFile polls path until its size is non-zero and unchanged
+// between two consecutive checks, and returns the final size. It gives up
+// with an error after maxCount checks.
+func waitForStableFile(path string, interval time.Duration, maxCount int) (int64, error) {
+	var lastSize int64 = -1
+	for i := 0; i < maxCount; i++ {
+		currentSize, err := getFileSize(path)
+		if err != nil {
+			log.Warnf("checking size...get file size failed: %v", err)
+			lastSize = -1
+		} else if currentSize > 0 && currentSize == lastSize {
+			log.Infof("checking size...success %d/%d", i, maxCount)
+			return currentSize, nil
+		} else if currentSize == 0 {
+			log.Warnf("get size 0, continue to wait for a valid data size %d/%d", i, maxCount)
+			lastSize = currentSize
+		} else {
+			log.Infof("checking size...changed %d/%d", i, maxCount)
+			lastSize = currentSize
+		}
+		time.Sleep(interval)
+	}
+	return 0, fmt.Errorf("file is not stable after %d checks: %s", maxCount, path)
 }
 
 type CheckerTemplateVariable struct {
