@@ -13,7 +13,9 @@ all: command
 
 command: $(BIN_PATH)/nwpc_data_client
 
-$(BIN_PATH)/nwpc_data_client: main.go
+GO_SOURCES := $(shell find . -type f -name '*.go' -not -path './bin/*')
+
+$(BIN_PATH)/nwpc_data_client: $(GO_SOURCES)
 	@mkdir -p $(BIN_PATH)
 	CGO_ENABLED=0 go build -ldflags "$(LDFLAGS)" -o $@ .
 
