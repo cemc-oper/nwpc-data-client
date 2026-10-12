@@ -66,6 +66,7 @@ nwpc_data_client check local <start_time> [flags]
       --check-interval-jitter float        Jitter ratio applied to the polling interval: each round sleeps interval×(1±j). 0 disables jitter. Range [0, 0.5]. (default 0.1)
       --max-concurrent-stable-checks int   Maximum number of files in size-stability observation at once (batched check mode only). (default 4)
       --check-mode string                  Polling mode: per_time (one goroutine per forecast time) or batched (single readdir-based loop). (default "per_time")
+      --arrival-order string               Arrival order override for batched mode gating: auto (follow the data config), sequential, or unordered. (default "auto")
       --debug                              Enable debug logging.
   -h, --help                               help for local
 ```

@@ -19,6 +19,7 @@ CheckerConfig 是 `check local` 的运行时配置（定义于
 | `delay_time` | `--delay-time` | `10s` | 相邻预报时效检查任务之间的错开等待 |
 | `debug` | `--debug` | `false` | 调试日志 |
 | `check_mode` | `--check-mode` | `per_time` | 轮询模式：`per_time`（每时效一协程）或 `batched`（单循环 readdir 批量发现） |
+| `arrival_order` | `--arrival-order` | `auto` | 到达顺序覆盖：`auto` 跟随数据配置的 `_arrival_order`，`sequential` 启用顺序门控，`unordered` 关闭（双向覆盖均有效；仅 batched 模式生效） |
 | `forecast_times` | —（仅 YAML） | — | 预报时效字符串列表，如 `["0h", "6h", "24h"]`；缺省时从标准输入读取 |
 | `execute_command` | `--execute-command` | `""` | 单条命令模板 |
 | `execute_commands` | —（仅 YAML） | — | 多条命令模板列表，与 `execute_command` 互斥 |
@@ -43,7 +44,8 @@ YAML 与 CLI 按以下优先级合并（`MergeCheckerConfig`）：
 - `data_type` 或 `data_config_file` 必须提供其一；
 - `execute_command` 与 `execute_commands` 不得同时存在；
 - `check_interval_jitter` 必须在 `[0, 0.5]` 内；
-- `check_mode` 必须是 `per_time` 或 `batched`。
+- `check_mode` 必须是 `per_time` 或 `batched`；
+- `arrival_order` 必须是 `auto`、`sequential` 或 `unordered`。
 
 ## 抖动（jitter）
 

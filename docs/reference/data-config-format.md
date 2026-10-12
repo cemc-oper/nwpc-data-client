@@ -10,6 +10,7 @@
 | 字段 | 类型 | 必选 | 说明 |
 |---|---|---|---|
 | `_config_version` | int | 否 | 保留字段，声明配置**格式**版本（当前为 3）。只用于版本校验，不参与路径解析 |
+| `_arrival_order` | string | 否 | 保留字段，声明预报时效的到达顺序：`sequential`（按时效顺序产出）或 `unordered`（缺省）。只用于 `check local` batched 模式的顺序门控，不参与路径解析 |
 | `default` | string | 否 | 所有候选路径都未找到文件时的返回值，通常为 `NOTFOUND` |
 | `file_name` | string | 否 | 单个候选文件名（模板） |
 | `file_names` | list&lt;string&gt; | 否 | 候选文件名（模板）列表 |
@@ -44,7 +45,23 @@
 - `paths` 必须存在且非空；
 - 每个 `paths` 条目的 `type` / `level` / `path` 均必填；
 - `type` 只接受 `local`；`level` 必须匹配
-  `runtime` / `archive` / `storage` 或其 `/` 组合。
+  `runtime` / `archive` / `storage` 或其 `/` 组合；
+- `_arrival_order` 只接受 `sequential` / `unordered`。
+
+## 到达顺序与顺序门控
+
+`_arrival_order: sequential` 声明该数据的预报时效**按时效顺序产出**
+（模式积分产品的固有属性）。在 `check local` 的 batched 模式下，它启用
+顺序门控：每一轮只有最早未到的时效参与目录扫描，它的命令执行完毕后
+才放开下一个时效；无序数据（缺省 `unordered`）不做门控，全部待等时效
+每轮一起检查。
+
+运行时可用 `--arrival-order` / checker YAML 的 `arrival_order` 覆盖数据
+配置（双向有效：`sequential→unordered` 是紧急开关，`unordered→sequential`
+是试验手段），缺省 `auto` 跟随数据配置。详见
+[Checker 配置](checker-config.md)。
+
+per_time 模式不做门控（各时效协程相互独立）。
 
 ## 示例
 
