@@ -2,12 +2,11 @@ package e2e
 
 import (
 	"os"
-	"os/exec"
 	"path/filepath"
-	"runtime"
 	"strings"
 	"testing"
 
+	"github.com/cemc-oper/nwpc-data-client/tests/testutil"
 	"github.com/stretchr/testify/require"
 )
 
@@ -15,54 +14,32 @@ import (
 // replaced with the absolute path of the test's temporary data root.
 const rootPlaceholder = "%ROOT%"
 
-// getBinaryPath returns the path to the nwpc_data_client binary. It honors
-// the NWPC_DATA_CLIENT_PROGRAM environment variable and otherwise defaults to
-// <repo>/bin/nwpc_data_client (.exe on Windows). The test is skipped when the
-// default binary does not exist, so plain "go test ./..." keeps working in
-// environments where the binary has not been built.
+// getBinaryPath returns the path to the nwpc_data_client binary. The test is
+// skipped when the default binary does not exist, so plain "go test ./..."
+// keeps working in environments where the binary has not been built.
 func getBinaryPath(t *testing.T) string {
 	t.Helper()
-	if p := os.Getenv("NWPC_DATA_CLIENT_PROGRAM"); p != "" {
-		return p
-	}
-	repoRoot := getRepoRoot(t)
-	binPath := filepath.Join(repoRoot, "bin", "nwpc_data_client")
-	if runtime.GOOS == "windows" {
-		binPath += ".exe"
-	}
-	if _, err := os.Stat(binPath); err != nil {
-		t.Skipf("nwpc_data_client binary not found: %s (build it first, e.g. make)", binPath)
+	binPath := testutil.BinaryPath(t)
+	if os.Getenv("NWPC_DATA_CLIENT_PROGRAM") == "" {
+		if _, err := os.Stat(binPath); err != nil {
+			t.Skipf("nwpc_data_client binary not found: %s (build it first, e.g. make)", binPath)
+		}
 	}
 	return binPath
 }
 
-// getConfigDir returns the absolute path of the repo's conf directory. It
-// honors the NWPC_DATA_CLIENT_CONFIG_DIR environment variable.
+// getConfigDir returns the absolute path of the repo's conf directory.
 func getConfigDir(t *testing.T) string {
 	t.Helper()
-	if d := os.Getenv("NWPC_DATA_CLIENT_CONFIG_DIR"); d != "" {
-		return d
-	}
-	return filepath.Join(getRepoRoot(t), "conf")
-}
-
-// getRepoRoot returns the repository root derived from this file's location.
-func getRepoRoot(t *testing.T) string {
-	t.Helper()
-	_, file, _, ok := runtime.Caller(0)
-	require.True(t, ok, "failed to get current file path")
-	return filepath.Join(filepath.Dir(file), "..", "..")
+	return testutil.ConfigDir(t)
 }
 
 // runCLI runs the nwpc_data_client binary with the given arguments, requires
 // a zero exit code, and returns the trimmed combined output.
 func runCLI(t *testing.T, args ...string) string {
 	t.Helper()
-	binPath := getBinaryPath(t)
-	cmd := exec.Command(binPath, args...)
-	output, err := cmd.CombinedOutput()
-	require.NoError(t, err, "CLI failed: %s", string(output))
-	return strings.TrimSpace(string(output))
+	getBinaryPath(t) // keep the skip-on-missing-binary behavior
+	return testutil.RunCLI(t, args...)
 }
 
 // writeConfigWithRoot reads the config template at the given slash-separated
@@ -72,7 +49,7 @@ func runCLI(t *testing.T, args ...string) string {
 // --data-config-dir.
 func writeConfigWithRoot(t *testing.T, configRelPath string, rootDir string) string {
 	t.Helper()
-	templatePath := filepath.Join(getRepoRoot(t), "tests", "e2e", "testdata", "configs",
+	templatePath := filepath.Join(testutil.RepoRoot(t), "tests", "e2e", "testdata", "configs",
 		filepath.FromSlash(configRelPath))
 	templateContent, err := os.ReadFile(templatePath)
 	require.NoError(t, err, "read config template failed: %s", templatePath)

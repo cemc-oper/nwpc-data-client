@@ -5,15 +5,12 @@ package integration
 import (
 	"fmt"
 	"os"
-	"os/exec"
-	"path/filepath"
-	"runtime"
 	"strings"
 	"testing"
 	"time"
 
+	"github.com/cemc-oper/nwpc-data-client/tests/testutil"
 	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
 )
 
 // Fallback pairs an alternative start time with the path expected when that start time is used.
@@ -70,7 +67,6 @@ func runTestCase(t *testing.T, tc TestCase) {
 		t.Skipf("data not available: %s", expectedPath)
 	}
 
-	binPath := getBinaryPath(t)
 	args := []string{
 		"local",
 		"--location-level=" + tc.LocationLevel,
@@ -79,44 +75,11 @@ func runTestCase(t *testing.T, tc TestCase) {
 		"--forecast-time=" + tc.ForecastTime,
 	}
 	if tc.ConfigDir != "" {
-		args = append(args, "--data-config-dir="+getConfigDir(t, tc.ConfigDir))
+		args = append(args, "--data-config-dir="+testutil.ConfigDir(t, tc.ConfigDir))
 	}
 
-	cmd := exec.Command(binPath, args...)
-	output, err := cmd.CombinedOutput()
-	require.NoError(t, err, "CLI failed: %s", string(output))
-
-	got := strings.TrimSpace(string(output))
+	got := testutil.RunCLI(t, args...)
 	assert.Equal(t, expectedPath, got)
-}
-
-// getBinaryPath returns the path to the nwpc_data_client binary.
-// It honors the NWPC_DATA_CLIENT_PROGRAM environment variable.
-func getBinaryPath(t *testing.T) string {
-	t.Helper()
-	if p := os.Getenv("NWPC_DATA_CLIENT_PROGRAM"); p != "" {
-		return p
-	}
-	_, file, _, ok := runtime.Caller(0)
-	require.True(t, ok, "failed to get current file path")
-	repoRoot := filepath.Join(filepath.Dir(file), "..", "..")
-	return filepath.Join(repoRoot, "bin", "nwpc_data_client")
-}
-
-// getConfigDir returns the absolute config directory path for a subdir (e.g. "local").
-// It honors the NWPC_DATA_CLIENT_CONFIG_DIR environment variable.
-func getConfigDir(t *testing.T, subdir string) string {
-	t.Helper()
-	base := ""
-	if d := os.Getenv("NWPC_DATA_CLIENT_CONFIG_DIR"); d != "" {
-		base = d
-	} else {
-		_, file, _, ok := runtime.Caller(0)
-		require.True(t, ok, "failed to get current file path")
-		repoRoot := filepath.Join(filepath.Dir(file), "..", "..")
-		base = filepath.Join(repoRoot, "conf")
-	}
-	return filepath.Join(base, subdir)
 }
 
 // yesterday returns YYYYMMDD for the day offsetDays before today.
