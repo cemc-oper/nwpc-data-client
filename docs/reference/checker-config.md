@@ -1,7 +1,7 @@
 # Checker 配置
 
 CheckerConfig 是 `check local` 的运行时配置（定义于
-`cmd/checker_config.go`），与数据路径配置（DataConfig）相互独立。
+`internal/checker/config.go`），与数据路径配置（DataConfig）相互独立。
 它通过 `--checker-config` 从 YAML 文件加载，并与 CLI 参数合并。
 
 ## 字段

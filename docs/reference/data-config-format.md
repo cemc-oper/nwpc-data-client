@@ -2,7 +2,7 @@
 
 数据配置（DataConfig）是描述数据文件位置的 YAML 文档，整体作为 Go 模板
 渲染后再解析。本页是渲染后结构的完整字段参考，与
-`common.ValidateDataConfig` 及 JSON Schema（`schemas/config/` 下的
+`internal/dataconfig.ValidateDataConfig` 及 JSON Schema（`schemas/config/` 下的
 `data-config.schema.json`）保持一致。
 
 ## 顶层字段
@@ -38,7 +38,7 @@
 
 ## 校验规则
 
-`config lint` 与 `common.ValidateDataConfig` 对渲染后的配置执行：
+`config lint` 与 `internal/dataconfig.ValidateDataConfig` 对渲染后的配置执行：
 
 - 严格 YAML 解码：出现以上未列出的字段直接报错；
 - `paths` 必须存在且非空；

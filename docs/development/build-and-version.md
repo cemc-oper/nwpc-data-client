@@ -3,7 +3,7 @@
 ## make 构建
 
 `make` 调用 `scripts/version.sh` 计算版本字符串，并通过 `-ldflags`
-注入 `common.Version`、`common.BuildTime`、`common.GitCommit`：
+注入 `internal/buildinfo.Version`、`internal/buildinfo.BuildTime`、`internal/buildinfo.GitCommit`：
 
 - 恰好检出标签 `v$(cat VERSION)`：发布版本（如 `0.11.0`）
 - 其他提交：`<VERSION>-dev.<提交数>+g<sha>`

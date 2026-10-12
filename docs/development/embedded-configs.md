@@ -1,13 +1,13 @@
 # 内嵌配置
 
 `conf/` 下的 YAML 配置可以嵌入二进制，生成代码为
-`common/config/config.autogen.go`：
+`internal/embedded/config.autogen.go`：
 
 ```bash
 make generate
 ```
 
-该命令在 `common/config/generate` 下运行 `go generate`，递归遍历 `conf/`，
+该命令在 `internal/embedded/generate` 下运行 `go generate`，递归遍历 `conf/`，
 把每个 `.yaml` 以其无扩展名的斜杠分隔相对路径为键嵌入（如
 `local/cma_gfs_gmf/current/grib2/orig`）。
 

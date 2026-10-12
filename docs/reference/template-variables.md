@@ -1,8 +1,8 @@
 # 模板变量与函数
 
 数据配置文件和 `check local` 的命令模板都使用 Go 模板（`{{...}}` 定界符）。
-本页列出全部可用变量与函数（实现见 `common/config_template.go` 与
-`common/time.go`）。
+本页列出全部可用变量与函数（实现见 `internal/dataconfig/config_template.go` 与
+`internal/dataconfig/time.go`）。
 
 ## 模板变量
 
