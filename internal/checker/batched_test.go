@@ -3,6 +3,7 @@ package checker
 import (
 	"os"
 	"path/filepath"
+	"strings"
 	"testing"
 	"time"
 
@@ -213,11 +214,119 @@ paths:
 	)
 
 	require.Len(t, submitted, 2)
+	// Submission order is nondeterministic: the two stability observations
+	// run concurrently, so index by forecast time instead of position.
+	byForecastTime := make(map[time.Duration]CheckResult)
 	for _, result := range submitted {
 		assert.NoError(t, result.Error)
+		byForecastTime[result.ForecastTime] = result
 	}
-	assert.Equal(t, time.Duration(0), submitted[0].ForecastTime)
-	assert.Equal(t, filepath.Join(runtimeDir, "data.000.grb2"), submitted[0].FilePath)
-	assert.Equal(t, 3*time.Hour, submitted[1].ForecastTime)
-	assert.Equal(t, filepath.Join(archiveDir, "data.003.grb2"), submitted[1].FilePath)
+	assert.Equal(t, filepath.Join(runtimeDir, "data.000.grb2"), byForecastTime[0].FilePath)
+	assert.Equal(t, filepath.Join(archiveDir, "data.003.grb2"), byForecastTime[3*time.Hour].FilePath)
+}
+
+func TestResolveArrivalOrder(t *testing.T) {
+	// CLI/YAML overrides the data config in both directions.
+	assert.Equal(t, "sequential", resolveArrivalOrder("sequential", "unordered"))
+	assert.Equal(t, "unordered", resolveArrivalOrder("unordered", "sequential"))
+	// auto (and the not-merged empty value) follows the data config.
+	assert.Equal(t, "sequential", resolveArrivalOrder(ArrivalOrderAuto, "sequential"))
+	assert.Equal(t, "unordered", resolveArrivalOrder(ArrivalOrderAuto, "unordered"))
+	assert.Equal(t, "sequential", resolveArrivalOrder("", "sequential"))
+	// Default: unordered.
+	assert.Equal(t, "unordered", resolveArrivalOrder(ArrivalOrderAuto, ""))
+	assert.Equal(t, "unordered", resolveArrivalOrder("", ""))
+}
+
+func TestGateParticipants(t *testing.T) {
+	targets := []*batchedTarget{
+		{forecastTime: 6 * time.Hour},
+		{forecastTime: 0},
+		{forecastTime: 3 * time.Hour},
+	}
+
+	// While the gate is held, nothing participates.
+	assert.Empty(t, gateParticipants(targets, true))
+
+	// Otherwise only the earliest forecast time participates.
+	got := gateParticipants(targets, false)
+	require.Len(t, got, 1)
+	assert.Equal(t, time.Duration(0), got[0].forecastTime)
+
+	assert.Empty(t, gateParticipants(nil, false))
+}
+
+// gatedLoopConfig builds a two-time config whose files live in one directory,
+// with the given arrival order (empty omits the field).
+func gatedLoopConfig(dir string, arrivalOrder string) string {
+	header := ""
+	if arrivalOrder != "" {
+		header = "_arrival_order: " + arrivalOrder + "\n"
+	}
+	return header + `
+default: NOTFOUND
+file_name: data.{{.ForecastHour}}.grb2
+paths:
+  - type: local
+    level: runtime
+    path: ` + filepath.ToSlash(dir) + `
+`
+}
+
+// runGatedLoop runs checkBatched over two forecast times where the 003h file
+// exists from the start but the 000h file only appears after a delay. The
+// execute command appends the forecast hour to orderFile, recording the
+// command execution order. configOrder sets the data config's
+// _arrival_order, checkerOrder sets the checker's arrival_order override.
+func runGatedLoop(t *testing.T, configOrder string, checkerOrder string) []string {
+	t.Helper()
+	dir := t.TempDir()
+	require.NoError(t, os.WriteFile(filepath.Join(dir, "data.003.grb2"), []byte("data"), 0644))
+
+	orderFile := filepath.Join(dir, "order.txt")
+	templates, err := buildCommandTemplates("echo {{.ForecastHour}} >> "+filepath.ToSlash(orderFile), nil)
+	require.NoError(t, err)
+
+	exec := newCommandExecutor(2, templates, time.Now(), "", nil)
+
+	config := DefaultCheckerConfig()
+	config.CheckMode = CheckModeBatched
+	config.CheckIntervalJitter = 0
+	config.ArrivalOrder = checkerOrder
+
+	// The 000h file arrives late.
+	go func() {
+		time.Sleep(400 * time.Millisecond)
+		_ = os.WriteFile(filepath.Join(dir, "data.000.grb2"), []byte("data"), 0644)
+	}()
+
+	checkBatched(
+		config,
+		time.Date(2026, 10, 12, 0, 0, 0, 0, time.UTC),
+		gatedLoopConfig(dir, configOrder),
+		nil,
+		20*time.Millisecond,
+		[]time.Duration{0, 3 * time.Hour},
+		exec,
+	)
+
+	data, err := os.ReadFile(orderFile)
+	require.NoError(t, err)
+	return strings.Fields(string(data))
+}
+
+func TestCheckBatchedSequentialGatesLaterTimes(t *testing.T) {
+	// auto follows the data config, which declares sequential: the later
+	// 003h file (present from the start) must wait for the delayed 000h.
+	assert.Equal(t, []string{"000", "003"}, runGatedLoop(t, "sequential", ArrivalOrderAuto))
+	// Same with an explicit CLI/YAML override upgrading unordered→sequential.
+	assert.Equal(t, []string{"000", "003"}, runGatedLoop(t, "unordered", "sequential"))
+}
+
+func TestCheckBatchedUnorderedDoesNotGate(t *testing.T) {
+	// unordered: the 003h file exists immediately and completes first, even
+	// though 000h is the earlier forecast time.
+	assert.Equal(t, []string{"003", "000"}, runGatedLoop(t, "unordered", ArrivalOrderAuto))
+	// The emergency switch: CLI/YAML override downgrading sequential→unordered.
+	assert.Equal(t, []string{"003", "000"}, runGatedLoop(t, "sequential", "unordered"))
 }

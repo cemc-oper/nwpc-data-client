@@ -61,6 +61,21 @@ const (
 // internal/dataconfig.
 const ArrivalOrderAuto = "auto"
 
+// resolveArrivalOrder applies the layered precedence for arrival gating:
+// CLI/YAML (any value other than auto) > the data config's _arrival_order >
+// unordered (safe default). Overrides work in both directions: sequential →
+// unordered is the emergency switch, unordered → sequential is for trials.
+func resolveArrivalOrder(checkerOrder, dataConfigOrder string) string {
+	if checkerOrder == dataconfig.ArrivalOrderSequential ||
+		checkerOrder == dataconfig.ArrivalOrderUnordered {
+		return checkerOrder
+	}
+	if dataConfigOrder == dataconfig.ArrivalOrderSequential {
+		return dataconfig.ArrivalOrderSequential
+	}
+	return dataconfig.ArrivalOrderUnordered
+}
+
 // DefaultCheckerConfig returns the default runtime configuration.
 // These values match the CLI flag defaults registered in local.go.
 func DefaultCheckerConfig() CheckerConfig {

@@ -45,6 +45,13 @@ func (e *commandExecutor) submit(result CheckResult) {
 	e.queue <- result
 }
 
+// setOnTaskDone installs the task-done hook. It must be called before any
+// result is submitted; it exists so the polling loop can decide on sequential
+// gating only after the data config has been expanded.
+func (e *commandExecutor) setOnTaskDone(hook func(CheckResult)) {
+	e.onTaskDone = hook
+}
+
 // finish closes the queue; no more submissions are allowed afterwards.
 func (e *commandExecutor) finish() {
 	close(e.queue)

@@ -21,6 +21,7 @@ type batchedTarget struct {
 	fileNames    []string
 	paths        []dataconfig.PathItem // location-level filtered, config order
 	defaultPath  string                // the config's default (not-found placeholder)
+	arrivalOrder string                // the config's _arrival_order (same for all targets)
 	rounds       int                   // existence checks consumed
 	observing    bool                  // in size-stability observation
 }
@@ -67,6 +68,7 @@ func expandBatchedTargets(
 			fileNames:    fileNames,
 			paths:        paths,
 			defaultPath:  dataConfig.Default,
+			arrivalOrder: dataConfig.ArrivalOrder,
 		})
 	}
 	return targets
@@ -110,6 +112,23 @@ func readDirSet(dir string) (map[string]struct{}, error) {
 	return set, nil
 }
 
+// gateParticipants enforces sequential arrival gating: while a previous
+// forecast time is being observed or its command is still running (gateHeld),
+// nothing participates; otherwise only the earliest pending forecast time
+// does.
+func gateParticipants(participants []*batchedTarget, gateHeld bool) []*batchedTarget {
+	if gateHeld || len(participants) == 0 {
+		return nil
+	}
+	earliest := participants[0]
+	for _, t := range participants[1:] {
+		if t.forecastTime < earliest.forecastTime {
+			earliest = t
+		}
+	}
+	return []*batchedTarget{earliest}
+}
+
 // matchTarget walks the target's paths in config order and returns the first
 // file present in this round's directory sets, preserving FindLocalFile's
 // "first existing path wins" priority (runtime beats archive). Directories
@@ -145,11 +164,30 @@ func checkBatched(
 ) {
 	member := ""
 
+	var mu sync.Mutex // guards pending, gateHeld, and the targets' rounds/observing fields
+
 	targets := expandBatchedTargets(configContent, startTime, forecastTimeList, member, levels, exec)
 
 	pending := make(map[time.Duration]*batchedTarget, len(targets))
 	for _, t := range targets {
 		pending[t.forecastTime] = t
+	}
+
+	// Sequential arrival gating: only the earliest pending forecast time
+	// takes part in each round, and the next one is released only after its
+	// command has finished (via the executor's onTaskDone hook).
+	gated := false
+	if len(targets) > 0 {
+		gated = resolveArrivalOrder(config.ArrivalOrder, targets[0].arrivalOrder) == dataconfig.ArrivalOrderSequential
+	}
+	var gateHeld bool
+	if gated {
+		log.Infof("arrival order is sequential: gating to the earliest pending forecast time")
+		exec.setOnTaskDone(func(CheckResult) {
+			mu.Lock()
+			gateHeld = false
+			mu.Unlock()
+		})
 	}
 
 	maxConcurrent := config.MaxConcurrentStableChecks
@@ -158,8 +196,6 @@ func checkBatched(
 		maxConcurrent = 1
 	}
 	sem := make(chan struct{}, maxConcurrent)
-
-	var mu sync.Mutex // guards pending and the targets' rounds/observing fields
 
 	for {
 		mu.Lock()
@@ -186,6 +222,13 @@ func checkBatched(
 				continue
 			}
 			participants = append(participants, t)
+		}
+
+		// Sequential gating: only the earliest pending forecast time
+		// participates, and only while no previous one is being observed or
+		// executing.
+		if gated {
+			participants = gateParticipants(participants, gateHeld)
 		}
 
 		// Discovery phase: one readdir per directory per round.
@@ -223,6 +266,11 @@ func checkBatched(
 			}
 
 			t.observing = true
+			if gated {
+				// The gate is released by the executor's onTaskDone hook once
+				// this target's command has finished.
+				gateHeld = true
+			}
 			budget := config.MaxCheckCount - t.rounds
 			go func(t *batchedTarget, filePath string, budget int) {
 				defer func() { <-sem }()
