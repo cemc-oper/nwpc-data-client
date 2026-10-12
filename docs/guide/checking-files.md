@@ -66,6 +66,33 @@ execute_commands:
   被丢弃；
 - 命令按列表顺序依次执行，共享进程的标准输入输出。
 
+> **YAML 引号提示**
+>
+> YAML 解析器难以处理包含"冒号加空格"的双引号标量，例如
+> `"echo file path: {{.FilePath}}"`。为避免解析错误，请用单引号包裹
+> 命令字符串：`'echo "file path: {{.FilePath}}"'`。
+
+## 实战示例：触发 ecFlow 事件
+
+CMA-GFS 产品制作系统的数据检查任务：等待 0–240 小时（间隔 3 小时）的
+基础 GRIB2 产品，每个文件稳定后通知 ecFlow 触发后续绘图任务：
+
+```bash
+seq 0 3 240 | awk '{b=$1"h"; print b}' | \
+    nwpc_data_client check local 2026062600 \
+        --data-config-dir=/g1/u/op_post/OPER/UTIL/nwpc_data_client/config/local_hpc2023 \
+        --data-type=cma_gfs_gmf/v4.2.3/oper/grib2/orig \
+        --location-level=all \
+        --max-check-count=2880 \
+        --check-interval=5s \
+        --delay-time=1s \
+        --execute-command 'ecflow_client --event grib2checked_{{.ForecastHour}}'
+```
+
+要点：起报时次为位置参数；预报时效由 `seq | awk` 生成后经标准输入
+传入；`{{.ForecastHour}}` 渲染为三位数字（如 `024`），与 ecFlow 事件
+名中的时效编号对应。
+
 ## 常用调优
 
 ```bash
