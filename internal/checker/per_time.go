@@ -7,6 +7,7 @@ import (
 	"os"
 	"os/signal"
 	"strings"
+	"sync"
 	"syscall"
 	"text/template"
 	"time"
@@ -104,12 +105,14 @@ func checkDataFile(
 	commandTemplates []*template.Template,
 	delayTime time.Duration,
 	forecastTimeList []time.Duration) {
-	ch := make(chan CheckResult)
-
 	member := ""
+	exec := newCommandExecutor(len(forecastTimeList), commandTemplates, startTime, member, nil)
 
+	var wg sync.WaitGroup
 	for index, oneTime := range forecastTimeList {
+		wg.Add(1)
 		go func(currentIndex int, forecastTime time.Duration) {
+			defer wg.Done()
 			sleepTime := delayTime * time.Duration(currentIndex)
 			forecastTimeString := dataconfig.FormatForecastTimeShort(forecastTime)
 			log.WithFields(log.Fields{"forecast_time": forecastTimeString}).
@@ -117,11 +120,9 @@ func checkDataFile(
 			time.Sleep(sleepTime)
 			log.WithFields(log.Fields{"forecast_time": forecastTimeString}).
 				Infof("checking begin...")
-			checkForOneTime(config, startTime, ch, configContent, levels, forecastTime, member, checkDuration)
+			checkForOneTime(config, startTime, exec, configContent, levels, forecastTime, member, checkDuration)
 		}(index, oneTime)
 	}
-
-	done := make(chan bool, 1)
 
 	sigs := make(chan os.Signal, 1)
 	signal.Notify(sigs, syscall.SIGHUP, syscall.SIGINT, syscall.SIGTERM, syscall.SIGQUIT)
@@ -132,33 +133,11 @@ func checkDataFile(
 		os.Exit(3)
 	}()
 
-	go func() {
-		for _ = range forecastTimeList {
-			result := <-ch
-			forecastTimeString := dataconfig.FormatForecastTimeShort(result.ForecastTime)
-			currentLog := log.WithFields(log.Fields{"forecast_time": forecastTimeString})
-			if result.Error != nil {
-				currentLog.Fatalf("check failed: %v", result.Error)
-			} else {
-				currentLog.Infof("file is available, run command...")
-
-				if len(commandTemplates) == 0 {
-					currentLog.Debugf("ignore execute command because of empty command")
-					continue
-				}
-
-				err := runCommands(commandTemplates, startTime, result.ForecastTime, member, result.FilePath)
-				if err != nil {
-					currentLog.Fatalf("run command failed: %v", err)
-				} else {
-					currentLog.Infof("run command success")
-				}
-			}
-		}
-		done <- true
-	}()
-
-	<-done
+	// All producers have submitted (the queue is buffered, so submissions
+	// never block); close the queue and wait until it is drained.
+	wg.Wait()
+	exec.finish()
+	exec.wait()
 }
 
 type CheckResult struct {
@@ -170,7 +149,7 @@ type CheckResult struct {
 func checkForOneTime(
 	config CheckerConfig,
 	startTime time.Time,
-	ch chan CheckResult,
+	exec *commandExecutor,
 	configContent string,
 	levels []string,
 	forecastTime time.Duration,
@@ -183,10 +162,10 @@ func checkForOneTime(
 
 	dataConfig, err := dataconfig.ParseConfigContent(configContent, startTime, forecastTime, member)
 	if err != nil {
-		ch <- CheckResult{
+		exec.submit(CheckResult{
 			ForecastTime: forecastTime,
 			Error:        fmt.Errorf("parse config content failed: %v", err),
-		}
+		})
 		return
 	}
 
@@ -221,7 +200,7 @@ func checkForOneTime(
 	if !foundData {
 		result.Error = fmt.Errorf("too many times")
 	}
-	ch <- result
+	exec.submit(result)
 }
 
 // readForecastTimesFromStdin reads whitespace-separated forecast time tokens
