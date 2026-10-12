@@ -47,5 +47,35 @@ jobs:
       - name: Test
         run: make test
 
+      - name: Test with race detector
+        run: go test -race -count=1 ./...
+
       - name: E2E test
         run: make test-e2e
+
+  build-test-windows:
+    name: Build & Test (Windows)
+    runs-on: windows-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          # Full history so `git describe --tags` works for version injection.
+          fetch-depth: 0
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+          cache: true
+
+      - name: go vet
+        run: go vet ./...
+
+      - name: Build
+        run: go build -o bin/nwpc_data_client.exe .
+
+      # Unit tests plus the e2e suite, which runs for real against the
+      # binary built above (including the cmd.exe command path).
+      - name: Test
+        run: go test -count=1 ./...
