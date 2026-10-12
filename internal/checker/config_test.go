@@ -19,6 +19,7 @@ func TestDefaultCheckerConfig(t *testing.T) {
 	assert.False(t, cfg.Debug)
 	assert.Equal(t, 0.1, cfg.CheckIntervalJitter)
 	assert.Equal(t, 4, cfg.MaxConcurrentStableChecks)
+	assert.Equal(t, CheckModePerTime, cfg.CheckMode)
 }
 
 func TestLoadCheckerConfig(t *testing.T) {
@@ -31,6 +32,7 @@ delay_time: 5s
 debug: true
 check_interval_jitter: 0.2
 max_concurrent_stable_checks: 8
+check_mode: batched
 forecast_times:
   - 0h
   - 6h
@@ -54,6 +56,7 @@ execute_commands:
 	assert.True(t, cfg.Debug)
 	assert.Equal(t, 0.2, cfg.CheckIntervalJitter)
 	assert.Equal(t, 8, cfg.MaxConcurrentStableChecks)
+	assert.Equal(t, "batched", cfg.CheckMode)
 	assert.Equal(t, []string{"0h", "6h", "12h"}, cfg.ForecastTimes)
 	assert.Equal(t, "", cfg.ExecuteCommand)
 	assert.Equal(t, []string{`echo "found {{.FilePath}}"`, `/app/postprocess.sh {{.FilePath}}`}, cfg.ExecuteCommands)
@@ -173,6 +176,7 @@ func newTestLocalCommand(t *testing.T) *cobra.Command {
 	cmd.Flags().String("delay-time", "10s", "")
 	cmd.Flags().Float64("check-interval-jitter", 0.1, "")
 	cmd.Flags().Int("max-concurrent-stable-checks", 4, "")
+	cmd.Flags().String("check-mode", "per_time", "")
 	cmd.Flags().Bool("debug", false, "")
 	return cmd
 }
@@ -202,6 +206,14 @@ func TestCheckerConfigValidate(t *testing.T) {
 
 	boundaryJitter := CheckerConfig{DataType: "some/type", CheckIntervalJitter: 0.5}
 	assert.NoError(t, boundaryJitter.Validate())
+
+	invalidCheckMode := CheckerConfig{DataType: "some/type", CheckMode: "nonsense"}
+	assert.Error(t, invalidCheckMode.Validate())
+
+	assert.NoError(t, CheckerConfig{DataType: "some/type", CheckMode: CheckModePerTime}.Validate())
+	assert.NoError(t, CheckerConfig{DataType: "some/type", CheckMode: CheckModeBatched}.Validate())
+	// Empty means "not merged yet" and falls back to the default.
+	assert.NoError(t, CheckerConfig{DataType: "some/type"}.Validate())
 }
 
 func TestCheckerConfigParseForecastTimes(t *testing.T) {

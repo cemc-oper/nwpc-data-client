@@ -47,6 +47,9 @@ func init() {
 	checkLocalCmd.Flags().IntVar(&checkFlagConfig.MaxConcurrentStableChecks, "max-concurrent-stable-checks", 4,
 		"Maximum number of files in size-stability observation at once (batched check mode only).")
 
+	checkLocalCmd.Flags().StringVar(&checkFlagConfig.CheckMode, "check-mode", "per_time",
+		"Polling mode: per_time (one goroutine per forecast time) or batched (single readdir-based loop).")
+
 	checkLocalCmd.Flags().BoolVar(&checkFlagConfig.Debug, "debug", false, "Enable debug logging.")
 }
 

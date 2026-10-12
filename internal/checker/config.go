@@ -37,7 +37,18 @@ type CheckerConfig struct {
 	// observation at once. It only applies to batched mode; per-time
 	// goroutines are inherently independent.
 	MaxConcurrentStableChecks int `yaml:"max_concurrent_stable_checks" flag:"max-concurrent-stable-checks"`
+
+	// CheckMode selects the polling loop: "per_time" (one goroutine per
+	// forecast time) or "batched" (a single loop checks all pending forecast
+	// times via directory readdir).
+	CheckMode string `yaml:"check_mode" flag:"check-mode"`
 }
+
+// Check modes accepted by CheckerConfig.CheckMode.
+const (
+	CheckModePerTime = "per_time"
+	CheckModeBatched = "batched"
+)
 
 // DefaultCheckerConfig returns the default runtime configuration.
 // These values match the CLI flag defaults registered in local.go.
@@ -49,6 +60,7 @@ func DefaultCheckerConfig() CheckerConfig {
 		Debug:                     false,
 		CheckIntervalJitter:       0.1,
 		MaxConcurrentStableChecks: 4,
+		CheckMode:                 CheckModePerTime,
 	}
 }
 
@@ -79,6 +91,11 @@ func (c CheckerConfig) Validate() error {
 	}
 	if c.CheckIntervalJitter < 0 || c.CheckIntervalJitter > 0.5 {
 		return fmt.Errorf("check_interval_jitter must be in [0, 0.5], got %v", c.CheckIntervalJitter)
+	}
+	// An empty check_mode is accepted here: it means the field never went
+	// through MergeCheckerConfig, which fills in the default.
+	if c.CheckMode != "" && c.CheckMode != CheckModePerTime && c.CheckMode != CheckModeBatched {
+		return fmt.Errorf("check_mode must be %q or %q, got %q", CheckModePerTime, CheckModeBatched, c.CheckMode)
 	}
 	return nil
 }
