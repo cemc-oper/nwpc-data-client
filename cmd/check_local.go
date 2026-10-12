@@ -12,8 +12,8 @@ import (
 	"text/template"
 	"time"
 
-	"github.com/cemc-oper/nwpc-data-client/common"
 	"github.com/cemc-oper/nwpc-data-client/internal/dataconfig"
+	"github.com/cemc-oper/nwpc-data-client/internal/finder"
 	"github.com/commander-cli/cmd"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
@@ -341,7 +341,7 @@ func readForecastTimesFromStdin(r io.Reader) []string {
 }
 
 func findLocalFileForCheck(config dataconfig.DataConfig, levels []string, forecastTime time.Duration) string {
-	pathItem := common.FindLocalFile(config, levels, checkStartTime, forecastTime)
+	pathItem := finder.FindLocalFile(config, levels, checkStartTime, forecastTime)
 	return pathItem.Path
 }
 

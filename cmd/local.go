@@ -6,9 +6,9 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/cemc-oper/nwpc-data-client/common"
 	"github.com/cemc-oper/nwpc-data-client/internal/dataconfig"
 	"github.com/cemc-oper/nwpc-data-client/internal/embedded"
+	"github.com/cemc-oper/nwpc-data-client/internal/finder"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 )
@@ -141,7 +141,7 @@ func findLocalFile(cmd *cobra.Command, args []string) {
 		return
 	}
 
-	pathItem := common.FindLocalFile(dataConfig, levels, localStartTime, localForecastTime)
+	pathItem := finder.FindLocalFile(dataConfig, levels, localStartTime, localForecastTime)
 	fmt.Printf("%s\n", pathItem.Path)
 }
 
