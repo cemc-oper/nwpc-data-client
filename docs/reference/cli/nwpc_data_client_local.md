@@ -1,8 +1,8 @@
-## nwpc_data_client local
+# nwpc_data_client local
 
 Find the local file path for model output data.
 
-### Synopsis
+## Synopsis
 
 Find a local data file through multiple directories and print the file path when found.
 
@@ -24,7 +24,7 @@ Run with --show-types to list the available data types (embedded, or from
 nwpc_data_client local [flags]
 ```
 
-### Examples
+## Examples
 
 ```
   # Use an embedded config for CMA-GFS grib2 data.
@@ -43,7 +43,7 @@ nwpc_data_client local [flags]
   nwpc_data_client local --show-types
 ```
 
-### Options
+## Options
 
 ```
       --data-config-dir string    Directory holding data config files. Optional; uses embedded configs when empty.
@@ -58,7 +58,7 @@ nwpc_data_client local [flags]
   -h, --help                      help for local
 ```
 
-### SEE ALSO
+## SEE ALSO
 
 * [nwpc_data_client](nwpc_data_client.md)	 - Find data files for operational systems in CEMC.
 

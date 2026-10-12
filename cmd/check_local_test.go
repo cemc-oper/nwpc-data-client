@@ -58,6 +58,10 @@ func TestWaitForStableFileStableAfterGrowth(t *testing.T) {
 	assert.NoError(t, err)
 
 	// Grow the file during the first checks, then leave it alone.
+	// The appends must finish well within one check interval: with the
+	// sleep matching the checker's 10 ms interval, the checker can sample
+	// the same size twice between two appends (observed on loaded Windows
+	// CI runners) and declare the file stable before all writes landed.
 	stop := make(chan struct{})
 	done := make(chan struct{})
 	go func() {
@@ -69,7 +73,7 @@ func TestWaitForStableFileStableAfterGrowth(t *testing.T) {
 			}
 			_, _ = f.WriteString("chunk")
 			_ = f.Close()
-			time.Sleep(10 * time.Millisecond)
+			time.Sleep(1 * time.Millisecond)
 		}
 		<-stop
 	}()

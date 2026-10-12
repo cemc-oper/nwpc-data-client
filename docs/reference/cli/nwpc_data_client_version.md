@@ -1,8 +1,8 @@
-## nwpc_data_client version
+# nwpc_data_client version
 
 Print version information.
 
-### Synopsis
+## Synopsis
 
 Print version, build time, and git commit baked into the binary.
 
@@ -10,19 +10,19 @@ Print version, build time, and git commit baked into the binary.
 nwpc_data_client version [flags]
 ```
 
-### Examples
+## Examples
 
 ```
   nwpc_data_client version
 ```
 
-### Options
+## Options
 
 ```
   -h, --help   help for version
 ```
 
-### SEE ALSO
+## SEE ALSO
 
 * [nwpc_data_client](nwpc_data_client.md)	 - Find data files for operational systems in CEMC.
 

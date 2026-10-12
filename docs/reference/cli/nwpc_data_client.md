@@ -1,8 +1,8 @@
-## nwpc_data_client
+# nwpc_data_client
 
 Find data files for operational systems in CEMC.
 
-### Synopsis
+## Synopsis
 
 nwpc_data_client is a data file finder for CEMC operational systems.
 
@@ -20,13 +20,13 @@ Use "nwpc_data_client [command] --help" for detailed help on a subcommand.
 nwpc_data_client [flags]
 ```
 
-### Options
+## Options
 
 ```
   -h, --help   help for nwpc_data_client
 ```
 
-### SEE ALSO
+## SEE ALSO
 
 * [nwpc_data_client check](nwpc_data_client_check.md)	 - Wait for operational data and act when it is ready.
 * [nwpc_data_client config](nwpc_data_client_config.md)	 - Validate and maintain data config files.

@@ -1,8 +1,8 @@
-## nwpc_data_client config export
+# nwpc_data_client config export
 
 Export the embedded data configs into a directory tree.
 
-### Synopsis
+## Synopsis
 
 Export the embedded data configs into a directory tree.
 
@@ -22,21 +22,21 @@ Existing files are not overwritten unless --force is given.
 nwpc_data_client config export <output-dir> [flags]
 ```
 
-### Examples
+## Examples
 
 ```
   # Export the embedded configs into ./exported_conf.
   nwpc_data_client config export ./exported_conf
 ```
 
-### Options
+## Options
 
 ```
       --force   Overwrite existing files in the output directory.
   -h, --help    help for export
 ```
 
-### SEE ALSO
+## SEE ALSO
 
 * [nwpc_data_client config](nwpc_data_client_config.md)	 - Validate and maintain data config files.
 

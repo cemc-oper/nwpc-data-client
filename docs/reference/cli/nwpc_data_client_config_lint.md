@@ -1,8 +1,8 @@
-## nwpc_data_client config lint
+# nwpc_data_client config lint
 
 Validate data config files.
 
-### Synopsis
+## Synopsis
 
 Lint data config files of any config format version (v1/v2/v3).
 
@@ -22,7 +22,7 @@ use --data-config-file to lint a single file.
 nwpc_data_client config lint [config-dir] [flags]
 ```
 
-### Examples
+## Examples
 
 ```
   # Lint all configs under conf/local recursively.
@@ -32,14 +32,14 @@ nwpc_data_client config lint [config-dir] [flags]
   nwpc_data_client config lint --data-config-file=./my_config.yaml
 ```
 
-### Options
+## Options
 
 ```
       --data-config-file string   Path to a single data config file. If set, the config directory argument is ignored.
   -h, --help                      help for lint
 ```
 
-### SEE ALSO
+## SEE ALSO
 
 * [nwpc_data_client config](nwpc_data_client_config.md)	 - Validate and maintain data config files.
 

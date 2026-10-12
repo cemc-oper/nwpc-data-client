@@ -1,8 +1,8 @@
-## nwpc_data_client check local
+# nwpc_data_client check local
 
 Wait for local files, then run a command for each one.
 
-### Synopsis
+## Synopsis
 
 Wait for a list of data files with different forecast times and 
 run command(s) when each file is found.
@@ -35,7 +35,7 @@ Args:
 nwpc_data_client check local <start_time> [flags]
 ```
 
-### Examples
+## Examples
 
 ```
   # Check via a checker config file (recommended).
@@ -51,7 +51,7 @@ nwpc_data_client check local <start_time> [flags]
       --check-interval=10s --max-check-count=360
 ```
 
-### Options
+## Options
 
 ```
       --data-config-dir string    Directory holding data config files. Optional; uses embedded configs when empty.
@@ -67,7 +67,7 @@ nwpc_data_client check local <start_time> [flags]
   -h, --help                      help for local
 ```
 
-### SEE ALSO
+## SEE ALSO
 
 * [nwpc_data_client check](nwpc_data_client_check.md)	 - Wait for operational data and act when it is ready.
 

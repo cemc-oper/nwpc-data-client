@@ -1,8 +1,8 @@
-## nwpc_data_client config migrate
+# nwpc_data_client config migrate
 
 Migrate data config files to a newer format version.
 
-### Synopsis
+## Synopsis
 
 Migrate data config files to a newer config format version.
 
@@ -29,7 +29,7 @@ at the target version are skipped.
 nwpc_data_client config migrate [config-dir] [flags]
 ```
 
-### Examples
+## Examples
 
 ```
   # Migrate a single config file to v3, in place.
@@ -42,7 +42,7 @@ nwpc_data_client config migrate [config-dir] [flags]
   nwpc_data_client config migrate --data-config-file=./my_config.yaml --to-version=2
 ```
 
-### Options
+## Options
 
 ```
       --data-config-file string   Path to a single data config file. If set, the config directory argument is ignored.
@@ -51,7 +51,7 @@ nwpc_data_client config migrate [config-dir] [flags]
   -h, --help                      help for migrate
 ```
 
-### SEE ALSO
+## SEE ALSO
 
 * [nwpc_data_client config](nwpc_data_client_config.md)	 - Validate and maintain data config files.
 
