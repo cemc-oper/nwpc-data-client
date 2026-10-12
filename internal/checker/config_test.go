@@ -20,6 +20,7 @@ func TestDefaultCheckerConfig(t *testing.T) {
 	assert.Equal(t, 0.1, cfg.CheckIntervalJitter)
 	assert.Equal(t, 4, cfg.MaxConcurrentStableChecks)
 	assert.Equal(t, CheckModePerTime, cfg.CheckMode)
+	assert.Equal(t, ArrivalOrderAuto, cfg.ArrivalOrder)
 }
 
 func TestLoadCheckerConfig(t *testing.T) {
@@ -177,6 +178,7 @@ func newTestLocalCommand(t *testing.T) *cobra.Command {
 	cmd.Flags().Float64("check-interval-jitter", 0.1, "")
 	cmd.Flags().Int("max-concurrent-stable-checks", 4, "")
 	cmd.Flags().String("check-mode", "per_time", "")
+	cmd.Flags().String("arrival-order", "auto", "")
 	cmd.Flags().Bool("debug", false, "")
 	return cmd
 }
@@ -214,6 +216,11 @@ func TestCheckerConfigValidate(t *testing.T) {
 	assert.NoError(t, CheckerConfig{DataType: "some/type", CheckMode: CheckModeBatched}.Validate())
 	// Empty means "not merged yet" and falls back to the default.
 	assert.NoError(t, CheckerConfig{DataType: "some/type"}.Validate())
+
+	assert.NoError(t, CheckerConfig{DataType: "some/type", ArrivalOrder: ArrivalOrderAuto}.Validate())
+	assert.NoError(t, CheckerConfig{DataType: "some/type", ArrivalOrder: "sequential"}.Validate())
+	assert.NoError(t, CheckerConfig{DataType: "some/type", ArrivalOrder: "unordered"}.Validate())
+	assert.Error(t, CheckerConfig{DataType: "some/type", ArrivalOrder: "weekly"}.Validate())
 }
 
 func TestCheckerConfigParseForecastTimes(t *testing.T) {

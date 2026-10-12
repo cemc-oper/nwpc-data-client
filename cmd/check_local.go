@@ -50,6 +50,9 @@ func init() {
 	checkLocalCmd.Flags().StringVar(&checkFlagConfig.CheckMode, "check-mode", "per_time",
 		"Polling mode: per_time (one goroutine per forecast time) or batched (single readdir-based loop).")
 
+	checkLocalCmd.Flags().StringVar(&checkFlagConfig.ArrivalOrder, "arrival-order", "auto",
+		"Arrival order override for batched mode gating: auto (follow the data config), sequential, or unordered.")
+
 	checkLocalCmd.Flags().BoolVar(&checkFlagConfig.Debug, "debug", false, "Enable debug logging.")
 }
 

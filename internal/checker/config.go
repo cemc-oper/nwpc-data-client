@@ -42,6 +42,12 @@ type CheckerConfig struct {
 	// forecast time) or "batched" (a single loop checks all pending forecast
 	// times via directory readdir).
 	CheckMode string `yaml:"check_mode" flag:"check-mode"`
+
+	// ArrivalOrder overrides the data config's _arrival_order for batched
+	// mode gating: "auto" (default) follows the data config, "sequential"
+	// gates polling to the earliest pending forecast time, "unordered"
+	// disables gating.
+	ArrivalOrder string `yaml:"arrival_order" flag:"arrival-order"`
 }
 
 // Check modes accepted by CheckerConfig.CheckMode.
@@ -49,6 +55,11 @@ const (
 	CheckModePerTime = "per_time"
 	CheckModeBatched = "batched"
 )
+
+// ArrivalOrderAuto makes the checker follow the data config's
+// _arrival_order. The sequential/unordered values themselves are defined in
+// internal/dataconfig.
+const ArrivalOrderAuto = "auto"
 
 // DefaultCheckerConfig returns the default runtime configuration.
 // These values match the CLI flag defaults registered in local.go.
@@ -61,6 +72,7 @@ func DefaultCheckerConfig() CheckerConfig {
 		CheckIntervalJitter:       0.1,
 		MaxConcurrentStableChecks: 4,
 		CheckMode:                 CheckModePerTime,
+		ArrivalOrder:              ArrivalOrderAuto,
 	}
 }
 
@@ -96,6 +108,14 @@ func (c CheckerConfig) Validate() error {
 	// through MergeCheckerConfig, which fills in the default.
 	if c.CheckMode != "" && c.CheckMode != CheckModePerTime && c.CheckMode != CheckModeBatched {
 		return fmt.Errorf("check_mode must be %q or %q, got %q", CheckModePerTime, CheckModeBatched, c.CheckMode)
+	}
+	// Same for arrival_order: empty means "not merged yet".
+	if c.ArrivalOrder != "" &&
+		c.ArrivalOrder != ArrivalOrderAuto &&
+		c.ArrivalOrder != dataconfig.ArrivalOrderSequential &&
+		c.ArrivalOrder != dataconfig.ArrivalOrderUnordered {
+		return fmt.Errorf("arrival_order must be %q, %q or %q, got %q",
+			ArrivalOrderAuto, dataconfig.ArrivalOrderSequential, dataconfig.ArrivalOrderUnordered, c.ArrivalOrder)
 	}
 	return nil
 }
