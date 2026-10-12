@@ -1,7 +1,9 @@
 # NWPC Data Client
 
 [![Maturity-Incubating](https://img.shields.io/badge/Maturity-Incubating-56B4E9)](https://github.com/cemc-oper/nwpc-data-client)
+[![GitHub Release](https://img.shields.io/github/v/release/cemc-oper/nwpc-data-client)](https://github.com/cemc-oper/nwpc-data-client/releases)
 [![CI](https://github.com/cemc-oper/nwpc-data-client/actions/workflows/ci.yml/badge.svg)](https://github.com/cemc-oper/nwpc-data-client/actions/workflows/ci.yml)
+[![Documentation Status](https://readthedocs.org/projects/nwpc-data-client/badge/?version=latest)](https://nwpc-data-client.readthedocs.io/)
 
 面向 CMA 超算平台开发的 CEMC/CMA 数值天气预报业务系统数据查找命令行工具。
 
