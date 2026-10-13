@@ -4,6 +4,7 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
+	"syscall"
 	"testing"
 	"time"
 
@@ -175,6 +176,7 @@ func TestReadDirSetOnFile(t *testing.T) {
 
 	_, err := readDirSet(filePath)
 	assert.Error(t, err)
+	assert.ErrorIs(t, err, syscall.ENOTDIR)
 }
 
 func TestCheckBatchedStableFiles(t *testing.T) {

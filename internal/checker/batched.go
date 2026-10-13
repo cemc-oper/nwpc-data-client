@@ -6,6 +6,7 @@ import (
 	"os"
 	"path/filepath"
 	"sync"
+	"syscall"
 	"time"
 
 	"github.com/cemc-oper/nwpc-data-client/internal/dataconfig"
@@ -98,11 +99,26 @@ func collectDirectories(targets []*batchedTarget) []string {
 // yields an empty set. Any other error is reported so the caller can skip the
 // directory for this round.
 func readDirSet(dir string) (map[string]struct{}, error) {
-	entries, err := os.ReadDir(dir)
+	// Open + handle-based Stat instead of os.ReadDir: on Windows ReadDir on a
+	// regular file silently succeeds, while callers rely on ENOTDIR. The stat
+	// rides on the open handle, so it costs no extra path lookup.
+	f, err := os.Open(dir)
 	if err != nil {
 		if errors.Is(err, os.ErrNotExist) {
 			return map[string]struct{}{}, nil
 		}
+		return nil, err
+	}
+	defer f.Close()
+	info, err := f.Stat()
+	if err != nil {
+		return nil, &os.PathError{Op: "stat", Path: dir, Err: err}
+	}
+	if !info.IsDir() {
+		return nil, &os.PathError{Op: "readdir", Path: dir, Err: syscall.ENOTDIR}
+	}
+	entries, err := f.ReadDir(-1)
+	if err != nil {
 		return nil, err
 	}
 	set := make(map[string]struct{}, len(entries))
