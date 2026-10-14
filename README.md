@@ -7,19 +7,12 @@
 
 面向 CMA 超算平台开发的 CEMC/CMA 数值天气预报业务系统数据查找命令行工具。
 
+中文文档：<https://nwpc-data-client.readthedocs.io/>
+
 ## 功能
 
 - 在一组目录中查找数值预报业务系统数据文件路径
 - 批量监视数据文件是否生成，当文件就绪后执行命令
-
-## 文档
-
-完整文档托管在 Read the Docs：<https://nwpc-data-client.readthedocs.io/>
-
-- **开始**：简介、安装、快速开始
-- **指南**：查找数据文件、数据类型、自定义配置、编写配置、等待文件并执行命令、配置格式版本迁移
-- **开发**：环境搭建、构建与版本、测试、内嵌配置、CI 与发版
-- **参考**：命令行参考（自动生成）、数据配置格式、Checker 配置、模板变量与函数、内置数据类型清单
 
 ## 快速开始
 
@@ -51,6 +44,13 @@ echo "000h 024h" |
 make            # 构建到 ./bin
 make test       # 单元测试
 make generate   # 修改 conf/ 后重新生成内嵌配置
+```
+
+交叉编译与本地发版构建使用 GoReleaser 快照模式：
+
+```bash
+goreleaser release --snapshot --clean               # 全平台构建，产物在 dist/
+goreleaser build --snapshot --clean --single-target # 仅构建本机平台的二进制，速度最快
 ```
 
 版本号规则、交叉编译、集成测试、发版流程等见文档站"开发"分类。
