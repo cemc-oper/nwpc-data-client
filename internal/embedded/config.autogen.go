@@ -7,8 +7,8 @@ var EmbeddedConfigs = [][2]string{
 
 _config_version: 3
 
-# Forecast files are produced in forecast-time order as the model integrates.
-_arrival_order: sequential
+# GRIB2 files are produced by post-processing and do not arrive in forecast-time order.
+_arrival_order: unordered
 
 default: NOTFOUND
 
@@ -72,8 +72,8 @@ paths:
 
 _config_version: 3
 
-# Forecast files are produced in forecast-time order as the model integrates.
-_arrival_order: sequential
+# GRIB2 files are produced by post-processing and do not arrive in forecast-time order.
+_arrival_order: unordered
 
 default: NOTFOUND
 
@@ -93,8 +93,8 @@ paths:
 
 _config_version: 3
 
-# Forecast files are produced in forecast-time order as the model integrates.
-_arrival_order: sequential
+# GRIB2 files are produced by post-processing and do not arrive in forecast-time order.
+_arrival_order: unordered
 
 default: NOTFOUND
 
@@ -162,8 +162,8 @@ paths:
 
 _config_version: 3
 
-# Forecast files are produced in forecast-time order as the model integrates.
-_arrival_order: sequential
+# GRIB2 files are produced by post-processing and do not arrive in forecast-time order.
+_arrival_order: unordered
 
 default: NOTFOUND
 
@@ -185,8 +185,8 @@ paths:
 
 _config_version: 3
 
-# Forecast files are produced in forecast-time order as the model integrates.
-_arrival_order: sequential
+# GRIB2 files are produced by post-processing and do not arrive in forecast-time order.
+_arrival_order: unordered
 
 default: NOTFOUND
 
@@ -206,8 +206,8 @@ paths:
 
 _config_version: 3
 
-# Forecast files are produced in forecast-time order as the model integrates.
-_arrival_order: sequential
+# GRIB2 files are produced by post-processing and do not arrive in forecast-time order.
+_arrival_order: unordered
 
 default: NOTFOUND
 
@@ -299,8 +299,8 @@ paths:
 
 _config_version: 3
 
-# Forecast files are produced in forecast-time order as the model integrates.
-_arrival_order: sequential
+# GRIB2 files are produced by post-processing and do not arrive in forecast-time order.
+_arrival_order: unordered
 
 default: NOTFOUND
 
@@ -320,8 +320,8 @@ paths:
 
 _config_version: 3
 
-# Forecast files are produced in forecast-time order as the model integrates.
-_arrival_order: sequential
+# GRIB2 files are produced by post-processing and do not arrive in forecast-time order.
+_arrival_order: unordered
 
 default: NOTFOUND
 
@@ -541,8 +541,8 @@ paths:
 
 _config_version: 3
 
-# Forecast files are produced in forecast-time order as the model integrates.
-_arrival_order: sequential
+# GRIB2 files are produced by post-processing and do not arrive in forecast-time order.
+_arrival_order: unordered
 
 default: NOTFOUND
 
@@ -562,8 +562,8 @@ paths:
 
 _config_version: 3
 
-# Forecast files are produced in forecast-time order as the model integrates.
-_arrival_order: sequential
+# GRIB2 files are produced by post-processing and do not arrive in forecast-time order.
+_arrival_order: unordered
 
 default: NOTFOUND
 
@@ -583,8 +583,8 @@ paths:
 
 _config_version: 3
 
-# Forecast files are produced in forecast-time order as the model integrates.
-_arrival_order: sequential
+# GRIB2 files are produced by post-processing and do not arrive in forecast-time order.
+_arrival_order: unordered
 
 default: NOTFOUND
 
@@ -684,8 +684,8 @@ paths:
 
 _config_version: 3
 
-# Forecast files are produced in forecast-time order as the model integrates.
-_arrival_order: sequential
+# GRIB2 files are produced by post-processing and do not arrive in forecast-time order.
+_arrival_order: unordered
 
 default: NOTFOUND
 
