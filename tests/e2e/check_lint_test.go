@@ -50,7 +50,8 @@ func TestCheckLintMissingPath(t *testing.T) {
 	missingPath := filepath.Join(t.TempDir(), "missing")
 	output, err := runCheckLint(t, missingPath)
 	require.Error(t, err)
-	assert.Contains(t, output, missingPath)
+	assert.Contains(t, output, "access checker path")
+	assert.Contains(t, output, filepath.Base(missingPath))
 }
 
 func TestCheckLintHasNoRuntimeSideEffects(t *testing.T) {

@@ -17,7 +17,7 @@ func LintCheckerFile(filePath string) error {
 		return err
 	}
 	if _, err := mergeCheckerConfig(fileConfig, CheckerConfig{}, nil); err != nil {
-		return fmt.Errorf("validate checker config file %q failed: %w", filePath, err)
+		return fmt.Errorf("validate checker config file %s failed: %w", filePath, err)
 	}
 	return nil
 }
@@ -54,7 +54,7 @@ func collectCheckerFiles(paths []string) ([]string, []error) {
 	for _, path := range paths {
 		info, err := os.Stat(path)
 		if err != nil {
-			lintErrors = append(lintErrors, fmt.Errorf("access checker path %q failed: %w", path, err))
+			lintErrors = append(lintErrors, fmt.Errorf("access checker path %s failed: %w", path, err))
 			continue
 		}
 		if !info.IsDir() {
@@ -72,7 +72,7 @@ func collectCheckerFiles(paths []string) ([]string, []error) {
 			return nil
 		})
 		if err != nil {
-			lintErrors = append(lintErrors, fmt.Errorf("walk checker config directory %q failed: %w", path, err))
+			lintErrors = append(lintErrors, fmt.Errorf("walk checker config directory %s failed: %w", path, err))
 		}
 	}
 	return files, lintErrors

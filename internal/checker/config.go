@@ -109,19 +109,19 @@ func LoadCheckerConfig(filePath string) (CheckerConfig, error) {
 	var config CheckerConfig
 	data, err := os.ReadFile(filePath)
 	if err != nil {
-		return config, fmt.Errorf("read checker config file %q failed: %w", filePath, err)
+		return config, fmt.Errorf("read checker config file %s failed: %w", filePath, err)
 	}
 
 	decoder := yaml.NewDecoder(bytes.NewReader(data))
 	decoder.KnownFields(true)
 	if err := decoder.Decode(&config); err != nil && !errors.Is(err, io.EOF) {
-		return CheckerConfig{}, fmt.Errorf("parse checker config file %q failed: %w", filePath, err)
+		return CheckerConfig{}, fmt.Errorf("parse checker config file %s failed: %w", filePath, err)
 	}
 
 	config.yamlFields = make(map[string]bool)
 	var document yaml.Node
 	if err := yaml.Unmarshal(data, &document); err != nil {
-		return CheckerConfig{}, fmt.Errorf("parse checker config file %q failed: %w", filePath, err)
+		return CheckerConfig{}, fmt.Errorf("parse checker config file %s failed: %w", filePath, err)
 	}
 	if len(document.Content) > 0 && document.Content[0].Kind == yaml.MappingNode {
 		mapping := document.Content[0]
