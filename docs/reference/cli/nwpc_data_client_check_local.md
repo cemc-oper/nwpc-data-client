@@ -28,6 +28,11 @@ Go templates with the usual config variables (Year, Month, Day, Hour,
 ForecastHour, ...) plus FilePath. Use --execute-command for a single command;
 multiple commands (execute_commands) can be supplied via --checker-config.
 
+--dry-run resolves the same run plan and prints the final mode, effective
+arrival order, candidate paths, and command templates. Candidate paths are
+not checked for existence or selection. Dry-run does not poll, sleep, execute
+commands, or write a run report.
+
 Args:
     start_time   Start time, YYYYMMDDHH, such as 2026062400.
 
@@ -46,6 +51,9 @@ nwpc_data_client check local <start_time> [flags]
       --data-type=cma_gfs_gmf/grib2/orig \
       --execute-command="echo ready: {{.FilePath}}"
 
+  # Print the resolved plan without accessing candidate files or running commands.
+  nwpc_data_client check local 2026062400 --checker-config=./checker.yaml --dry-run
+
   # Poll faster and limit the number of attempts per forecast time.
   nwpc_data_client check local 2026062400 --checker-config=./checker.yaml \
       --check-interval=10s --max-check-count=360
@@ -62,6 +70,9 @@ nwpc_data_client check local <start_time> [flags]
       --max-check-count int                Maximum number of existence/size checks per forecast time. (default 2880)
       --check-interval string              Interval between checks, a duration such as 5s, 30s, or 1m. (default "5s")
       --execute-command string             Go template for a command to run once a file becomes stable. Mutually exclusive with execute_commands.
+      --command-timeout string             Timeout for each executed command, such as 30m or 1h. 0 disables the timeout. (default "30m")
+      --report-file string                 Path for the optional JSON run report. Empty does not generate a report.
+      --dry-run                            Print the resolved run plan without polling files or executing commands.
       --delay-time string                  Stagger delay between consecutive forecast times (duration such as 10s). (default "10s")
       --check-interval-jitter float        Jitter ratio applied to the polling interval: each round sleeps interval×(1±j). 0 disables jitter. Range [0, 0.5]. (default 0.1)
       --max-concurrent-stable-checks int   Maximum number of files in size-stability observation at once (batched check mode only). (default 4)

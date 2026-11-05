@@ -6,7 +6,8 @@ Wait for operational data and act when it is ready.
 
 Check data files for CEMC operational systems.
 
-Use "nwpc_data_client check local --help" for detailed help.
+Use "nwpc_data_client check local --help" or
+"nwpc_data_client check lint --help" for detailed help.
 
 ```
 nwpc_data_client check [flags]
@@ -21,5 +22,6 @@ nwpc_data_client check [flags]
 ## SEE ALSO
 
 * [nwpc_data_client](nwpc_data_client.md)	 - Find data files for operational systems in CEMC.
+* [nwpc_data_client check lint](nwpc_data_client_check_lint.md)	 - Statically validate checker config files.
 * [nwpc_data_client check local](nwpc_data_client_check_local.md)	 - Wait for local files, then run a command for each one.
 

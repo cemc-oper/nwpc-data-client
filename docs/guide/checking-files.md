@@ -38,6 +38,63 @@ nwpc_data_client check local 2026062400 --checker-config=./checker.yaml
 
 全部字段及与 CLI 参数的合并规则见[参考：Checker 配置](../reference/checker-config.md)。
 
+## 静态校验 check lint
+
+`check lint` 在合并或部署前检查 checker YAML 本身。它可以接收一个或多个
+文件、目录，目录会递归查找 `.yaml` 文件并聚合全部错误：
+
+```bash
+# 校验单份配置。
+nwpc_data_client check lint ./checker.yaml
+
+# 递归校验多个目录，也可以混合文件和目录。
+nwpc_data_client check lint ./checker/system_a ./checker/system_b
+```
+
+校验内容包括严格 YAML 字段、默认值合并、duration、正整数、预报时效格式、
+data config 组合和命令模板语法。任一文件失败时非零退出；空目录成功。
+
+静态 lint 明确不做以下事情：
+
+- 不需要起报时次，不加载 data config；
+- 不要求 `forecast_times` 非空，因为真实运行时可以从标准输入读取；
+- 不读取标准输入，不访问业务数据目录；
+- 不执行命令，不创建运行报告。
+
+因此它能发现字段拼写错误和静态值错误，但不能发现 data type 缺失、data
+config 模板展开失败等问题；这些由 dry-run 检查。
+
+## 运行前验证 check local --dry-run
+
+`--dry-run` 使用与真实 `check local` 相同的配置合并和运行计划构造：
+
+```bash
+nwpc_data_client check local 2026062400 \
+    --checker-config=./checker.yaml \
+    --data-config-dir=/path/to/complete/config \
+    --dry-run
+```
+
+输出包括最终 `check_mode`、有效 arrival order、时效数量、逐时效候选路径和
+原始命令模板。候选路径只是按配置展开的计划，**不表示文件已经存在，也不
+表示真实查找已经选中该路径**。命令模板使用哑 `FilePath` 验证 Go 模板变量
+和函数，但不会作为 shell 命令执行。
+
+dry-run 会读取 checker/data 配置，并在 YAML 未提供时效时读取标准输入；时效
+优先级与真实运行一致。`--data-config-dir` 仍是完整配置树的全量替代，缺失
+data type 不会回退到内嵌配置。任一时效的 data config 或命令模板展开失败都会
+非零退出。
+
+它不会执行以下运行时动作：
+
+- 不 `stat` 候选文件，不 `readdir` 候选目录；
+- 不执行启动抖动、逐时效延迟或轮询等待；
+- 不启动命令执行器，不执行命令；
+- 即使设置了 `report_file`，也不写运行报告。
+
+可用它在部署前验证完整配置组合；如果只需要检查 YAML 字段而还没有完整
+配置树或起报时次，使用更轻量的 `check lint`。
+
 ## 从标准输入提供预报时效
 
 ```bash

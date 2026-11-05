@@ -15,6 +15,7 @@
    nwpc_data_client_local
    nwpc_data_client_check
    nwpc_data_client_check_local
+   nwpc_data_client_check_lint
    nwpc_data_client_config
    nwpc_data_client_config_lint
    nwpc_data_client_config_migrate
