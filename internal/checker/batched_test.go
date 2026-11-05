@@ -13,8 +13,26 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func newTestExecutor(capacity int) *commandExecutor {
-	return newCommandExecutor(capacity, nil, time.Now(), "", nil)
+func newBatchedTestRunPlan(
+	t *testing.T,
+	config CheckerConfig,
+	startTime time.Time,
+	content string,
+	levels []string,
+	checkInterval time.Duration,
+	forecastTimes []time.Duration,
+) *runPlan {
+	t.Helper()
+	targets, err := expandCheckTargets(content, startTime, forecastTimes, levels)
+	require.NoError(t, err)
+	return &runPlan{
+		config:           config,
+		startTime:        startTime,
+		locationLevels:   levels,
+		checkInterval:    checkInterval,
+		forecastTimeList: forecastTimes,
+		targets:          targets,
+	}
 }
 
 func pathItems(dirs ...string) []dataconfig.PathItem {
@@ -49,18 +67,17 @@ paths:
     level: archive
     path: /data/archive
 `
-	exec := newTestExecutor(2)
-	defer func() { exec.finish(); exec.wait() }()
-
 	startTime := time.Date(2026, 10, 12, 0, 0, 0, 0, time.UTC)
 
-	targets := expandBatchedTargets(content, startTime, []time.Duration{0}, "", nil, exec)
+	targets, err := expandCheckTargets(content, startTime, []time.Duration{0}, nil)
+	require.NoError(t, err)
 	require.Len(t, targets, 1)
 	assert.Len(t, targets[0].paths, 2)
 	assert.Equal(t, "NOTFOUND", targets[0].defaultPath)
 	assert.Equal(t, []string{"data.000.grb2"}, targets[0].fileNames)
 
-	targets = expandBatchedTargets(content, startTime, []time.Duration{0}, "", []string{"runtime"}, exec)
+	targets, err = expandCheckTargets(content, startTime, []time.Duration{0}, []string{"runtime"})
+	require.NoError(t, err)
 	require.Len(t, targets, 1)
 	require.Len(t, targets[0].paths, 1)
 	assert.Equal(t, "runtime", targets[0].paths[0].LevelType)
@@ -77,10 +94,8 @@ paths:
     level: runtime
     path: /data
 `
-	exec := newTestExecutor(1)
-	defer func() { exec.finish(); exec.wait() }()
-
-	targets := expandBatchedTargets(content, time.Now(), []time.Duration{0}, "", nil, exec)
+	targets, err := expandCheckTargets(content, time.Now(), []time.Duration{0}, nil)
+	require.NoError(t, err)
 	require.Len(t, targets, 1)
 	// file_names comes first, file_name is appended after it (FindLocalFile order).
 	assert.Equal(t, []string{"a.grb2", "b.grb2"}, targets[0].fileNames)
@@ -205,15 +220,16 @@ paths:
 	config.CheckMode = CheckModeBatched
 	config.CheckIntervalJitter = 0
 
-	checkBatched(
+	plan := newBatchedTestRunPlan(
+		t,
 		config,
 		time.Date(2026, 10, 12, 0, 0, 0, 0, time.UTC),
 		content,
 		nil,
 		10*time.Millisecond,
 		[]time.Duration{0, 3 * time.Hour},
-		exec,
 	)
+	checkBatched(plan, exec)
 
 	require.Len(t, submitted, 2)
 	// Submission order is nondeterministic: the two stability observations
@@ -302,15 +318,16 @@ func runGatedLoop(t *testing.T, configOrder string, checkerOrder string) []strin
 		_ = os.WriteFile(filepath.Join(dir, "data.000.grb2"), []byte("data"), 0644)
 	}()
 
-	checkBatched(
+	plan := newBatchedTestRunPlan(
+		t,
 		config,
 		time.Date(2026, 10, 12, 0, 0, 0, 0, time.UTC),
 		gatedLoopConfig(dir, configOrder),
 		nil,
 		20*time.Millisecond,
 		[]time.Duration{0, 3 * time.Hour},
-		exec,
 	)
+	checkBatched(plan, exec)
 
 	data, err := os.ReadFile(orderFile)
 	require.NoError(t, err)

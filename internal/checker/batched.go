@@ -10,70 +10,8 @@ import (
 	"time"
 
 	"github.com/cemc-oper/nwpc-data-client/internal/dataconfig"
-	"github.com/cemc-oper/nwpc-data-client/internal/finder"
 	log "github.com/sirupsen/logrus"
 )
-
-// batchedTarget is one pending forecast time in batched check mode. The
-// config template is expanded once up front (it is deterministic for a given
-// start/forecast time), while rounds and observing mutate across rounds.
-type batchedTarget struct {
-	forecastTime time.Duration
-	fileNames    []string
-	paths        []dataconfig.PathItem // location-level filtered, config order
-	defaultPath  string                // the config's default (not-found placeholder)
-	arrivalOrder string                // the config's _arrival_order (same for all targets)
-	rounds       int                   // existence checks consumed
-	observing    bool                  // in size-stability observation
-}
-
-// expandBatchedTargets renders the config template for every forecast time
-// and applies the location-level filter. A parse failure for one forecast
-// time submits an error result for it (fail-fast via the executor) while the
-// remaining forecast times proceed.
-func expandBatchedTargets(
-	configContent string,
-	startTime time.Time,
-	forecastTimeList []time.Duration,
-	member string,
-	levels []string,
-	exec *commandExecutor,
-) []*batchedTarget {
-	var targets []*batchedTarget
-	for _, forecastTime := range forecastTimeList {
-		dataConfig, err := dataconfig.ParseConfigContent(configContent, startTime, forecastTime, member)
-		if err != nil {
-			exec.submit(CheckResult{
-				ForecastTime: forecastTime,
-				Error:        fmt.Errorf("parse config content failed: %v", err),
-			})
-			continue
-		}
-
-		var fileNames []string
-		fileNames = append(fileNames, dataConfig.FileNames...)
-		if len(dataConfig.FileName) > 0 {
-			fileNames = append(fileNames, dataConfig.FileName)
-		}
-
-		var paths []dataconfig.PathItem
-		for _, item := range dataConfig.Paths {
-			if !finder.InLocationLevelTypes(levels, item.LevelType) {
-				continue
-			}
-			paths = append(paths, item)
-		}
-
-		targets = append(targets, &batchedTarget{
-			forecastTime: forecastTime,
-			fileNames:    fileNames,
-			paths:        paths,
-			defaultPath:  dataConfig.Default,
-			arrivalOrder: dataConfig.ArrivalOrder,
-		})
-	}
-	return targets
-}
 
 // collectDirectories returns the union of directories referenced by the
 // targets, deduplicated. Templates containing {{.ForecastHour}} place
@@ -169,20 +107,11 @@ func matchTarget(t *batchedTarget, dirSets map[string]map[string]struct{}) (stri
 // one goroutine per forecast time. Results are submitted to the caller's
 // executor; when every forecast time has submitted, the loop closes the queue
 // and waits for it to drain.
-func checkBatched(
-	config CheckerConfig,
-	startTime time.Time,
-	configContent string,
-	levels []string,
-	checkDuration time.Duration,
-	forecastTimeList []time.Duration,
-	exec *commandExecutor,
-) {
-	member := ""
+func checkBatched(plan *runPlan, exec *commandExecutor) {
+	config := plan.config
+	targets := plan.targets
 
 	var mu sync.Mutex // guards pending, gateHeld, and the targets' rounds/observing fields
-
-	targets := expandBatchedTargets(configContent, startTime, forecastTimeList, member, levels, exec)
 
 	pending := make(map[time.Duration]*batchedTarget, len(targets))
 	for _, t := range targets {
@@ -290,7 +219,7 @@ func checkBatched(
 			budget := config.MaxCheckCount - t.rounds
 			go func(t *batchedTarget, filePath string, budget int) {
 				defer func() { <-sem }()
-				_, err := waitForStableFile(filePath, checkDuration, budget)
+				_, err := waitForStableFile(filePath, plan.checkInterval, budget)
 
 				// Submit before removing the target from pending: the main
 				// loop closes the queue once pending is empty, so a removal
@@ -316,7 +245,7 @@ func checkBatched(
 		}
 		mu.Unlock()
 
-		sleepWithJitter(checkDuration, config.CheckIntervalJitter)
+		sleepWithJitter(plan.checkInterval, config.CheckIntervalJitter)
 	}
 
 	// All forecast times have submitted their results (the queue is buffered,

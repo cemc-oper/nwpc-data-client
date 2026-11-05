@@ -44,6 +44,9 @@ func init() {
 	checkLocalCmd.Flags().StringVar(&checkFlagConfig.ReportFile, "report-file", "",
 		"Path for the optional JSON run report. Empty does not generate a report.")
 
+	checkLocalCmd.Flags().BoolVar(&checkDryRun, "dry-run", false,
+		"Print the resolved run plan without polling files or executing commands.")
+
 	checkLocalCmd.Flags().StringVar(&checkFlagConfig.DelayTime, "delay-time", "10s",
 		"Stagger delay between consecutive forecast times (duration such as 10s).")
 
@@ -88,6 +91,11 @@ Go templates with the usual config variables (Year, Month, Day, Hour,
 ForecastHour, ...) plus FilePath. Use --execute-command for a single command;
 multiple commands (execute_commands) can be supplied via --checker-config.
 
+--dry-run resolves the same run plan and prints the final mode, effective
+arrival order, candidate paths, and command templates. Candidate paths are
+not checked for existence or selection. Dry-run does not poll, sleep, execute
+commands, or write a run report.
+
 Args:
     start_time   Start time, YYYYMMDDHH, such as 2026062400.`
 
@@ -98,6 +106,9 @@ const checkLocalCommandExample = `  # Check via a checker config file (recommend
   echo "0h 3h 6h" | nwpc_data_client check local 2026062400 \
       --data-type=cma_gfs_gmf/grib2/orig \
       --execute-command="echo ready: {{.FilePath}}"
+
+  # Print the resolved plan without accessing candidate files or running commands.
+  nwpc_data_client check local 2026062400 --checker-config=./checker.yaml --dry-run
 
   # Poll faster and limit the number of attempts per forecast time.
   nwpc_data_client check local 2026062400 --checker-config=./checker.yaml \
@@ -137,6 +148,12 @@ var checkLocalCmd = &cobra.Command{
 			log.Fatalf("invalid checker config: %v", err)
 		}
 
+		if checkDryRun {
+			if err := checker.DryRun(config, startTime, os.Stdin, cmd.OutOrStdout()); err != nil {
+				log.Fatalf("dry run failed: %v", err)
+			}
+			return
+		}
 		checker.Run(config, startTime, os.Stdin)
 	},
 }

@@ -9,4 +9,6 @@ var (
 	checkFlagConfig checker.CheckerConfig
 	// checkConfigFile is the path to the optional YAML runtime config file.
 	checkConfigFile = ""
+	// checkDryRun prints the resolved run plan without polling or executing commands.
+	checkDryRun = false
 )

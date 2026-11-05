@@ -100,9 +100,12 @@ func ParseConfigContent(content string, startTime time.Time, forecastTime time.D
 	forecastTimeStr := FormatForecastTimeShort(forecastTime)
 	currentLog := log.WithFields(log.Fields{"forecastTime": forecastTimeStr})
 
-	contentTemplate := template.Must(template.New("dataConfig").Funcs(ConfigTemplateFuncMap()).Parse(content))
+	contentTemplate, err := template.New("dataConfig").Funcs(ConfigTemplateFuncMap()).Parse(content)
+	if err != nil {
+		return dataConfig, fmt.Errorf("parse data config template failed: %w", err)
+	}
 	var configBuilder strings.Builder
-	err := contentTemplate.Execute(&configBuilder, tpVar)
+	err = contentTemplate.Execute(&configBuilder, tpVar)
 	if err != nil {
 		currentLog.Errorf("file name template execute has error: %s", err)
 		return dataConfig, err

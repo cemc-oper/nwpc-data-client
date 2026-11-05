@@ -6,10 +6,8 @@ import (
 	"io"
 	"os"
 	"os/signal"
-	"strings"
 	"sync"
 	"syscall"
-	"text/template"
 	"time"
 
 	"github.com/cemc-oper/nwpc-data-client/internal/dataconfig"
@@ -19,73 +17,24 @@ import (
 
 // Run executes the per-forecast-time polling loop: for every forecast time it
 // waits for the data file to appear and become stable, then runs the
-// configured command(s). It resolves the data config content itself from the
-// checker config (embedded configs, config dir, or a single config file).
+// configured command(s). Real polling and DryRun share buildRunPlan.
 //
 // It terminates the process via log.Fatal on unrecoverable errors, matching
 // the CLI's historical behavior.
 func Run(config CheckerConfig, startTime time.Time, stdin io.Reader) {
-	// debug
 	if config.Debug {
 		log.SetLevel(log.DebugLevel)
 	}
 
-	// location levels
-	levels := strings.Split(config.LocationLevels, ",")
-
-	// check duration
-	checkDuration, err := time.ParseDuration(config.CheckInterval)
+	plan, err := buildRunPlan(config, startTime, stdin)
 	if err != nil {
-		log.Fatalf("parse check-interval failed: %v", err)
+		log.Fatalf("build run plan failed: %v", err)
 	}
-
-	// delay time
-	delayTime, err := time.ParseDuration(config.DelayTime)
-	if err != nil {
-		log.Fatalf("parse delay-time failed: %v", err)
-	}
-
-	// command templates
-	commandTemplates, err := buildCommandTemplates(config.ExecuteCommand, config.ExecuteCommands)
-	if err != nil {
-		log.Fatalf("build command templates failed: %v", err)
-	}
-
-	// forecast times: YAML config takes precedence, otherwise stdin.
-	// The final string list is stored in config.ForecastTimes so the config
-	// object remains the single source of truth.
-	if len(config.ForecastTimes) == 0 {
-		config.ForecastTimes = readForecastTimesFromStdin(stdin)
-	}
-	if len(config.ForecastTimes) == 0 {
-		log.Fatalf("no forecast times provided: set forecast_times in checker config or pipe forecast times to stdin")
-	}
-
-	forecastTimeList, err := config.ParseForecastTimes()
-	if err != nil {
-		log.Fatalf("parse forecast times failed: %v", err)
-	}
-	logForecastTimeList(startTime, forecastTimeList)
-
-	// data config dir, data type
-	var configContent string
-	if config.DataConfigFile != "" {
-		configContent, err = dataconfig.LoadConfigContentFromFile(config.DataConfigFile)
-	} else {
-		dataType := config.DataType
-		if len(config.DataConfigDir) == 0 {
-			dataType = "local/" + dataType
-		}
-		configContent, err = dataconfig.LoadConfigContent(config.DataConfigDir, dataType)
-	}
-	if err != nil {
-		log.Fatalf("load config content failed: %v\n", err)
-		return
-	}
+	logForecastTimeList(startTime, plan.forecastTimeList)
 
 	// Startup jitter: shift this process's polling phase once before entering
 	// the loop, so processes launched at the same moment do not stay aligned.
-	jitterSleep := startupJitter(checkDuration)
+	jitterSleep := startupJitter(plan.checkInterval)
 	log.Infof("startup jitter...sleep %v", jitterSleep)
 	time.Sleep(jitterSleep)
 
@@ -98,60 +47,37 @@ func Run(config CheckerConfig, startTime time.Time, stdin io.Reader) {
 		os.Exit(3)
 	}()
 
-	if config.CheckMode == CheckModeBatched {
-		if config.DelayTime != "" {
+	if plan.config.CheckMode == CheckModeBatched {
+		if plan.config.DelayTime != "" {
 			log.Infof("delay-time is ignored in batched check mode")
 		}
-		exec := newCommandExecutor(len(forecastTimeList), commandTemplates, startTime, "", nil)
-		checkBatched(
-			config,
-			startTime,
-			configContent,
-			levels,
-			checkDuration,
-			forecastTimeList,
-			exec)
+		exec := newCommandExecutor(len(plan.targets), plan.commandTemplates, startTime, "", nil)
+		checkBatched(plan, exec)
 	} else {
-		checkDataFile(
-			config,
-			startTime,
-			configContent,
-			levels,
-			checkDuration,
-			commandTemplates,
-			delayTime,
-			forecastTimeList)
+		checkDataFile(plan)
 	}
 
 	log.Infof("exiting")
 }
 
-func checkDataFile(
-	config CheckerConfig,
-	startTime time.Time,
-	configContent string,
-	levels []string,
-	checkDuration time.Duration,
-	commandTemplates []*template.Template,
-	delayTime time.Duration,
-	forecastTimeList []time.Duration) {
+func checkDataFile(plan *runPlan) {
 	member := ""
-	exec := newCommandExecutor(len(forecastTimeList), commandTemplates, startTime, member, nil)
+	exec := newCommandExecutor(len(plan.targets), plan.commandTemplates, plan.startTime, member, nil)
 
 	var wg sync.WaitGroup
-	for index, oneTime := range forecastTimeList {
+	for index, target := range plan.targets {
 		wg.Add(1)
-		go func(currentIndex int, forecastTime time.Duration) {
+		go func(currentIndex int, target *checkTarget) {
 			defer wg.Done()
-			sleepTime := delayTime * time.Duration(currentIndex)
-			forecastTimeString := dataconfig.FormatForecastTimeShort(forecastTime)
+			sleepTime := plan.delayTime * time.Duration(currentIndex)
+			forecastTimeString := dataconfig.FormatForecastTimeShort(target.forecastTime)
 			log.WithFields(log.Fields{"forecast_time": forecastTimeString}).
 				Infof("sleeping before check...%v", sleepTime)
 			time.Sleep(sleepTime)
 			log.WithFields(log.Fields{"forecast_time": forecastTimeString}).
 				Infof("checking begin...")
-			checkForOneTime(config, startTime, exec, configContent, levels, forecastTime, member, checkDuration)
-		}(index, oneTime)
+			checkForOneTime(plan, exec, target)
+		}(index, target)
 	}
 
 	// All producers have submitted (the queue is buffered, so submissions
@@ -167,40 +93,25 @@ type CheckResult struct {
 	Error        error
 }
 
-func checkForOneTime(
-	config CheckerConfig,
-	startTime time.Time,
-	exec *commandExecutor,
-	configContent string,
-	levels []string,
-	forecastTime time.Duration,
-	member string,
-	checkDuration time.Duration) {
+func checkForOneTime(plan *runPlan, exec *commandExecutor, target *checkTarget) {
+	config := plan.config
+	forecastTime := target.forecastTime
+	dataConfig := target.dataConfig
 	foundData := false
 	roundNumber := 0
 	forecastTimeString := dataconfig.FormatForecastTimeShort(forecastTime)
 	currentLog := log.WithFields(log.Fields{"forecast_time": forecastTimeString})
-
-	dataConfig, err := dataconfig.ParseConfigContent(configContent, startTime, forecastTime, member)
-	if err != nil {
-		exec.submit(CheckResult{
-			ForecastTime: forecastTime,
-			Error:        fmt.Errorf("parse config content failed: %v", err),
-		})
-		return
-	}
-
 	filePath := dataConfig.Default
 
 	for roundNumber < config.MaxCheckCount {
 		currentLog.Infof("checking... %d/%d", roundNumber, config.MaxCheckCount)
-		filePath = findLocalFileForCheck(dataConfig, startTime, levels, forecastTime)
+		filePath = findLocalFileForCheck(dataConfig, plan.startTime, plan.locationLevels, forecastTime)
 		if filePath == dataConfig.Default {
 			currentLog.Infof("checking exist...not found")
 		} else {
 			currentLog.Infof("checking exist...success: %s", filePath)
 			// The size checks share the same budget of remaining checks.
-			_, err := waitForStableFile(filePath, checkDuration, config.MaxCheckCount-roundNumber)
+			_, err := waitForStableFile(filePath, plan.checkInterval, config.MaxCheckCount-roundNumber)
 			if err != nil {
 				currentLog.Warnf("checking size...failed: %v", err)
 			} else {
@@ -208,7 +119,7 @@ func checkForOneTime(
 			}
 			break
 		}
-		sleepWithJitter(checkDuration, config.CheckIntervalJitter)
+		sleepWithJitter(plan.checkInterval, config.CheckIntervalJitter)
 		roundNumber += 1
 	}
 

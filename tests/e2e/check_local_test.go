@@ -16,14 +16,17 @@ import (
 
 // checkerConfig mirrors the YAML structure of the checker's runtime config.
 type checkerConfig struct {
-	DataConfigDir  string   `yaml:"data_config_dir"`
-	DataType       string   `yaml:"data_type"`
-	CheckInterval  string   `yaml:"check_interval"`
-	MaxCheckCount  int      `yaml:"max_check_count"`
+	DataConfigDir  string   `yaml:"data_config_dir,omitempty"`
+	DataConfigFile string   `yaml:"data_config_file,omitempty"`
+	DataType       string   `yaml:"data_type,omitempty"`
+	CheckInterval  string   `yaml:"check_interval,omitempty"`
+	MaxCheckCount  int      `yaml:"max_check_count,omitempty"`
 	DelayTime      string   `yaml:"delay_time,omitempty"`
 	CheckMode      string   `yaml:"check_mode,omitempty"`
+	ArrivalOrder   string   `yaml:"arrival_order,omitempty"`
 	ForecastTimes  []string `yaml:"forecast_times"`
 	ExecuteCommand string   `yaml:"execute_command,omitempty"`
+	ReportFile     string   `yaml:"report_file,omitempty"`
 }
 
 // writeCheckerConfig marshals cfg into a temporary checker config YAML file
