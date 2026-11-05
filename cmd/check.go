@@ -7,13 +7,15 @@ import (
 func init() {
 	rootCmd.AddCommand(checkCmd)
 	checkCmd.AddCommand(checkLocalCmd)
+	checkCmd.AddCommand(checkLintCmd)
 }
 
 const checkCommandName = "check"
 
 const checkCommandDocString = `Check data files for CEMC operational systems.
 
-Use "nwpc_data_client check local --help" for detailed help.`
+Use "nwpc_data_client check local --help" or
+"nwpc_data_client check lint --help" for detailed help.`
 
 var checkCmd = &cobra.Command{
 	Use:   checkCommandName,

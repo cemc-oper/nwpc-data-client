@@ -217,6 +217,12 @@ func (c CheckerConfig) ParseForecastTimes() ([]time.Duration, error) {
 // CLI flags always override values from the YAML file. The result is validated
 // before being returned.
 func MergeCheckerConfig(fileConfig CheckerConfig, flagConfig CheckerConfig, cmd *cobra.Command) (CheckerConfig, error) {
+	return mergeCheckerConfig(fileConfig, flagConfig, cmd)
+}
+
+// mergeCheckerConfig applies defaults, YAML field presence, and optional CLI
+// overrides. A nil command performs static resolution without any CLI flags.
+func mergeCheckerConfig(fileConfig CheckerConfig, flagConfig CheckerConfig, cmd *cobra.Command) (CheckerConfig, error) {
 	config := DefaultCheckerConfig()
 
 	// For fields that have a `flag` tag, use the CLI value if the flag was
@@ -230,7 +236,7 @@ func MergeCheckerConfig(fileConfig CheckerConfig, flagConfig CheckerConfig, cmd 
 
 	// If --execute-command was set on the CLI, discard any execute_commands
 	// from YAML because the two fields are mutually exclusive.
-	if !cmd.Flags().Changed("execute-command") {
+	if cmd == nil || !cmd.Flags().Changed("execute-command") {
 		config.ExecuteCommands = fileConfig.ExecuteCommands
 	}
 
@@ -260,7 +266,7 @@ func mergeFlaggedFields(fileConfig CheckerConfig, flagConfig CheckerConfig, cmd 
 		fileField := fileValue.Field(i)
 		flagField := flagValue.Field(i)
 
-		if cmd.Flags().Changed(flagName) {
+		if cmd != nil && cmd.Flags().Changed(flagName) {
 			configField.Set(flagField)
 			continue
 		}
