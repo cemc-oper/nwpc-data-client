@@ -30,6 +30,28 @@
 > 命令取消和超时只保证命令依赖实际支持的直接进程终止，不承诺跨平台清理 shell
 > 派生的整个子孙进程树。业务命令若会派生长驻子进程，需要单独验证其退出行为。
 
+## JSON 运行报告
+
+设置 `report_file` / `--report-file` 后，成功、检查失败、命令失败、命令超时和可处理的
+信号取消都会写出最终 JSON 报告；默认空值不生成文件，dry-run 也从不写报告。
+
+```yaml
+report_file: /path/to/runtime/check-2026062400.json
+```
+
+报告以 `report_version: 1` 标识 schema，包含运行状态、汇总及逐时效结果。总状态为
+`success`、`failed` 或 `cancelled`；逐时效状态包括 `pending`、`success`、
+`check_failed`、`command_failed` 和 `cancelled`。fail-fast 时尚未开始的时效保留为
+`pending`，已开始但未完成的时效为 `cancelled`。
+
+`check_count` 是实际文件存在性与大小检查次数；`wait_seconds` 从首次实际检查计时，
+不包含 per-time 的启动错峰；`command_seconds` 单独记录命令执行耗时。报告不包含命令
+stdout/stderr 或环境变量。
+
+报告在目标目录内先写临时文件，再原子重命名，读取者不会看到半份 JSON。报告写失败会
+使 CLI 非零退出，即使检查本身已经成功。报告文件的命名、按起报时次区分、保留周期和
+清理由业务调度侧负责。
+
 ## 使用 checker 配置文件（推荐）
 
 ```yaml

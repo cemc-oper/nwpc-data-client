@@ -162,7 +162,12 @@ var checkLocalCmd = &cobra.Command{
 
 		ctx, stop := signal.NotifyContext(cmd.Context(), syscall.SIGHUP, syscall.SIGINT, syscall.SIGTERM, syscall.SIGQUIT)
 		defer stop()
-		if _, err := checker.Run(ctx, config, startTime, os.Stdin); err != nil {
+		result, runErr := checker.Run(ctx, config, startTime, os.Stdin)
+		var reportErr error
+		if result != nil {
+			reportErr = checker.WriteRunReport(config.ReportFile, result)
+		}
+		if err := errors.Join(runErr, reportErr); err != nil {
 			if ctx.Err() != nil {
 				return &exitCodeError{code: 3, err: fmt.Errorf("check local cancelled: %w", err)}
 			}

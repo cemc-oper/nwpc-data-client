@@ -58,6 +58,7 @@ func runCheckLocalWithSIGTERM(t *testing.T, checkerConfigPath string, readyLog s
 
 func TestCheckLocalSIGTERMExitsThree(t *testing.T) {
 	rootDir := t.TempDir()
+	reportFile := filepath.Join(rootDir, "startup-cancel-report.json")
 	configDir := writeConfigWithRoot(t, e2eDemoConfigPath, rootDir)
 	checkerConfigPath := writeCheckerConfig(t, checkerConfig{
 		DataConfigDir: filepath.ToSlash(configDir),
@@ -66,6 +67,7 @@ func TestCheckLocalSIGTERMExitsThree(t *testing.T) {
 		MaxCheckCount: 10,
 		DelayTime:     "0s",
 		ForecastTimes: []string{"24h"},
+		ReportFile:    reportFile,
 	})
 
 	output, err, _ := runCheckLocalWithSIGTERM(t, checkerConfigPath, "startup jitter")
@@ -75,10 +77,16 @@ func TestCheckLocalSIGTERMExitsThree(t *testing.T) {
 	assert.Equal(t, 3, exitErr.ExitCode())
 	assert.Contains(t, output, "cancelled")
 	assert.NotContains(t, output, "Usage:")
+	report := readRunReport(t, reportFile)
+	assert.Equal(t, "cancelled", report.Status)
+	assert.Equal(t, 1, report.Summary.Pending)
+	require.Len(t, report.Results, 1)
+	assert.Equal(t, "pending", report.Results[0].Status)
 }
 
 func TestCheckLocalSIGTERMCancelsRunningCommand(t *testing.T) {
 	rootDir := t.TempDir()
+	reportFile := filepath.Join(rootDir, "command-cancel-report.json")
 	dataFile := filepath.Join(rootDir, "runtime", "2026101200", "data.2026101200024.grb2")
 	require.NoError(t, os.MkdirAll(filepath.Dir(dataFile), 0755))
 	require.NoError(t, os.WriteFile(dataFile, []byte("data"), 0644))
@@ -92,6 +100,7 @@ func TestCheckLocalSIGTERMCancelsRunningCommand(t *testing.T) {
 		ForecastTimes:  []string{"24h"},
 		ExecuteCommand: e2eCommandHelperCommand("wait"),
 		CommandTimeout: "30m",
+		ReportFile:     reportFile,
 	})
 
 	output, err, elapsed := runCheckLocalWithSIGTERM(t, checkerConfigPath, "running command <")
@@ -103,4 +112,10 @@ func TestCheckLocalSIGTERMCancelsRunningCommand(t *testing.T) {
 	assert.Contains(t, output, "cancelled")
 	assert.NotContains(t, output, "command timed out")
 	assert.NotContains(t, output, "Usage:")
+	report := readRunReport(t, reportFile)
+	assert.Equal(t, "cancelled", report.Status)
+	assert.Equal(t, 1, report.Summary.Cancelled)
+	require.Len(t, report.Results, 1)
+	assert.Equal(t, "cancelled", report.Results[0].Status)
+	assert.Contains(t, report.Results[0].Error, "context canceled")
 }

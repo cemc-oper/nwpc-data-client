@@ -2,6 +2,7 @@ package e2e
 
 import (
 	"context"
+	"encoding/json"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -28,6 +29,36 @@ type checkerConfig struct {
 	ExecuteCommand string   `yaml:"execute_command,omitempty"`
 	CommandTimeout string   `yaml:"command_timeout,omitempty"`
 	ReportFile     string   `yaml:"report_file,omitempty"`
+}
+
+type runReport struct {
+	ReportVersion int    `json:"report_version"`
+	Status        string `json:"status"`
+	Summary       struct {
+		Total     int `json:"total"`
+		Succeeded int `json:"succeeded"`
+		Failed    int `json:"failed"`
+		Cancelled int `json:"cancelled"`
+		Pending   int `json:"pending"`
+	} `json:"summary"`
+	Results []struct {
+		ForecastTime   string  `json:"forecast_time"`
+		Status         string  `json:"status"`
+		FilePath       string  `json:"file_path"`
+		CheckCount     int     `json:"check_count"`
+		WaitSeconds    float64 `json:"wait_seconds"`
+		CommandSeconds float64 `json:"command_seconds"`
+		Error          string  `json:"error"`
+	} `json:"results"`
+}
+
+func readRunReport(t *testing.T, path string) runReport {
+	t.Helper()
+	data, err := os.ReadFile(path)
+	require.NoError(t, err, "read run report")
+	var report runReport
+	require.NoError(t, json.Unmarshal(data, &report), "parse run report: %s", data)
+	return report
 }
 
 // writeCheckerConfig marshals cfg into a temporary checker config YAML file
@@ -67,6 +98,7 @@ func runCheckLocal(t *testing.T, checkerConfigPath string) (string, error) {
 // a stable size, so the CLI runs the execute command and exits 0.
 func TestCheckLocalFileStable(t *testing.T) {
 	rootDir := t.TempDir()
+	reportFile := filepath.Join(rootDir, "success-report.json")
 	dataFile := filepath.Join(rootDir, "runtime", "2026101200", "data.2026101200024.grb2")
 	require.NoError(t, os.MkdirAll(filepath.Dir(dataFile), 0755))
 	require.NoError(t, os.WriteFile(dataFile, []byte("data"), 0644))
@@ -80,6 +112,7 @@ func TestCheckLocalFileStable(t *testing.T) {
 		DelayTime:      "1ms",
 		ForecastTimes:  []string{"24h"},
 		ExecuteCommand: doneCommand,
+		ReportFile:     reportFile,
 	})
 
 	output, err := runCheckLocal(t, checkerConfigPath)
@@ -87,10 +120,20 @@ func TestCheckLocalFileStable(t *testing.T) {
 	require.NoError(t, err, "check local failed: %s", output)
 	_, statErr := os.Stat(dataFile + ".done")
 	assert.NoError(t, statErr, "execute command did not create the .done file")
+	report := readRunReport(t, reportFile)
+	assert.Equal(t, 1, report.ReportVersion)
+	assert.Equal(t, "success", report.Status)
+	assert.Equal(t, 1, report.Summary.Total)
+	assert.Equal(t, 1, report.Summary.Succeeded)
+	require.Len(t, report.Results, 1)
+	assert.Equal(t, "success", report.Results[0].Status)
+	assert.Equal(t, dataFile, report.Results[0].FilePath)
+	assert.Greater(t, report.Results[0].CheckCount, 0)
 }
 
 func TestCheckLocalCommandFailureReturnsError(t *testing.T) {
 	rootDir := t.TempDir()
+	reportFile := filepath.Join(rootDir, "command-failure-report.json")
 	dataFile := filepath.Join(rootDir, "runtime", "2026101200", "data.2026101200024.grb2")
 	require.NoError(t, os.MkdirAll(filepath.Dir(dataFile), 0755))
 	require.NoError(t, os.WriteFile(dataFile, []byte("data"), 0644))
@@ -103,6 +146,7 @@ func TestCheckLocalCommandFailureReturnsError(t *testing.T) {
 		DelayTime:      "1ms",
 		ForecastTimes:  []string{"24h"},
 		ExecuteCommand: "exit 7",
+		ReportFile:     reportFile,
 	})
 
 	output, err := runCheckLocal(t, checkerConfigPath)
@@ -113,10 +157,17 @@ func TestCheckLocalCommandFailureReturnsError(t *testing.T) {
 	assert.Equal(t, 1, exitErr.ExitCode())
 	assert.Contains(t, output, "exit code is not 0: 7")
 	assert.NotContains(t, output, "Usage:")
+	report := readRunReport(t, reportFile)
+	assert.Equal(t, "failed", report.Status)
+	assert.Equal(t, 1, report.Summary.Failed)
+	require.Len(t, report.Results, 1)
+	assert.Equal(t, "command_failed", report.Results[0].Status)
+	assert.Contains(t, report.Results[0].Error, "exit code is not 0: 7")
 }
 
 func TestCheckLocalCommandTimeout(t *testing.T) {
 	rootDir := t.TempDir()
+	reportFile := filepath.Join(rootDir, "timeout-report.json")
 	dataFile := filepath.Join(rootDir, "runtime", "2026101200", "data.2026101200024.grb2")
 	require.NoError(t, os.MkdirAll(filepath.Dir(dataFile), 0755))
 	require.NoError(t, os.WriteFile(dataFile, []byte("data"), 0644))
@@ -130,6 +181,7 @@ func TestCheckLocalCommandTimeout(t *testing.T) {
 		ForecastTimes:  []string{"24h"},
 		ExecuteCommand: e2eCommandHelperCommand("wait"),
 		CommandTimeout: "50ms",
+		ReportFile:     reportFile,
 	})
 
 	output, err := runCheckLocal(t, checkerConfigPath)
@@ -140,12 +192,19 @@ func TestCheckLocalCommandTimeout(t *testing.T) {
 	assert.Equal(t, 1, exitErr.ExitCode())
 	assert.Contains(t, output, "command timed out after 50ms")
 	assert.NotContains(t, output, "Usage:")
+	report := readRunReport(t, reportFile)
+	assert.Equal(t, "failed", report.Status)
+	assert.Equal(t, 1, report.Summary.Failed)
+	require.Len(t, report.Results, 1)
+	assert.Equal(t, "command_failed", report.Results[0].Status)
+	assert.Contains(t, report.Results[0].Error, "command timed out after 50ms")
 }
 
 // TestCheckLocalFileNeverAppears is scenario E8: the data file never shows
 // up, so the CLI gives up after max_check_count checks and exits non-zero.
 func TestCheckLocalFileNeverAppears(t *testing.T) {
 	rootDir := t.TempDir()
+	reportFile := filepath.Join(rootDir, "check-failure-report.json")
 	configDir := writeConfigWithRoot(t, e2eDemoConfigPath, rootDir)
 	checkerConfigPath := writeCheckerConfig(t, checkerConfig{
 		DataConfigDir: filepath.ToSlash(configDir),
@@ -154,6 +213,7 @@ func TestCheckLocalFileNeverAppears(t *testing.T) {
 		MaxCheckCount: 5,
 		DelayTime:     "1ms",
 		ForecastTimes: []string{"24h"},
+		ReportFile:    reportFile,
 	})
 
 	output, err := runCheckLocal(t, checkerConfigPath)
@@ -162,6 +222,13 @@ func TestCheckLocalFileNeverAppears(t *testing.T) {
 	assert.Contains(t, output, "too many times")
 	assert.NotContains(t, output, "Usage:")
 	assert.False(t, strings.Contains(output, "run command success"))
+	report := readRunReport(t, reportFile)
+	assert.Equal(t, "failed", report.Status)
+	assert.Equal(t, 1, report.Summary.Failed)
+	require.Len(t, report.Results, 1)
+	assert.Equal(t, "check_failed", report.Results[0].Status)
+	assert.Equal(t, 5, report.Results[0].CheckCount)
+	assert.Contains(t, report.Results[0].Error, "too many times")
 }
 
 // TestCheckLocalBatchedStable is scenario E9: in batched mode, both data
@@ -169,6 +236,7 @@ func TestCheckLocalFileNeverAppears(t *testing.T) {
 // for each and exits 0.
 func TestCheckLocalBatchedStable(t *testing.T) {
 	rootDir := t.TempDir()
+	reportFile := filepath.Join(rootDir, "batched-success-report.json")
 	var dataFiles []string
 	for _, forecastHour := range []string{"024", "048"} {
 		dataFile := filepath.Join(rootDir, "runtime", "2026101200",
@@ -187,6 +255,7 @@ func TestCheckLocalBatchedStable(t *testing.T) {
 		CheckMode:      "batched",
 		ForecastTimes:  []string{"24h", "48h"},
 		ExecuteCommand: doneCommand,
+		ReportFile:     reportFile,
 	})
 
 	output, err := runCheckLocal(t, checkerConfigPath)
@@ -196,12 +265,22 @@ func TestCheckLocalBatchedStable(t *testing.T) {
 		_, statErr := os.Stat(dataFile + ".done")
 		assert.NoError(t, statErr, "execute command did not create the .done file for %s", dataFile)
 	}
+	report := readRunReport(t, reportFile)
+	assert.Equal(t, "success", report.Status)
+	assert.Equal(t, 2, report.Summary.Total)
+	assert.Equal(t, 2, report.Summary.Succeeded)
+	require.Len(t, report.Results, 2)
+	for _, result := range report.Results {
+		assert.Equal(t, "success", result.Status)
+		assert.Greater(t, result.CheckCount, 0)
+	}
 }
 
 // TestCheckLocalBatchedNeverAppears is scenario E10: in batched mode the file
 // never shows up, so the CLI exhausts max_check_count and exits non-zero.
 func TestCheckLocalBatchedNeverAppears(t *testing.T) {
 	rootDir := t.TempDir()
+	reportFile := filepath.Join(rootDir, "batched-check-failure-report.json")
 	configDir := writeConfigWithRoot(t, e2eDemoConfigPath, rootDir)
 	checkerConfigPath := writeCheckerConfig(t, checkerConfig{
 		DataConfigDir: filepath.ToSlash(configDir),
@@ -210,6 +289,7 @@ func TestCheckLocalBatchedNeverAppears(t *testing.T) {
 		MaxCheckCount: 5,
 		CheckMode:     "batched",
 		ForecastTimes: []string{"24h"},
+		ReportFile:    reportFile,
 	})
 
 	output, err := runCheckLocal(t, checkerConfigPath)
@@ -218,6 +298,12 @@ func TestCheckLocalBatchedNeverAppears(t *testing.T) {
 	assert.Contains(t, output, "too many times")
 	assert.NotContains(t, output, "Usage:")
 	assert.False(t, strings.Contains(output, "run command success"))
+	report := readRunReport(t, reportFile)
+	assert.Equal(t, "failed", report.Status)
+	assert.Equal(t, 1, report.Summary.Failed)
+	require.Len(t, report.Results, 1)
+	assert.Equal(t, "check_failed", report.Results[0].Status)
+	assert.Equal(t, 5, report.Results[0].CheckCount)
 }
 
 // TestCheckLocalBatchedPathPriority is scenario E11: in batched mode the file
@@ -250,4 +336,59 @@ func TestCheckLocalBatchedPathPriority(t *testing.T) {
 	assert.NoError(t, statErr, "execute command did not run for the runtime file")
 	_, statErr = os.Stat(archiveFile + ".done")
 	assert.True(t, os.IsNotExist(statErr), "archive file must not be used when runtime hits")
+}
+
+func TestCheckLocalFailFastReportKeepsPending(t *testing.T) {
+	rootDir := t.TempDir()
+	reportFile := filepath.Join(rootDir, "fail-fast-report.json")
+	configDir := writeConfigWithRoot(t, e2eDemoConfigPath, rootDir)
+	checkerConfigPath := writeCheckerConfig(t, checkerConfig{
+		DataConfigDir: filepath.ToSlash(configDir),
+		DataType:      e2eDemoDataType,
+		CheckInterval: "1ms",
+		MaxCheckCount: 1,
+		DelayTime:     "1h",
+		ForecastTimes: []string{"24h", "48h"},
+		ReportFile:    reportFile,
+	})
+
+	output, err := runCheckLocal(t, checkerConfigPath)
+
+	require.Error(t, err, "check local should fail fast: %s", output)
+	report := readRunReport(t, reportFile)
+	assert.Equal(t, "failed", report.Status)
+	assert.Equal(t, 2, report.Summary.Total)
+	assert.Equal(t, 1, report.Summary.Failed)
+	assert.Equal(t, 1, report.Summary.Pending)
+	require.Len(t, report.Results, 2)
+	assert.Equal(t, "check_failed", report.Results[0].Status)
+	assert.Equal(t, "pending", report.Results[1].Status)
+	assert.Zero(t, report.Results[1].CheckCount)
+}
+
+func TestCheckLocalReportWriteFailure(t *testing.T) {
+	rootDir := t.TempDir()
+	dataFile := filepath.Join(rootDir, "runtime", "2026101200", "data.2026101200024.grb2")
+	require.NoError(t, os.MkdirAll(filepath.Dir(dataFile), 0755))
+	require.NoError(t, os.WriteFile(dataFile, []byte("data"), 0644))
+	configDir := writeConfigWithRoot(t, e2eDemoConfigPath, rootDir)
+	reportFile := filepath.Join(rootDir, "missing", "report.json")
+	checkerConfigPath := writeCheckerConfig(t, checkerConfig{
+		DataConfigDir: filepath.ToSlash(configDir),
+		DataType:      e2eDemoDataType,
+		CheckInterval: "20ms",
+		MaxCheckCount: 20,
+		DelayTime:     "0s",
+		ForecastTimes: []string{"24h"},
+		ReportFile:    reportFile,
+	})
+
+	output, err := runCheckLocal(t, checkerConfigPath)
+
+	require.Error(t, err, "report write failure must make the CLI fail: %s", output)
+	var exitErr *exec.ExitError
+	require.ErrorAs(t, err, &exitErr)
+	assert.Equal(t, 1, exitErr.ExitCode())
+	assert.Contains(t, output, "create temporary run report")
+	assert.NotContains(t, output, "Usage:")
 }

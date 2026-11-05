@@ -64,7 +64,7 @@ func TestRunStartupCancellation(t *testing.T) {
 
 func TestCheckDataFileCancellationDuringDelay(t *testing.T) {
 	ctx, cancel := context.WithCancel(context.Background())
-	exec := newCommandExecutor(ctx, 0, 1, nil, time.Now(), "", nil)
+	exec := newCommandExecutor(ctx, 0, 1, nil, time.Now(), "", nil, nil)
 	plan := &runPlan{
 		config:    DefaultCheckerConfig(),
 		startTime: time.Now(),
@@ -73,7 +73,7 @@ func TestCheckDataFileCancellationDuringDelay(t *testing.T) {
 	}
 	done := make(chan error, 1)
 	go func() {
-		_, err := checkDataFile(exec.context(), plan, exec)
+		err := checkDataFile(exec.context(), plan, exec)
 		done <- err
 	}()
 	time.Sleep(20 * time.Millisecond)
@@ -90,7 +90,7 @@ func TestCheckDataFileCancellationDuringDelay(t *testing.T) {
 
 func TestCheckDataFileCancellationDuringPolling(t *testing.T) {
 	ctx, cancel := context.WithCancel(context.Background())
-	exec := newCommandExecutor(ctx, 0, 1, nil, time.Now(), "", nil)
+	exec := newCommandExecutor(ctx, 0, 1, nil, time.Now(), "", nil, nil)
 	plan := &runPlan{
 		config:        DefaultCheckerConfig(),
 		startTime:     time.Now(),
@@ -102,7 +102,7 @@ func TestCheckDataFileCancellationDuringPolling(t *testing.T) {
 	}
 	done := make(chan error, 1)
 	go func() {
-		_, err := checkDataFile(exec.context(), plan, exec)
+		err := checkDataFile(exec.context(), plan, exec)
 		done <- err
 	}()
 	time.Sleep(20 * time.Millisecond)

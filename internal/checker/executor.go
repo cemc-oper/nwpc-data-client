@@ -10,12 +10,6 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-// RunResult contains the check results processed by the executor, in queue
-// order. Later reporting stages can extend it without changing polling logic.
-type RunResult struct {
-	Results []CheckResult
-}
-
 // commandExecutor runs the configured command(s) for each submitted check
 // result, serially and in submission order, from a single consumer goroutine.
 // The queue is buffered with capacity for every forecast time, so submit
@@ -36,11 +30,11 @@ type commandExecutor struct {
 	startTime        time.Time
 	member           string
 	onTaskDone       func(CheckResult)
-	results          []CheckResult
+	tracker          *runTracker
 	err              error
 }
 
-func newCommandExecutor(ctx context.Context, commandTimeout time.Duration, capacity int, commandTemplates []*template.Template, startTime time.Time, member string, onTaskDone func(CheckResult)) *commandExecutor {
+func newCommandExecutor(ctx context.Context, commandTimeout time.Duration, capacity int, commandTemplates []*template.Template, startTime time.Time, member string, onTaskDone func(CheckResult), tracker *runTracker) *commandExecutor {
 	runCtx, cancel := context.WithCancel(ctx)
 	e := &commandExecutor{
 		ctx:              runCtx,
@@ -52,6 +46,7 @@ func newCommandExecutor(ctx context.Context, commandTimeout time.Duration, capac
 		startTime:        startTime,
 		member:           member,
 		onTaskDone:       onTaskDone,
+		tracker:          tracker,
 	}
 	go e.consume()
 	return e
@@ -87,12 +82,12 @@ func (e *commandExecutor) finish() {
 	close(e.queue)
 }
 
-// wait blocks until the consumer exits and returns its processed results and
-// first error. The queue must be closed after all producers have returned.
-func (e *commandExecutor) wait() (RunResult, error) {
+// wait blocks until the consumer exits and returns its first error. The queue
+// must be closed after all producers have returned.
+func (e *commandExecutor) wait() error {
 	<-e.drained
 	e.cancel()
-	return RunResult{Results: e.results}, e.err
+	return e.err
 }
 
 func (e *commandExecutor) fail(err error) {
@@ -126,9 +121,7 @@ func (e *commandExecutor) consume() {
 			forecastTimeString := dataconfig.FormatForecastTimeShort(result.ForecastTime)
 			currentLog := log.WithFields(log.Fields{"forecast_time": forecastTimeString})
 			if result.Error != nil {
-				result.Error = fmt.Errorf("check failed for forecast time %s: %w", forecastTimeString, result.Error)
-				e.results = append(e.results, result)
-				e.fail(result.Error)
+				e.fail(fmt.Errorf("check failed for forecast time %s: %w", forecastTimeString, result.Error))
 				return
 			}
 
@@ -136,18 +129,22 @@ func (e *commandExecutor) consume() {
 
 			if len(e.commandTemplates) == 0 {
 				currentLog.Debugf("ignore execute command because of empty command")
+				if e.tracker != nil {
+					e.tracker.completeCommand(result.targetIndex, 0, nil)
+				}
 			} else {
+				commandStarted := time.Now()
 				err := runCommands(e.ctx, e.commandTimeout, e.commandTemplates, e.startTime, result.ForecastTime, e.member, result.FilePath)
+				if e.tracker != nil {
+					e.tracker.completeCommand(result.targetIndex, time.Since(commandStarted), err)
+				}
 				if err != nil {
-					result.Error = fmt.Errorf("run command failed for forecast time %s: %w", forecastTimeString, err)
-					e.results = append(e.results, result)
-					e.fail(result.Error)
+					e.fail(fmt.Errorf("run command failed for forecast time %s: %w", forecastTimeString, err))
 					return
 				}
 				currentLog.Infof("run command success")
 			}
 
-			e.results = append(e.results, result)
 			if e.onTaskDone != nil {
 				e.onTaskDone(result)
 			}

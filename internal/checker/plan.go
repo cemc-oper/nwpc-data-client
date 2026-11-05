@@ -16,6 +16,7 @@ import (
 // candidatePaths is informational; polling uses dataConfig and the filtered
 // fields so real runs and dry-run share exactly the same expansion.
 type checkTarget struct {
+	index          int
 	forecastTime   time.Duration
 	dataConfig     dataconfig.DataConfig
 	fileNames      []string
@@ -26,6 +27,7 @@ type checkTarget struct {
 
 	// Batched polling state. These fields are unused during plan construction.
 	rounds    int
+	checks    int
 	observing bool
 }
 
@@ -45,6 +47,7 @@ type runPlan struct {
 	targets          []*checkTarget
 	commandTemplates []*template.Template
 	arrivalOrder     string
+	tracker          *runTracker
 }
 
 // buildRunPlan is shared by real runs and dry-run. It reads checker/data
@@ -143,7 +146,7 @@ func expandCheckTargets(
 	levels []string,
 ) ([]*checkTarget, error) {
 	var targets []*checkTarget
-	for _, forecastTime := range forecastTimeList {
+	for index, forecastTime := range forecastTimeList {
 		dataConfig, err := dataconfig.ParseConfigContent(configContent, startTime, forecastTime, "")
 		if err != nil {
 			return nil, fmt.Errorf("parse config content for forecast time %s failed: %w",
@@ -169,6 +172,7 @@ func expandCheckTargets(
 		}
 
 		targets = append(targets, &checkTarget{
+			index:          index,
 			forecastTime:   forecastTime,
 			dataConfig:     dataConfig,
 			fileNames:      fileNames,

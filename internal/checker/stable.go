@@ -20,11 +20,11 @@ func getFileSize(filePath string) (int64, error) {
 // waitForStableFile polls path until its size is non-zero and unchanged
 // between two consecutive checks, and returns the final size. It gives up
 // with an error after maxCount checks or when ctx is cancelled.
-func waitForStableFile(ctx context.Context, path string, interval time.Duration, maxCount int) (int64, error) {
+func waitForStableFile(ctx context.Context, path string, interval time.Duration, maxCount int) (int64, int, error) {
 	var lastSize int64 = -1
 	for i := 0; i < maxCount; i++ {
 		if err := ctx.Err(); err != nil {
-			return 0, err
+			return 0, i, err
 		}
 		currentSize, err := getFileSize(path)
 		if err != nil {
@@ -32,7 +32,7 @@ func waitForStableFile(ctx context.Context, path string, interval time.Duration,
 			lastSize = -1
 		} else if currentSize > 0 && currentSize == lastSize {
 			log.Infof("checking size...success %d/%d", i, maxCount)
-			return currentSize, nil
+			return currentSize, i + 1, nil
 		} else if currentSize == 0 {
 			log.Warnf("get size 0, continue to wait for a valid data size %d/%d", i, maxCount)
 			lastSize = currentSize
@@ -41,8 +41,8 @@ func waitForStableFile(ctx context.Context, path string, interval time.Duration,
 			lastSize = currentSize
 		}
 		if err := sleepContext(ctx, interval); err != nil {
-			return 0, err
+			return 0, i + 1, err
 		}
 	}
-	return 0, fmt.Errorf("file is not stable after %d checks: %s", maxCount, path)
+	return 0, maxCount, fmt.Errorf("file is not stable after %d checks: %s", maxCount, path)
 }

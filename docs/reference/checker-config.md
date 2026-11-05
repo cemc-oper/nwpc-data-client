@@ -28,11 +28,11 @@ CheckerConfig 是 `check local` 的运行时配置（定义于
 
 `dry_run` 只提供 CLI 参数 `--dry-run`，不是可持久化的 YAML 字段。
 
-> **当前开发阶段的运行时边界**
+> **运行时边界**
 >
 > `command_timeout` 已接入每条命令的实际执行，默认 30 分钟，`0` 禁用。
-> `report_file` 目前仅完成配置解析、合并与校验，设置后仍不会创建报告；
-> `--dry-run` 在任何情况下都不会写报告。
+> `report_file` 会生成 versioned JSON 运行报告；空值禁用，`--dry-run` 在任何情况下
+> 都不会写报告。
 
 ## 合并与校验规则
 
@@ -75,6 +75,45 @@ YAML 与 CLI 按以下优先级合并（`MergeCheckerConfig`）：
   不需要起报时次、完整 data config 或非空 `forecast_times`；
 - `check local --dry-run`：使用真实配置合并和 data config 展开生成运行计划，
   验证起报时次、预报时效、候选路径和命令模板，但不访问候选业务文件。
+
+## JSON 报告结构
+
+`report_file` 非空时生成以下 versioned 结构；完整状态和耗时口径见
+[等待文件并执行命令](../guide/checking-files.md#json-运行报告)。
+
+```json
+{
+  "report_version": 1,
+  "start_time": "2026102600",
+  "data_type": "cma_gfs_gmf/current/grib2/orig",
+  "check_mode": "batched",
+  "arrival_order": "unordered",
+  "started_at": "2026-10-26T00:00:00Z",
+  "finished_at": "2026-10-26T00:01:00Z",
+  "status": "success",
+  "summary": {
+    "total": 1,
+    "succeeded": 1,
+    "failed": 0,
+    "cancelled": 0,
+    "pending": 0
+  },
+  "results": [
+    {
+      "forecast_time": "000h",
+      "status": "success",
+      "file_path": "/path/to/file",
+      "check_count": 3,
+      "wait_seconds": 20.0,
+      "command_seconds": 0.1,
+      "error": ""
+    }
+  ]
+}
+```
+
+报告通过同目录临时文件和重命名原子发布；写失败会非零退出。文件命名、保留和清理
+由调度侧负责，client 不做日志轮转，也不把报告写入 stdout。
 
 ## 抖动（jitter）
 

@@ -17,15 +17,19 @@ import (
 // for the data file to appear and become stable, then runs the configured
 // command(s). Real polling and DryRun share buildRunPlan. Cancellation stops
 // all checker-owned waits and producers; errors are returned to the caller.
-func Run(ctx context.Context, config CheckerConfig, startTime time.Time, stdin io.Reader) (RunResult, error) {
+func Run(ctx context.Context, config CheckerConfig, startTime time.Time, stdin io.Reader) (result *RunResult, err error) {
 	if config.Debug {
 		log.SetLevel(log.DebugLevel)
 	}
 
 	plan, err := buildRunPlan(config, startTime, stdin)
 	if err != nil {
-		return RunResult{}, fmt.Errorf("build run plan failed: %w", err)
+		return nil, fmt.Errorf("build run plan failed: %w", err)
 	}
+	plan.tracker = newRunTracker(plan)
+	defer func() {
+		result = plan.tracker.finish(err)
+	}()
 	logForecastTimeList(startTime, plan.forecastTimeList)
 
 	// Startup jitter: shift this process's polling phase once before entering
@@ -33,28 +37,30 @@ func Run(ctx context.Context, config CheckerConfig, startTime time.Time, stdin i
 	jitterSleep := startupJitter(plan.checkInterval)
 	log.Infof("startup jitter...sleep %v", jitterSleep)
 	if err := sleepContext(ctx, jitterSleep); err != nil {
-		return RunResult{}, err
+		return nil, err
 	}
 
-	exec := newCommandExecutor(ctx, plan.commandTimeout, len(plan.targets), plan.commandTemplates, startTime, "", nil)
-	var result RunResult
+	exec := newCommandExecutor(ctx, plan.commandTimeout, len(plan.targets), plan.commandTemplates, startTime, "", nil, plan.tracker)
 	if plan.config.CheckMode == CheckModeBatched {
 		if plan.config.DelayTime != "" {
 			log.Infof("delay-time is ignored in batched check mode")
 		}
-		result, err = checkBatched(exec.context(), plan, exec)
+		err = checkBatched(exec.context(), plan, exec)
 	} else {
-		result, err = checkDataFile(exec.context(), plan, exec)
+		err = checkDataFile(exec.context(), plan, exec)
 	}
 	if err != nil {
-		return result, err
+		return nil, err
 	}
 
 	log.Infof("exiting")
-	return result, nil
+	return nil, nil
 }
 
-func checkDataFile(ctx context.Context, plan *runPlan, exec *commandExecutor) (RunResult, error) {
+func checkDataFile(ctx context.Context, plan *runPlan, exec *commandExecutor) error {
+	if plan.tracker == nil {
+		plan.tracker = newRunTracker(plan)
+	}
 	var wg sync.WaitGroup
 	for index, target := range plan.targets {
 		if ctx.Err() != nil {
@@ -83,34 +89,34 @@ func checkDataFile(ctx context.Context, plan *runPlan, exec *commandExecutor) (R
 	return exec.wait()
 }
 
-type CheckResult struct {
-	ForecastTime time.Duration
-	FilePath     string
-	Error        error
-}
-
 func checkForOneTime(ctx context.Context, plan *runPlan, exec *commandExecutor, target *checkTarget) {
 	config := plan.config
 	forecastTime := target.forecastTime
 	dataConfig := target.dataConfig
 	foundData := false
 	roundNumber := 0
+	checkCount := 0
 	forecastTimeString := dataconfig.FormatForecastTimeShort(forecastTime)
 	currentLog := log.WithFields(log.Fields{"forecast_time": forecastTimeString})
 	filePath := dataConfig.Default
+	plan.tracker.start(target.index)
 
 	for roundNumber < config.MaxCheckCount {
 		if ctx.Err() != nil {
 			return
 		}
 		currentLog.Infof("checking... %d/%d", roundNumber, config.MaxCheckCount)
+		checkCount++
 		filePath = findLocalFileForCheck(dataConfig, plan.startTime, plan.locationLevels, forecastTime)
+		plan.tracker.progress(target.index, filePath, checkCount)
 		if filePath == dataConfig.Default {
 			currentLog.Infof("checking exist...not found")
 		} else {
 			currentLog.Infof("checking exist...success: %s", filePath)
 			// The size checks share the same budget of remaining checks.
-			_, err := waitForStableFile(ctx, filePath, plan.checkInterval, config.MaxCheckCount-roundNumber)
+			_, stableChecks, err := waitForStableFile(ctx, filePath, plan.checkInterval, config.MaxCheckCount-roundNumber)
+			checkCount += stableChecks
+			plan.tracker.progress(target.index, filePath, checkCount)
 			if err != nil {
 				if ctx.Err() != nil {
 					return
@@ -130,12 +136,15 @@ func checkForOneTime(ctx context.Context, plan *runPlan, exec *commandExecutor, 
 	result := CheckResult{
 		ForecastTime: forecastTime,
 		FilePath:     filePath,
-		Error:        nil,
+		Status:       CheckStatusWaiting,
+		CheckCount:   checkCount,
+		targetIndex:  target.index,
 	}
 
 	if !foundData {
 		result.Error = fmt.Errorf("too many times")
 	}
+	plan.tracker.completeCheck(result)
 	exec.submit(result)
 }
 

@@ -16,7 +16,7 @@ func TestCommandExecutorProcessesInOrder(t *testing.T) {
 
 	exec := newCommandExecutor(context.Background(), 0, 3, nil, time.Now(), "", func(result CheckResult) {
 		hooked = append(hooked, result.ForecastTime)
-	})
+	}, nil)
 
 	results := []CheckResult{
 		{ForecastTime: 0, FilePath: "/a"},
@@ -36,7 +36,7 @@ func TestCommandExecutorProcessesInOrder(t *testing.T) {
 func TestCommandExecutorSubmitDoesNotBlock(t *testing.T) {
 	// Capacity covers every submission, so producers never block even
 	// before the consumer has drained anything.
-	exec := newCommandExecutor(context.Background(), 0, 2, nil, time.Now(), "", nil)
+	exec := newCommandExecutor(context.Background(), 0, 2, nil, time.Now(), "", nil, nil)
 	done := make(chan struct{})
 	go func() {
 		defer close(done)
@@ -53,46 +53,41 @@ func TestCommandExecutorSubmitDoesNotBlock(t *testing.T) {
 }
 
 func TestCommandExecutorReturnsCheckFailureAndStops(t *testing.T) {
-	exec := newCommandExecutor(context.Background(), 0, 3, nil, time.Now(), "", nil)
+	exec := newCommandExecutor(context.Background(), 0, 3, nil, time.Now(), "", nil, nil)
 	exec.submit(CheckResult{ForecastTime: 0, FilePath: "/a"})
 	exec.submit(CheckResult{ForecastTime: time.Hour, Error: assert.AnError})
 	exec.submit(CheckResult{ForecastTime: 2 * time.Hour, FilePath: "/c"})
 	exec.finish()
 
-	result, err := exec.wait()
+	err := exec.wait()
 
 	require.ErrorIs(t, err, assert.AnError)
-	require.Len(t, result.Results, 2)
-	assert.NoError(t, result.Results[0].Error)
-	assert.ErrorIs(t, result.Results[1].Error, assert.AnError)
 	assert.False(t, exec.submit(CheckResult{ForecastTime: 3 * time.Hour}))
 }
 
 func TestCommandExecutorReturnsCommandFailureAndStops(t *testing.T) {
 	templates, err := buildCommandTemplates("exit 7", nil)
 	require.NoError(t, err)
-	exec := newCommandExecutor(context.Background(), 0, 2, templates, time.Now(), "", nil)
+	exec := newCommandExecutor(context.Background(), 0, 2, templates, time.Now(), "", nil, nil)
 	exec.submit(CheckResult{ForecastTime: 0, FilePath: "/a"})
 	exec.submit(CheckResult{ForecastTime: time.Hour, FilePath: "/b"})
 	exec.finish()
 
-	result, err := exec.wait()
+	err = exec.wait()
 
 	require.Error(t, err)
 	assert.Contains(t, err.Error(), "exit code is not 0: 7")
-	assert.Len(t, result.Results, 1)
 }
 
 func TestCommandExecutorReturnsCommandTimeoutAndStops(t *testing.T) {
 	templates, err := buildCommandTemplates(commandHelperCommand("wait"), nil)
 	require.NoError(t, err)
-	exec := newCommandExecutor(context.Background(), 50*time.Millisecond, 2, templates, time.Now(), "", nil)
+	exec := newCommandExecutor(context.Background(), 50*time.Millisecond, 2, templates, time.Now(), "", nil, nil)
 	exec.submit(CheckResult{ForecastTime: 0, FilePath: "/a"})
 	exec.submit(CheckResult{ForecastTime: time.Hour, FilePath: "/b"})
 	exec.finish()
 
-	result, err := exec.wait()
+	err = exec.wait()
 
 	require.ErrorIs(t, err, ErrCommandTimeout)
-	assert.Len(t, result.Results, 1)
 }

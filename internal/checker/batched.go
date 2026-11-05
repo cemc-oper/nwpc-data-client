@@ -107,7 +107,10 @@ func matchTarget(t *batchedTarget, dirSets map[string]map[string]struct{}) (stri
 // pending forecast times with one readdir per directory per round, instead of
 // one goroutine per forecast time. Stability observers are tracked so failure
 // and cancellation cannot leave submissions running after the queue closes.
-func checkBatched(ctx context.Context, plan *runPlan, exec *commandExecutor) (RunResult, error) {
+func checkBatched(ctx context.Context, plan *runPlan, exec *commandExecutor) error {
+	if plan.tracker == nil {
+		plan.tracker = newRunTracker(plan)
+	}
 	config := plan.config
 	targets := plan.targets
 
@@ -164,11 +167,16 @@ polling:
 			}
 			if t.rounds >= config.MaxCheckCount {
 				delete(pending, t.forecastTime)
-				exec.submit(CheckResult{
+				result := CheckResult{
 					ForecastTime: t.forecastTime,
 					FilePath:     t.defaultPath,
 					Error:        fmt.Errorf("too many times"),
-				})
+					Status:       CheckStatusWaiting,
+					CheckCount:   t.checks,
+					targetIndex:  t.index,
+				}
+				plan.tracker.completeCheck(result)
+				exec.submit(result)
 				continue
 			}
 			participants = append(participants, t)
@@ -194,16 +202,20 @@ polling:
 
 		// Match phase: in-memory priority match per target.
 		for _, t := range participants {
+			plan.tracker.start(t.index)
 			forecastTimeString := dataconfig.FormatForecastTimeShort(t.forecastTime)
 			currentLog := log.WithFields(log.Fields{"forecast_time": forecastTimeString})
 			currentLog.Infof("checking... %d/%d", t.rounds, config.MaxCheckCount)
 
+			t.checks++
+			plan.tracker.progress(t.index, t.defaultPath, t.checks)
 			filePath, found := matchTarget(t, dirSets)
 			if !found {
 				currentLog.Infof("checking exist...not found")
 				t.rounds++
 				continue
 			}
+			plan.tracker.progress(t.index, filePath, t.checks)
 			currentLog.Infof("checking exist...success: %s", filePath)
 
 			// Stability observation runs asynchronously, capped by the
@@ -227,36 +239,40 @@ polling:
 				gateHeld = true
 			}
 			budget := config.MaxCheckCount - t.rounds
+			baseChecks := t.checks
 			observations.Add(1)
-			go func(t *batchedTarget, filePath string, budget int) {
+			go func(t *batchedTarget, filePath string, budget int, baseChecks int) {
 				defer observations.Done()
 				defer func() { <-sem }()
-				_, err := waitForStableFile(ctx, filePath, plan.checkInterval, budget)
+				_, stableChecks, err := waitForStableFile(ctx, filePath, plan.checkInterval, budget)
+				checkCount := baseChecks + stableChecks
+				plan.tracker.progress(t.index, filePath, checkCount)
 				if ctx.Err() != nil {
 					return
 				}
 
+				result := CheckResult{
+					ForecastTime: t.forecastTime,
+					FilePath:     filePath,
+					Status:       CheckStatusWaiting,
+					CheckCount:   checkCount,
+					targetIndex:  t.index,
+				}
+				if err != nil {
+					currentLog.Warnf("checking size...failed: %v", err)
+					result.Error = fmt.Errorf("too many times")
+				}
+				plan.tracker.completeCheck(result)
+
 				// Submit before removing the target from pending: the main
 				// loop closes the queue once pending is empty, so a removal
 				// must imply the result is already queued.
-				if err != nil {
-					currentLog.Warnf("checking size...failed: %v", err)
-					exec.submit(CheckResult{
-						ForecastTime: t.forecastTime,
-						FilePath:     filePath,
-						Error:        fmt.Errorf("too many times"),
-					})
-				} else {
-					exec.submit(CheckResult{
-						ForecastTime: t.forecastTime,
-						FilePath:     filePath,
-					})
-				}
+				exec.submit(result)
 
 				mu.Lock()
 				delete(pending, t.forecastTime)
 				mu.Unlock()
-			}(t, filePath, budget)
+			}(t, filePath, budget, baseChecks)
 		}
 		mu.Unlock()
 
