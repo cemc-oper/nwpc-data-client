@@ -20,7 +20,7 @@ type checkerConfig struct {
 	DataType       string   `yaml:"data_type"`
 	CheckInterval  string   `yaml:"check_interval"`
 	MaxCheckCount  int      `yaml:"max_check_count"`
-	DelayTime      string   `yaml:"delay_time"`
+	DelayTime      string   `yaml:"delay_time,omitempty"`
 	CheckMode      string   `yaml:"check_mode,omitempty"`
 	ForecastTimes  []string `yaml:"forecast_times"`
 	ExecuteCommand string   `yaml:"execute_command,omitempty"`

@@ -38,6 +38,12 @@ func init() {
 	checkLocalCmd.Flags().StringVar(&checkFlagConfig.ExecuteCommand, "execute-command", "",
 		"Go template for a command to run once a file becomes stable. Mutually exclusive with execute_commands.")
 
+	checkLocalCmd.Flags().StringVar(&checkFlagConfig.CommandTimeout, "command-timeout", "30m",
+		"Timeout for each executed command, such as 30m or 1h. 0 disables the timeout.")
+
+	checkLocalCmd.Flags().StringVar(&checkFlagConfig.ReportFile, "report-file", "",
+		"Path for the optional JSON run report. Empty does not generate a report.")
+
 	checkLocalCmd.Flags().StringVar(&checkFlagConfig.DelayTime, "delay-time", "10s",
 		"Stagger delay between consecutive forecast times (duration such as 10s).")
 
