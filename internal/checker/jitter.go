@@ -1,6 +1,7 @@
 package checker
 
 import (
+	"context"
 	"math/rand"
 	"time"
 )
@@ -26,8 +27,23 @@ func startupJitter(interval time.Duration) time.Duration {
 	return time.Duration(rand.Float64() * float64(interval))
 }
 
+// sleepContext waits for delay or context cancellation, whichever comes first.
+func sleepContext(ctx context.Context, delay time.Duration) error {
+	if delay <= 0 {
+		return ctx.Err()
+	}
+	timer := time.NewTimer(delay)
+	defer timer.Stop()
+	select {
+	case <-timer.C:
+		return nil
+	case <-ctx.Done():
+		return ctx.Err()
+	}
+}
+
 // sleepWithJitter sleeps for one jittered polling round. It is the shared
 // sleep point for all check modes, so jitter applies uniformly.
-func sleepWithJitter(interval time.Duration, jitter float64) {
-	time.Sleep(jitteredInterval(interval, jitter))
+func sleepWithJitter(ctx context.Context, interval time.Duration, jitter float64) error {
+	return sleepContext(ctx, jitteredInterval(interval, jitter))
 }

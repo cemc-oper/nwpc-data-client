@@ -4,10 +4,11 @@ import (
 	"errors"
 	"fmt"
 	"os"
+	"os/signal"
+	"syscall"
 
 	"github.com/cemc-oper/nwpc-data-client/internal/checker"
 	"github.com/cemc-oper/nwpc-data-client/internal/dataconfig"
-	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 )
 
@@ -128,7 +129,11 @@ var checkLocalCmd = &cobra.Command{
 		}
 		return nil
 	},
-	Run: func(cmd *cobra.Command, args []string) {
+	RunE: func(cmd *cobra.Command, args []string) error {
+		// Argument errors still show usage; runtime failures return a single
+		// diagnostic to the root command without a usage page.
+		cmd.SilenceUsage = true
+
 		// Args already validated the format, so this parse cannot fail.
 		startTime, _ := dataconfig.ParseStartTime(args[0])
 
@@ -138,22 +143,31 @@ var checkLocalCmd = &cobra.Command{
 			var err error
 			fileConfig, err = checker.LoadCheckerConfig(checkConfigFile)
 			if err != nil {
-				log.Fatalf("load checker config failed: %v", err)
+				return fmt.Errorf("load checker config failed: %w", err)
 			}
 		}
 
 		// Merge YAML config with CLI flags into a single config object.
 		config, err := checker.MergeCheckerConfig(fileConfig, checkFlagConfig, cmd)
 		if err != nil {
-			log.Fatalf("invalid checker config: %v", err)
+			return fmt.Errorf("invalid checker config: %w", err)
 		}
 
 		if checkDryRun {
 			if err := checker.DryRun(config, startTime, os.Stdin, cmd.OutOrStdout()); err != nil {
-				log.Fatalf("dry run failed: %v", err)
+				return fmt.Errorf("dry run failed: %w", err)
 			}
-			return
+			return nil
 		}
-		checker.Run(config, startTime, os.Stdin)
+
+		ctx, stop := signal.NotifyContext(cmd.Context(), syscall.SIGHUP, syscall.SIGINT, syscall.SIGTERM, syscall.SIGQUIT)
+		defer stop()
+		if _, err := checker.Run(ctx, config, startTime, os.Stdin); err != nil {
+			if ctx.Err() != nil {
+				return &exitCodeError{code: 3, err: fmt.Errorf("check local cancelled: %w", err)}
+			}
+			return err
+		}
+		return nil
 	},
 }

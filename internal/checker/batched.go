@@ -1,6 +1,7 @@
 package checker
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"os"
@@ -104,10 +105,9 @@ func matchTarget(t *batchedTarget, dirSets map[string]map[string]struct{}) (stri
 
 // checkBatched is the batched-mode polling loop: a single loop checks all
 // pending forecast times with one readdir per directory per round, instead of
-// one goroutine per forecast time. Results are submitted to the caller's
-// executor; when every forecast time has submitted, the loop closes the queue
-// and waits for it to drain.
-func checkBatched(plan *runPlan, exec *commandExecutor) {
+// one goroutine per forecast time. Stability observers are tracked so failure
+// and cancellation cannot leave submissions running after the queue closes.
+func checkBatched(ctx context.Context, plan *runPlan, exec *commandExecutor) (RunResult, error) {
 	config := plan.config
 	targets := plan.targets
 
@@ -141,8 +141,13 @@ func checkBatched(plan *runPlan, exec *commandExecutor) {
 		maxConcurrent = 1
 	}
 	sem := make(chan struct{}, maxConcurrent)
+	var observations sync.WaitGroup
 
+polling:
 	for {
+		if ctx.Err() != nil {
+			break
+		}
 		mu.Lock()
 		if len(pending) == 0 {
 			mu.Unlock()
@@ -210,6 +215,11 @@ func checkBatched(plan *runPlan, exec *commandExecutor) {
 				continue
 			}
 
+			if ctx.Err() != nil {
+				<-sem
+				mu.Unlock()
+				break polling
+			}
 			t.observing = true
 			if gated {
 				// The gate is released by the executor's onTaskDone hook once
@@ -217,9 +227,14 @@ func checkBatched(plan *runPlan, exec *commandExecutor) {
 				gateHeld = true
 			}
 			budget := config.MaxCheckCount - t.rounds
+			observations.Add(1)
 			go func(t *batchedTarget, filePath string, budget int) {
+				defer observations.Done()
 				defer func() { <-sem }()
-				_, err := waitForStableFile(filePath, plan.checkInterval, budget)
+				_, err := waitForStableFile(ctx, filePath, plan.checkInterval, budget)
+				if ctx.Err() != nil {
+					return
+				}
 
 				// Submit before removing the target from pending: the main
 				// loop closes the queue once pending is empty, so a removal
@@ -245,11 +260,14 @@ func checkBatched(plan *runPlan, exec *commandExecutor) {
 		}
 		mu.Unlock()
 
-		sleepWithJitter(plan.checkInterval, config.CheckIntervalJitter)
+		if err := sleepWithJitter(ctx, plan.checkInterval, config.CheckIntervalJitter); err != nil {
+			break
+		}
 	}
 
-	// All forecast times have submitted their results (the queue is buffered,
-	// so submissions never block); close the queue and wait until drained.
+	// No producer remains before the queue is closed, including stability
+	// observers that were active when failure or cancellation stopped the loop.
+	observations.Wait()
 	exec.finish()
-	exec.wait()
+	return exec.wait()
 }

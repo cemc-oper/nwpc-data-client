@@ -1,6 +1,7 @@
 package checker
 
 import (
+	"context"
 	"testing"
 	"time"
 
@@ -38,4 +39,26 @@ func TestStartupJitterWithinBounds(t *testing.T) {
 func TestStartupJitterNonPositiveInterval(t *testing.T) {
 	assert.Equal(t, time.Duration(0), startupJitter(0))
 	assert.Equal(t, time.Duration(0), startupJitter(-time.Second))
+}
+
+func TestSleepContextCancellation(t *testing.T) {
+	ctx, cancel := context.WithCancel(context.Background())
+	done := make(chan error, 1)
+	go func() {
+		done <- sleepContext(ctx, time.Hour)
+	}()
+	cancel()
+
+	select {
+	case err := <-done:
+		assert.ErrorIs(t, err, context.Canceled)
+	case <-time.After(time.Second):
+		t.Fatal("context-aware sleep did not return after cancellation")
+	}
+}
+
+func TestSleepContextAlreadyCancelledWithZeroDelay(t *testing.T) {
+	ctx, cancel := context.WithCancel(context.Background())
+	cancel()
+	assert.ErrorIs(t, sleepContext(ctx, 0), context.Canceled)
 }

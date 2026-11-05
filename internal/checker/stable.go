@@ -1,6 +1,7 @@
 package checker
 
 import (
+	"context"
 	"fmt"
 	"os"
 	"time"
@@ -18,10 +19,13 @@ func getFileSize(filePath string) (int64, error) {
 
 // waitForStableFile polls path until its size is non-zero and unchanged
 // between two consecutive checks, and returns the final size. It gives up
-// with an error after maxCount checks.
-func waitForStableFile(path string, interval time.Duration, maxCount int) (int64, error) {
+// with an error after maxCount checks or when ctx is cancelled.
+func waitForStableFile(ctx context.Context, path string, interval time.Duration, maxCount int) (int64, error) {
 	var lastSize int64 = -1
 	for i := 0; i < maxCount; i++ {
+		if err := ctx.Err(); err != nil {
+			return 0, err
+		}
 		currentSize, err := getFileSize(path)
 		if err != nil {
 			log.Warnf("checking size...get file size failed: %v", err)
@@ -36,7 +40,9 @@ func waitForStableFile(path string, interval time.Duration, maxCount int) (int64
 			log.Infof("checking size...changed %d/%d", i, maxCount)
 			lastSize = currentSize
 		}
-		time.Sleep(interval)
+		if err := sleepContext(ctx, interval); err != nil {
+			return 0, err
+		}
 	}
 	return 0, fmt.Errorf("file is not stable after %d checks: %s", maxCount, path)
 }

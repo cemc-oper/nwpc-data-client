@@ -1,6 +1,7 @@
 package checker
 
 import (
+	"context"
 	"os"
 	"path/filepath"
 	"strings"
@@ -212,7 +213,7 @@ paths:
     path: ` + filepath.ToSlash(archiveDir) + `
 `
 	var submitted []CheckResult
-	exec := newCommandExecutor(2, nil, time.Now(), "", func(result CheckResult) {
+	exec := newCommandExecutor(context.Background(), 2, nil, time.Now(), "", func(result CheckResult) {
 		submitted = append(submitted, result)
 	})
 
@@ -229,7 +230,7 @@ paths:
 		10*time.Millisecond,
 		[]time.Duration{0, 3 * time.Hour},
 	)
-	checkBatched(plan, exec)
+	checkBatched(context.Background(), plan, exec)
 
 	require.Len(t, submitted, 2)
 	// Submission order is nondeterministic: the two stability observations
@@ -305,7 +306,7 @@ func runGatedLoop(t *testing.T, configOrder string, checkerOrder string) []strin
 	templates, err := buildCommandTemplates("echo {{.ForecastHour}} >> "+filepath.ToSlash(orderFile), nil)
 	require.NoError(t, err)
 
-	exec := newCommandExecutor(2, templates, time.Now(), "", nil)
+	exec := newCommandExecutor(context.Background(), 2, templates, time.Now(), "", nil)
 
 	config := DefaultCheckerConfig()
 	config.CheckMode = CheckModeBatched
@@ -327,7 +328,7 @@ func runGatedLoop(t *testing.T, configOrder string, checkerOrder string) []strin
 		20*time.Millisecond,
 		[]time.Duration{0, 3 * time.Hour},
 	)
-	checkBatched(plan, exec)
+	checkBatched(context.Background(), plan, exec)
 
 	data, err := os.ReadFile(orderFile)
 	require.NoError(t, err)
@@ -348,4 +349,40 @@ func TestCheckBatchedUnorderedDoesNotGate(t *testing.T) {
 	assert.Equal(t, []string{"003", "000"}, runGatedLoop(t, "unordered", ArrivalOrderAuto))
 	// The emergency switch: CLI/YAML override downgrading sequential→unordered.
 	assert.Equal(t, []string{"003", "000"}, runGatedLoop(t, "sequential", "unordered"))
+}
+
+func TestCheckBatchedCancellationWaitsForObservers(t *testing.T) {
+	dir := t.TempDir()
+	require.NoError(t, os.WriteFile(filepath.Join(dir, "data.000.grb2"), []byte("data"), 0644))
+	ctx, cancel := context.WithCancel(context.Background())
+	exec := newCommandExecutor(ctx, 1, nil, time.Now(), "", nil)
+	config := DefaultCheckerConfig()
+	config.CheckMode = CheckModeBatched
+	config.CheckIntervalJitter = 0
+	plan := newBatchedTestRunPlan(
+		t,
+		config,
+		time.Now(),
+		gatedLoopConfig(dir, dataconfig.ArrivalOrderUnordered),
+		nil,
+		time.Hour,
+		[]time.Duration{0},
+	)
+	done := make(chan error, 1)
+	go func() {
+		_, err := checkBatched(exec.context(), plan, exec)
+		done <- err
+	}()
+	time.Sleep(20 * time.Millisecond)
+	cancel()
+
+	select {
+	case err := <-done:
+		assert.ErrorIs(t, err, context.Canceled)
+	case <-time.After(time.Second):
+		t.Fatal("batched check did not return after cancellation")
+	}
+	// The observer has returned and the queue is closed. A late submission is
+	// rejected by the cancelled context instead of panicking on a closed queue.
+	assert.False(t, exec.submit(CheckResult{}))
 }

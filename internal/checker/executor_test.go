@@ -1,6 +1,7 @@
 package checker
 
 import (
+	"context"
 	"testing"
 	"time"
 
@@ -13,7 +14,7 @@ func TestCommandExecutorProcessesInOrder(t *testing.T) {
 	// processed, so recording there observes the execution order.
 	var hooked []time.Duration
 
-	exec := newCommandExecutor(3, nil, time.Now(), "", func(result CheckResult) {
+	exec := newCommandExecutor(context.Background(), 3, nil, time.Now(), "", func(result CheckResult) {
 		hooked = append(hooked, result.ForecastTime)
 	})
 
@@ -35,7 +36,7 @@ func TestCommandExecutorProcessesInOrder(t *testing.T) {
 func TestCommandExecutorSubmitDoesNotBlock(t *testing.T) {
 	// Capacity covers every submission, so producers never block even
 	// before the consumer has drained anything.
-	exec := newCommandExecutor(2, nil, time.Now(), "", nil)
+	exec := newCommandExecutor(context.Background(), 2, nil, time.Now(), "", nil)
 	done := make(chan struct{})
 	go func() {
 		defer close(done)
@@ -49,4 +50,35 @@ func TestCommandExecutorSubmitDoesNotBlock(t *testing.T) {
 		t.Fatal("submit blocked despite sufficient queue capacity")
 	}
 	exec.wait()
+}
+
+func TestCommandExecutorReturnsCheckFailureAndStops(t *testing.T) {
+	exec := newCommandExecutor(context.Background(), 3, nil, time.Now(), "", nil)
+	exec.submit(CheckResult{ForecastTime: 0, FilePath: "/a"})
+	exec.submit(CheckResult{ForecastTime: time.Hour, Error: assert.AnError})
+	exec.submit(CheckResult{ForecastTime: 2 * time.Hour, FilePath: "/c"})
+	exec.finish()
+
+	result, err := exec.wait()
+
+	require.ErrorIs(t, err, assert.AnError)
+	require.Len(t, result.Results, 2)
+	assert.NoError(t, result.Results[0].Error)
+	assert.ErrorIs(t, result.Results[1].Error, assert.AnError)
+	assert.False(t, exec.submit(CheckResult{ForecastTime: 3 * time.Hour}))
+}
+
+func TestCommandExecutorReturnsCommandFailureAndStops(t *testing.T) {
+	templates, err := buildCommandTemplates("exit 7", nil)
+	require.NoError(t, err)
+	exec := newCommandExecutor(context.Background(), 2, templates, time.Now(), "", nil)
+	exec.submit(CheckResult{ForecastTime: 0, FilePath: "/a"})
+	exec.submit(CheckResult{ForecastTime: time.Hour, FilePath: "/b"})
+	exec.finish()
+
+	result, err := exec.wait()
+
+	require.Error(t, err)
+	assert.Contains(t, err.Error(), "exit code is not 0: 7")
+	assert.Len(t, result.Results, 1)
 }

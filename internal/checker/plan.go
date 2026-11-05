@@ -70,7 +70,11 @@ func buildRunPlan(config CheckerConfig, startTime time.Time, stdin io.Reader) (*
 
 	// YAML forecast times take precedence over stdin, matching check local.
 	if len(config.ForecastTimes) == 0 {
-		config.ForecastTimes = readForecastTimesFromStdin(stdin)
+		forecastTimes, err := readForecastTimesFromStdin(stdin)
+		if err != nil {
+			return nil, fmt.Errorf("read forecast times from stdin failed: %w", err)
+		}
+		config.ForecastTimes = forecastTimes
 	}
 	if len(config.ForecastTimes) == 0 {
 		return nil, fmt.Errorf("no forecast times provided: set forecast_times in checker config or pipe forecast times to stdin")

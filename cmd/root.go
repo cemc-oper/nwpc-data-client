@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"errors"
 	"fmt"
 	"os"
 
@@ -20,18 +21,41 @@ Common subcommands:
 Use "nwpc_data_client [command] --help" for detailed help on a subcommand.`
 
 var rootCmd = &cobra.Command{
-	Use:   "nwpc_data_client",
-	Short: "Find data files for operational systems in CEMC.",
-	Long:  rootCommandDocString,
+	Use:           "nwpc_data_client",
+	Short:         "Find data files for operational systems in CEMC.",
+	Long:          rootCommandDocString,
+	SilenceErrors: true,
 	Run: func(cmd *cobra.Command, args []string) {
 		cmd.Help()
 	},
 }
 
+type exitCodeError struct {
+	code int
+	err  error
+}
+
+func (e *exitCodeError) Error() string {
+	return e.err.Error()
+}
+
+func (e *exitCodeError) Unwrap() error {
+	return e.err
+}
+
+func (e *exitCodeError) ExitCode() int {
+	return e.code
+}
+
 func Execute() {
 	if err := rootCmd.Execute(); err != nil {
-		fmt.Println(err)
-		os.Exit(1)
+		fmt.Fprintln(rootCmd.ErrOrStderr(), err)
+		exitCode := 1
+		var coded interface{ ExitCode() int }
+		if errors.As(err, &coded) {
+			exitCode = coded.ExitCode()
+		}
+		os.Exit(exitCode)
 	}
 }
 

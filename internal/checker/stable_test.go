@@ -1,12 +1,14 @@
 package checker
 
 import (
+	"context"
 	"os"
 	"path/filepath"
 	"testing"
 	"time"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func TestWaitForStableFileAlreadyStable(t *testing.T) {
@@ -15,7 +17,7 @@ func TestWaitForStableFileAlreadyStable(t *testing.T) {
 	err := os.WriteFile(filePath, content, 0644)
 	assert.NoError(t, err)
 
-	size, err := waitForStableFile(filePath, 10*time.Millisecond, 10)
+	size, err := waitForStableFile(context.Background(), filePath, 10*time.Millisecond, 10)
 
 	assert.NoError(t, err)
 	assert.Equal(t, int64(len(content)), size)
@@ -47,7 +49,7 @@ func TestWaitForStableFileStableAfterGrowth(t *testing.T) {
 		<-stop
 	}()
 
-	size, err := waitForStableFile(filePath, 10*time.Millisecond, 50)
+	size, err := waitForStableFile(context.Background(), filePath, 10*time.Millisecond, 50)
 	close(stop)
 	<-done
 
@@ -84,7 +86,7 @@ func TestWaitForStableFileKeepsGrowing(t *testing.T) {
 		}
 	}()
 
-	_, err = waitForStableFile(filePath, 10*time.Millisecond, 5)
+	_, err = waitForStableFile(context.Background(), filePath, 10*time.Millisecond, 5)
 	close(stop)
 	<-done
 
@@ -94,7 +96,7 @@ func TestWaitForStableFileKeepsGrowing(t *testing.T) {
 func TestWaitForStableFileMissing(t *testing.T) {
 	filePath := filepath.Join(t.TempDir(), "not-exist.grb2")
 
-	_, err := waitForStableFile(filePath, 10*time.Millisecond, 5)
+	_, err := waitForStableFile(context.Background(), filePath, 10*time.Millisecond, 5)
 
 	assert.Error(t, err)
 }
@@ -111,4 +113,24 @@ func TestGetFileSize(t *testing.T) {
 
 	_, err = getFileSize(filepath.Join(dir, "not-exist.grb2"))
 	assert.Error(t, err)
+}
+
+func TestWaitForStableFileCancellation(t *testing.T) {
+	filePath := filepath.Join(t.TempDir(), "data.grb2")
+	require.NoError(t, os.WriteFile(filePath, []byte("data"), 0644))
+	ctx, cancel := context.WithCancel(context.Background())
+	done := make(chan error, 1)
+	go func() {
+		_, err := waitForStableFile(ctx, filePath, time.Hour, 10)
+		done <- err
+	}()
+	time.Sleep(20 * time.Millisecond)
+	cancel()
+
+	select {
+	case err := <-done:
+		assert.ErrorIs(t, err, context.Canceled)
+	case <-time.After(time.Second):
+		t.Fatal("stable-file wait did not return after cancellation")
+	}
 }
