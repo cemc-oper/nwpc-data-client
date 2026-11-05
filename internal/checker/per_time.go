@@ -36,7 +36,7 @@ func Run(ctx context.Context, config CheckerConfig, startTime time.Time, stdin i
 		return RunResult{}, err
 	}
 
-	exec := newCommandExecutor(ctx, len(plan.targets), plan.commandTemplates, startTime, "", nil)
+	exec := newCommandExecutor(ctx, plan.commandTimeout, len(plan.targets), plan.commandTemplates, startTime, "", nil)
 	var result RunResult
 	if plan.config.CheckMode == CheckModeBatched {
 		if plan.config.DelayTime != "" {

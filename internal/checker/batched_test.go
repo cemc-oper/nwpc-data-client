@@ -213,7 +213,7 @@ paths:
     path: ` + filepath.ToSlash(archiveDir) + `
 `
 	var submitted []CheckResult
-	exec := newCommandExecutor(context.Background(), 2, nil, time.Now(), "", func(result CheckResult) {
+	exec := newCommandExecutor(context.Background(), 0, 2, nil, time.Now(), "", func(result CheckResult) {
 		submitted = append(submitted, result)
 	})
 
@@ -306,7 +306,7 @@ func runGatedLoop(t *testing.T, configOrder string, checkerOrder string) []strin
 	templates, err := buildCommandTemplates("echo {{.ForecastHour}} >> "+filepath.ToSlash(orderFile), nil)
 	require.NoError(t, err)
 
-	exec := newCommandExecutor(context.Background(), 2, templates, time.Now(), "", nil)
+	exec := newCommandExecutor(context.Background(), 0, 2, templates, time.Now(), "", nil)
 
 	config := DefaultCheckerConfig()
 	config.CheckMode = CheckModeBatched
@@ -355,7 +355,7 @@ func TestCheckBatchedCancellationWaitsForObservers(t *testing.T) {
 	dir := t.TempDir()
 	require.NoError(t, os.WriteFile(filepath.Join(dir, "data.000.grb2"), []byte("data"), 0644))
 	ctx, cancel := context.WithCancel(context.Background())
-	exec := newCommandExecutor(ctx, 1, nil, time.Now(), "", nil)
+	exec := newCommandExecutor(ctx, 0, 1, nil, time.Now(), "", nil)
 	config := DefaultCheckerConfig()
 	config.CheckMode = CheckModeBatched
 	config.CheckIntervalJitter = 0

@@ -29,6 +29,7 @@ type RunResult struct {
 type commandExecutor struct {
 	ctx              context.Context
 	cancel           context.CancelFunc
+	commandTimeout   time.Duration
 	queue            chan CheckResult
 	drained          chan struct{}
 	commandTemplates []*template.Template
@@ -39,11 +40,12 @@ type commandExecutor struct {
 	err              error
 }
 
-func newCommandExecutor(ctx context.Context, capacity int, commandTemplates []*template.Template, startTime time.Time, member string, onTaskDone func(CheckResult)) *commandExecutor {
+func newCommandExecutor(ctx context.Context, commandTimeout time.Duration, capacity int, commandTemplates []*template.Template, startTime time.Time, member string, onTaskDone func(CheckResult)) *commandExecutor {
 	runCtx, cancel := context.WithCancel(ctx)
 	e := &commandExecutor{
 		ctx:              runCtx,
 		cancel:           cancel,
+		commandTimeout:   commandTimeout,
 		queue:            make(chan CheckResult, capacity),
 		drained:          make(chan struct{}),
 		commandTemplates: commandTemplates,
@@ -135,7 +137,7 @@ func (e *commandExecutor) consume() {
 			if len(e.commandTemplates) == 0 {
 				currentLog.Debugf("ignore execute command because of empty command")
 			} else {
-				err := runCommands(e.commandTemplates, e.startTime, result.ForecastTime, e.member, result.FilePath)
+				err := runCommands(e.ctx, e.commandTimeout, e.commandTemplates, e.startTime, result.ForecastTime, e.member, result.FilePath)
 				if err != nil {
 					result.Error = fmt.Errorf("run command failed for forecast time %s: %w", forecastTimeString, err)
 					e.results = append(e.results, result)

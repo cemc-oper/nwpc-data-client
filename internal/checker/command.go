@@ -1,6 +1,8 @@
 package checker
 
 import (
+	"context"
+	"errors"
 	"fmt"
 	"strings"
 	"text/template"
@@ -11,12 +13,19 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
+// ErrCommandTimeout identifies a deadline created for an individual command,
+// as distinct from cancellation or a deadline on the parent run context.
+var ErrCommandTimeout = errors.New("command timed out")
+
 type CheckerTemplateVariable struct {
 	dataconfig.ConfigTemplateVariable
 	FilePath string
 }
 
-func runCommand(commandTemplate *template.Template, startTime time.Time, forecastTime time.Duration, member string, filePath string) error {
+func runCommand(ctx context.Context, timeout time.Duration, commandTemplate *template.Template, startTime time.Time, forecastTime time.Duration, member string, filePath string) error {
+	if err := ctx.Err(); err != nil {
+		return err
+	}
 	tpVar := dataconfig.GenerateConfigTemplateVariable(startTime, forecastTime, member)
 	var checkerVar CheckerTemplateVariable
 	checkerVar.ConfigTemplateVariable = tpVar
@@ -35,13 +44,29 @@ func runCommand(commandTemplate *template.Template, startTime time.Time, forecas
 		"forecast_time": forecastTimeString,
 	}).Infof("running command <%s> ...", commandString)
 
+	commandCtx := ctx
+	cancel := func() {}
+	if timeout > 0 {
+		commandCtx, cancel = context.WithTimeout(ctx, timeout)
+	}
+	defer cancel()
+
 	c := cmd.NewCommand(
 		commandString,
 		cmd.WithStandardStreams,
-		cmd.WithInheritedEnvironment(nil))
-	err = c.Execute()
+		cmd.WithInheritedEnvironment(nil),
+		// The dependency's implicit 30-minute timer is replaced by the
+		// explicit per-command context so command_timeout=0 really disables it.
+		cmd.WithoutTimeout)
+	err = c.ExecuteContext(commandCtx)
 	if err != nil {
-		return fmt.Errorf("run command <%s> has error: %v", commandString, err)
+		if ctx.Err() != nil {
+			return fmt.Errorf("run command <%s> cancelled: %w", commandString, ctx.Err())
+		}
+		if errors.Is(commandCtx.Err(), context.DeadlineExceeded) {
+			return fmt.Errorf("%w after %s: <%s>: %v", ErrCommandTimeout, timeout, commandString, err)
+		}
+		return fmt.Errorf("run command <%s> has error: %w", commandString, err)
 	} else if c.ExitCode() != 0 {
 		return fmt.Errorf("run command <%s> exit code is not 0: %d", commandString, c.ExitCode())
 	}
@@ -49,9 +74,12 @@ func runCommand(commandTemplate *template.Template, startTime time.Time, forecas
 	return nil
 }
 
-func runCommands(commandTemplates []*template.Template, startTime time.Time, forecastTime time.Duration, member string, filePath string) error {
+func runCommands(ctx context.Context, timeout time.Duration, commandTemplates []*template.Template, startTime time.Time, forecastTime time.Duration, member string, filePath string) error {
 	for _, commandTemplate := range commandTemplates {
-		if err := runCommand(commandTemplate, startTime, forecastTime, member, filePath); err != nil {
+		if err := ctx.Err(); err != nil {
+			return err
+		}
+		if err := runCommand(ctx, timeout, commandTemplate, startTime, forecastTime, member, filePath); err != nil {
 			return err
 		}
 	}

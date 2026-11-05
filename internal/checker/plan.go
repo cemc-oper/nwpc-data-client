@@ -40,6 +40,7 @@ type runPlan struct {
 	locationLevels   []string
 	checkInterval    time.Duration
 	delayTime        time.Duration
+	commandTimeout   time.Duration
 	forecastTimeList []time.Duration
 	targets          []*checkTarget
 	commandTemplates []*template.Template
@@ -62,6 +63,10 @@ func buildRunPlan(config CheckerConfig, startTime time.Time, stdin io.Reader) (*
 	delayTime, err := time.ParseDuration(config.DelayTime)
 	if err != nil {
 		return nil, fmt.Errorf("parse delay_time failed: %w", err)
+	}
+	commandTimeout, err := time.ParseDuration(config.CommandTimeout)
+	if err != nil {
+		return nil, fmt.Errorf("parse command_timeout failed: %w", err)
 	}
 	commandTemplates, err := buildCommandTemplates(config.ExecuteCommand, config.ExecuteCommands)
 	if err != nil {
@@ -110,6 +115,7 @@ func buildRunPlan(config CheckerConfig, startTime time.Time, stdin io.Reader) (*
 		locationLevels:   locationLevels,
 		checkInterval:    checkInterval,
 		delayTime:        delayTime,
+		commandTimeout:   commandTimeout,
 		forecastTimeList: forecastTimeList,
 		targets:          targets,
 		commandTemplates: commandTemplates,

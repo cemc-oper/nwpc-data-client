@@ -1,10 +1,12 @@
 package e2e
 
 import (
+	"fmt"
 	"os"
 	"path/filepath"
 	"strings"
 	"testing"
+	"time"
 
 	"github.com/cemc-oper/nwpc-data-client/tests/testutil"
 	"github.com/stretchr/testify/require"
@@ -63,4 +65,19 @@ func writeConfigWithRoot(t *testing.T, configRelPath string, rootDir string) str
 	require.NoError(t, os.MkdirAll(filepath.Dir(configPath), 0755))
 	require.NoError(t, os.WriteFile(configPath, []byte(content), 0644))
 	return configDir
+}
+
+// TestE2ECommandHelperProcess gives command timeout tests a portable child
+// process instead of relying on a Unix or Windows specific sleep command.
+func TestE2ECommandHelperProcess(t *testing.T) {
+	for i, arg := range os.Args {
+		if arg == "--" && i+1 < len(os.Args) && os.Args[i+1] == "wait" {
+			time.Sleep(2 * time.Second)
+			return
+		}
+	}
+}
+
+func e2eCommandHelperCommand(mode string) string {
+	return fmt.Sprintf("%q -test.run=TestE2ECommandHelperProcess -- %s", filepath.ToSlash(os.Args[0]), mode)
 }

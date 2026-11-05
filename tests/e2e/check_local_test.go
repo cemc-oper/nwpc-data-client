@@ -26,6 +26,7 @@ type checkerConfig struct {
 	ArrivalOrder   string   `yaml:"arrival_order,omitempty"`
 	ForecastTimes  []string `yaml:"forecast_times"`
 	ExecuteCommand string   `yaml:"execute_command,omitempty"`
+	CommandTimeout string   `yaml:"command_timeout,omitempty"`
 	ReportFile     string   `yaml:"report_file,omitempty"`
 }
 
@@ -111,6 +112,33 @@ func TestCheckLocalCommandFailureReturnsError(t *testing.T) {
 	require.ErrorAs(t, err, &exitErr)
 	assert.Equal(t, 1, exitErr.ExitCode())
 	assert.Contains(t, output, "exit code is not 0: 7")
+	assert.NotContains(t, output, "Usage:")
+}
+
+func TestCheckLocalCommandTimeout(t *testing.T) {
+	rootDir := t.TempDir()
+	dataFile := filepath.Join(rootDir, "runtime", "2026101200", "data.2026101200024.grb2")
+	require.NoError(t, os.MkdirAll(filepath.Dir(dataFile), 0755))
+	require.NoError(t, os.WriteFile(dataFile, []byte("data"), 0644))
+	configDir := writeConfigWithRoot(t, e2eDemoConfigPath, rootDir)
+	checkerConfigPath := writeCheckerConfig(t, checkerConfig{
+		DataConfigDir:  filepath.ToSlash(configDir),
+		DataType:       e2eDemoDataType,
+		CheckInterval:  "20ms",
+		MaxCheckCount:  20,
+		DelayTime:      "1ms",
+		ForecastTimes:  []string{"24h"},
+		ExecuteCommand: e2eCommandHelperCommand("wait"),
+		CommandTimeout: "50ms",
+	})
+
+	output, err := runCheckLocal(t, checkerConfigPath)
+
+	require.Error(t, err, "check local should return the command timeout: %s", output)
+	var exitErr *exec.ExitError
+	require.ErrorAs(t, err, &exitErr)
+	assert.Equal(t, 1, exitErr.ExitCode())
+	assert.Contains(t, output, "command timed out after 50ms")
 	assert.NotContains(t, output, "Usage:")
 }
 
