@@ -64,8 +64,11 @@ func TestCommandHelperProcess(t *testing.T) {
 		}
 		switch os.Args[i+1] {
 		case "wait":
-			if i+2 < len(os.Args) {
-				_ = os.WriteFile(os.Args[i+2], []byte("started"), 0644)
+			if marker := os.Getenv("NWPC_CHECKER_TEST_COMMAND_STARTED"); marker != "" {
+				if err := os.WriteFile(marker, []byte("started"), 0644); err != nil {
+					fmt.Fprintf(os.Stderr, "write command helper marker: %v\n", err)
+					os.Exit(8)
+				}
 			}
 			time.Sleep(2 * time.Second)
 		case "brief":
@@ -77,7 +80,7 @@ func TestCommandHelperProcess(t *testing.T) {
 	}
 }
 
-func commandHelperCommand(t *testing.T, mode string, args ...string) string {
+func commandHelperCommand(t *testing.T, mode string) string {
 	t.Helper()
 	// cmd.exe /C cannot reliably start a quoted executable through the command
 	// library's argument escaping. Resolve the helper by name instead; this also
@@ -88,9 +91,6 @@ func commandHelperCommand(t *testing.T, mode string, args ...string) string {
 		"-test.run=TestCommandHelperProcess",
 		"--",
 		mode,
-	}
-	for _, arg := range args {
-		parts = append(parts, fmt.Sprintf("%q", filepath.ToSlash(arg)))
 	}
 	return strings.Join(parts, " ")
 }
@@ -128,8 +128,9 @@ func TestRunCommandShortTimeout(t *testing.T) {
 
 func TestRunCommandParentCancellation(t *testing.T) {
 	marker := filepath.Join(t.TempDir(), "started")
+	t.Setenv("NWPC_CHECKER_TEST_COMMAND_STARTED", marker)
 	ctx, cancel := context.WithCancel(context.Background())
-	commandTemplate := testCommandTemplate(t, commandHelperCommand(t, "wait", marker))
+	commandTemplate := testCommandTemplate(t, commandHelperCommand(t, "wait"))
 	done := make(chan error, 1)
 	go func() {
 		done <- runCommand(ctx, 30*time.Minute, commandTemplate, time.Now(), 0, "", "data.grb2")
