@@ -64,19 +64,33 @@ func TestRunStartupCancellation(t *testing.T) {
 
 func TestCheckDataFileCancellationDuringDelay(t *testing.T) {
 	ctx, cancel := context.WithCancel(context.Background())
-	exec := newCommandExecutor(ctx, 0, 1, nil, time.Now(), "", nil, nil)
+	exec := newCommandExecutor(ctx, 0, 2, nil, time.Now(), "", nil, nil)
 	plan := &runPlan{
-		config:    DefaultCheckerConfig(),
-		startTime: time.Now(),
-		delayTime: time.Hour,
-		targets:   []*checkTarget{{forecastTime: 0}},
+		config:        DefaultCheckerConfig(),
+		startTime:     time.Now(),
+		checkInterval: time.Hour,
+		delayTime:     time.Hour,
+		targets: []*checkTarget{
+			{forecastTime: 0, dataConfig: dataconfig.DataConfig{Default: "NOTFOUND"}},
+			{forecastTime: time.Hour, dataConfig: dataconfig.DataConfig{Default: "NOTFOUND"}},
+		},
 	}
+	plan.tracker = newRunTracker(plan)
 	done := make(chan error, 1)
 	go func() {
 		err := checkDataFile(exec.context(), plan, exec)
 		done <- err
 	}()
-	time.Sleep(20 * time.Millisecond)
+
+	// Wait until the first target is polling while the second is still delayed.
+	// This avoids racing a zero-interval polling loop against a fixed sleep.
+	require.Eventually(t, func() bool {
+		plan.tracker.mu.Lock()
+		defer plan.tracker.mu.Unlock()
+		return plan.tracker.result.Results[0].Status == CheckStatusWaiting &&
+			plan.tracker.result.Results[0].CheckCount > 0 &&
+			plan.tracker.result.Results[1].Status == CheckStatusPending
+	}, time.Second, 5*time.Millisecond)
 	cancel()
 
 	select {
@@ -86,6 +100,7 @@ func TestCheckDataFileCancellationDuringDelay(t *testing.T) {
 		t.Fatal("per-time delay did not return after cancellation")
 	}
 	assert.False(t, exec.submit(CheckResult{}))
+	assert.Equal(t, CheckStatusPending, plan.tracker.result.Results[1].Status)
 }
 
 func TestCheckDataFileCancellationDuringPolling(t *testing.T) {

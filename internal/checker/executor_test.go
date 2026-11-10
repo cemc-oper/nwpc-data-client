@@ -80,7 +80,7 @@ func TestCommandExecutorReturnsCommandFailureAndStops(t *testing.T) {
 }
 
 func TestCommandExecutorReturnsCommandTimeoutAndStops(t *testing.T) {
-	templates, err := buildCommandTemplates(commandHelperCommand("wait"), nil)
+	templates, err := buildCommandTemplates(commandHelperCommand(t, "wait"), nil)
 	require.NoError(t, err)
 	exec := newCommandExecutor(context.Background(), 50*time.Millisecond, 2, templates, time.Now(), "", nil, nil)
 	exec.submit(CheckResult{ForecastTime: 0, FilePath: "/a"})

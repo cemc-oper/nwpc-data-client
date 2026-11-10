@@ -77,9 +77,14 @@ func TestCommandHelperProcess(t *testing.T) {
 	}
 }
 
-func commandHelperCommand(mode string, args ...string) string {
+func commandHelperCommand(t *testing.T, mode string, args ...string) string {
+	t.Helper()
+	// cmd.exe /C cannot reliably start a quoted executable through the command
+	// library's argument escaping. Resolve the helper by name instead; this also
+	// keeps the command working when the test binary directory contains spaces.
+	t.Setenv("PATH", filepath.Dir(os.Args[0])+string(os.PathListSeparator)+os.Getenv("PATH"))
 	parts := []string{
-		fmt.Sprintf("%q", filepath.ToSlash(os.Args[0])),
+		filepath.Base(os.Args[0]),
 		"-test.run=TestCommandHelperProcess",
 		"--",
 		mode,
@@ -103,18 +108,18 @@ func runTestCommand(t *testing.T, ctx context.Context, timeout time.Duration, co
 }
 
 func TestRunCommandDefaultTimeoutSuccess(t *testing.T) {
-	err := runTestCommand(t, context.Background(), 30*time.Minute, commandHelperCommand("success"))
+	err := runTestCommand(t, context.Background(), 30*time.Minute, commandHelperCommand(t, "success"))
 	assert.NoError(t, err)
 }
 
 func TestRunCommandNonZeroExit(t *testing.T) {
-	err := runTestCommand(t, context.Background(), 30*time.Minute, commandHelperCommand("fail"))
+	err := runTestCommand(t, context.Background(), 30*time.Minute, commandHelperCommand(t, "fail"))
 	require.Error(t, err)
 	assert.Contains(t, err.Error(), "exit code is not 0: 7")
 }
 
 func TestRunCommandShortTimeout(t *testing.T) {
-	err := runTestCommand(t, context.Background(), 50*time.Millisecond, commandHelperCommand("wait"))
+	err := runTestCommand(t, context.Background(), 50*time.Millisecond, commandHelperCommand(t, "wait"))
 	require.Error(t, err)
 	assert.ErrorIs(t, err, ErrCommandTimeout)
 	assert.NotErrorIs(t, err, context.Canceled)
@@ -124,7 +129,7 @@ func TestRunCommandShortTimeout(t *testing.T) {
 func TestRunCommandParentCancellation(t *testing.T) {
 	marker := filepath.Join(t.TempDir(), "started")
 	ctx, cancel := context.WithCancel(context.Background())
-	commandTemplate := testCommandTemplate(t, commandHelperCommand("wait", marker))
+	commandTemplate := testCommandTemplate(t, commandHelperCommand(t, "wait", marker))
 	done := make(chan error, 1)
 	go func() {
 		done <- runCommand(ctx, 30*time.Minute, commandTemplate, time.Now(), 0, "", "data.grb2")
@@ -147,7 +152,7 @@ func TestRunCommandParentCancellation(t *testing.T) {
 func TestRunCommandParentDeadlineIsNotCommandTimeout(t *testing.T) {
 	ctx, cancel := context.WithTimeout(context.Background(), 50*time.Millisecond)
 	defer cancel()
-	err := runTestCommand(t, ctx, 30*time.Minute, commandHelperCommand("wait"))
+	err := runTestCommand(t, ctx, 30*time.Minute, commandHelperCommand(t, "wait"))
 	assert.ErrorIs(t, err, context.DeadlineExceeded)
 	assert.NotErrorIs(t, err, ErrCommandTimeout)
 }
@@ -155,6 +160,6 @@ func TestRunCommandParentDeadlineIsNotCommandTimeout(t *testing.T) {
 func TestRunCommandZeroTimeoutDisablesDeadline(t *testing.T) {
 	ctx, cancel := context.WithTimeout(context.Background(), 2*time.Second)
 	defer cancel()
-	err := runTestCommand(t, ctx, 0, commandHelperCommand("brief"))
+	err := runTestCommand(t, ctx, 0, commandHelperCommand(t, "brief"))
 	assert.NoError(t, err)
 }

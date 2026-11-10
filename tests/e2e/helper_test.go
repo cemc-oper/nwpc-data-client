@@ -78,6 +78,10 @@ func TestE2ECommandHelperProcess(t *testing.T) {
 	}
 }
 
-func e2eCommandHelperCommand(mode string) string {
-	return fmt.Sprintf("%q -test.run=TestE2ECommandHelperProcess -- %s", filepath.ToSlash(os.Args[0]), mode)
+func e2eCommandHelperCommand(t *testing.T, mode string) string {
+	t.Helper()
+	// Resolve the helper through PATH so cmd.exe /C does not have to parse a
+	// quoted executable as its first token. This also supports paths with spaces.
+	t.Setenv("PATH", filepath.Dir(os.Args[0])+string(os.PathListSeparator)+os.Getenv("PATH"))
+	return fmt.Sprintf("%s -test.run=TestE2ECommandHelperProcess -- %s", filepath.Base(os.Args[0]), mode)
 }

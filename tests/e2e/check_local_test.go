@@ -179,7 +179,7 @@ func TestCheckLocalCommandTimeout(t *testing.T) {
 		MaxCheckCount:  20,
 		DelayTime:      "1ms",
 		ForecastTimes:  []string{"24h"},
-		ExecuteCommand: e2eCommandHelperCommand("wait"),
+		ExecuteCommand: e2eCommandHelperCommand(t, "wait"),
 		CommandTimeout: "50ms",
 		ReportFile:     reportFile,
 	})

@@ -98,7 +98,7 @@ func TestCheckLocalSIGTERMCancelsRunningCommand(t *testing.T) {
 		MaxCheckCount:  20,
 		DelayTime:      "0s",
 		ForecastTimes:  []string{"24h"},
-		ExecuteCommand: e2eCommandHelperCommand("wait"),
+		ExecuteCommand: e2eCommandHelperCommand(t, "wait"),
 		CommandTimeout: "30m",
 		ReportFile:     reportFile,
 	})
