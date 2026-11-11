@@ -5,12 +5,14 @@
 package testutil
 
 import (
+	"encoding/base64"
 	"os"
 	"os/exec"
 	"path/filepath"
 	"runtime"
 	"strings"
 	"testing"
+	"unicode/utf16"
 
 	"github.com/stretchr/testify/require"
 )
@@ -61,4 +63,19 @@ func RunCLI(t *testing.T, args ...string) string {
 	output, err := cmd.CombinedOutput()
 	require.NoError(t, err, "CLI failed: %s", string(output))
 	return strings.TrimSpace(string(output))
+}
+
+// PowerShellEncodedCommand wraps a PowerShell script without nested quotes.
+// PowerShell expects -EncodedCommand to be UTF-16LE Base64. A single encoded
+// argument also prevents cmd.exe and command-runner escaping from changing the
+// script or splitting it into immediately returning arguments.
+func PowerShellEncodedCommand(script string) string {
+	codeUnits := utf16.Encode([]rune(script))
+	encoded := make([]byte, len(codeUnits)*2)
+	for i, codeUnit := range codeUnits {
+		encoded[i*2] = byte(codeUnit)
+		encoded[i*2+1] = byte(codeUnit >> 8)
+	}
+	return "powershell -NoProfile -NonInteractive -EncodedCommand " +
+		base64.StdEncoding.EncodeToString(encoded)
 }

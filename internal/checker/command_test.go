@@ -11,6 +11,7 @@ import (
 	"text/template"
 	"time"
 
+	"github.com/cemc-oper/nwpc-data-client/tests/testutil"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -94,9 +95,15 @@ func commandHelperCommand(t *testing.T, mode string) string {
 		case "fail":
 			return "exit 7"
 		case "wait":
-			return `if defined NWPC_CHECKER_TEST_COMMAND_STARTED (echo started > "%NWPC_CHECKER_TEST_COMMAND_STARTED%") & powershell -NoProfile -NonInteractive -Command "Start-Sleep -Seconds 2"`
+			script := `
+if ($env:NWPC_CHECKER_TEST_COMMAND_STARTED) {
+    [System.IO.File]::WriteAllText($env:NWPC_CHECKER_TEST_COMMAND_STARTED, 'started')
+}
+Start-Sleep -Seconds 2
+`
+			return testutil.PowerShellEncodedCommand(script)
 		case "brief":
-			return `powershell -NoProfile -NonInteractive -Command "Start-Sleep -Milliseconds 100"`
+			return testutil.PowerShellEncodedCommand("Start-Sleep -Milliseconds 100")
 		default:
 			t.Fatalf("unknown Windows command helper mode: %s", mode)
 		}

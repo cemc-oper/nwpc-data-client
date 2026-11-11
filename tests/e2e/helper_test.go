@@ -86,7 +86,7 @@ func e2eCommandHelperCommand(t *testing.T, mode string) string {
 		// Windows locks the running image and the go tool cannot remove it.
 		switch mode {
 		case "wait":
-			return `powershell -NoProfile -NonInteractive -Command "Start-Sleep -Seconds 2"`
+			return testutil.PowerShellEncodedCommand("Start-Sleep -Seconds 2")
 		default:
 			t.Fatalf("unknown Windows e2e command helper mode: %s", mode)
 		}
