@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"runtime"
 	"strings"
 	"testing"
 	"time"
@@ -67,8 +68,8 @@ func writeConfigWithRoot(t *testing.T, configRelPath string, rootDir string) str
 	return configDir
 }
 
-// TestE2ECommandHelperProcess gives command timeout tests a portable child
-// process instead of relying on a Unix or Windows specific sleep command.
+// TestE2ECommandHelperProcess gives non-Windows command timeout tests a child
+// process; Windows uses PowerShell to avoid locking the running test image.
 func TestE2ECommandHelperProcess(t *testing.T) {
 	for i, arg := range os.Args {
 		if arg == "--" && i+1 < len(os.Args) && os.Args[i+1] == "wait" {
@@ -80,6 +81,16 @@ func TestE2ECommandHelperProcess(t *testing.T) {
 
 func e2eCommandHelperCommand(t *testing.T, mode string) string {
 	t.Helper()
+	if runtime.GOOS == "windows" {
+		// Do not leave an orphaned e2e.test.exe behind when cmd.exe is killed:
+		// Windows locks the running image and the go tool cannot remove it.
+		switch mode {
+		case "wait":
+			return `powershell -NoProfile -NonInteractive -Command "Start-Sleep -Seconds 2"`
+		default:
+			t.Fatalf("unknown Windows e2e command helper mode: %s", mode)
+		}
+	}
 	// Resolve the helper through PATH so cmd.exe /C does not have to parse a
 	// quoted executable as its first token. This also supports paths with spaces.
 	t.Setenv("PATH", filepath.Dir(os.Args[0])+string(os.PathListSeparator)+os.Getenv("PATH"))

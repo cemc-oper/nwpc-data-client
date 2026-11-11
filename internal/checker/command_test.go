@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"runtime"
 	"strings"
 	"testing"
 	"text/template"
@@ -55,8 +56,8 @@ func TestBuildCommandTemplatesInvalidTemplate(t *testing.T) {
 	assert.Error(t, err)
 }
 
-// TestCommandHelperProcess is executed in a child copy of the test binary.
-// The explicit -- argument keeps it inactive during the normal test run.
+// TestCommandHelperProcess is executed in a child copy of the test binary on
+// non-Windows platforms. The explicit -- argument keeps it inactive normally.
 func TestCommandHelperProcess(t *testing.T) {
 	for i, arg := range os.Args {
 		if arg != "--" || i+1 >= len(os.Args) {
@@ -82,6 +83,24 @@ func TestCommandHelperProcess(t *testing.T) {
 
 func commandHelperCommand(t *testing.T, mode string) string {
 	t.Helper()
+	if runtime.GOOS == "windows" {
+		// Killing cmd.exe does not kill a child copy of the test binary on
+		// Windows. Such an orphan keeps checker.test.exe locked and can make
+		// the go tool fail with Access denied while cleaning its build cache.
+		// Use PowerShell for waits so no test-binary image remains running.
+		switch mode {
+		case "success":
+			return "exit 0"
+		case "fail":
+			return "exit 7"
+		case "wait":
+			return `if defined NWPC_CHECKER_TEST_COMMAND_STARTED (echo started > "%NWPC_CHECKER_TEST_COMMAND_STARTED%") & powershell -NoProfile -NonInteractive -Command "Start-Sleep -Seconds 2"`
+		case "brief":
+			return `powershell -NoProfile -NonInteractive -Command "Start-Sleep -Milliseconds 100"`
+		default:
+			t.Fatalf("unknown Windows command helper mode: %s", mode)
+		}
+	}
 	// cmd.exe /C cannot reliably start a quoted executable through the command
 	// library's argument escaping. Resolve the helper by name instead; this also
 	// keeps the command working when the test binary directory contains spaces.
