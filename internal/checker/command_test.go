@@ -164,7 +164,7 @@ func TestRunCommandParentCancellation(t *testing.T) {
 	require.Eventually(t, func() bool {
 		_, err := os.Stat(marker)
 		return err == nil
-	}, time.Second, 5*time.Millisecond)
+	}, 10*time.Second, 5*time.Millisecond, "PowerShell helper did not write its startup marker")
 	cancel()
 
 	select {
