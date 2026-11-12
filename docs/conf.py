@@ -2,7 +2,9 @@
 #
 # Build from the repository root:
 #
-#   pip install -r docs/requirements.txt
+#   uv venv --python 3.14 .venv
+#   uv pip install --python .venv -r docs/requirements.txt
+#   source .venv/bin/activate
 #   sphinx-build -b html docs docs/_build/html
 #
 # Or simply `make docs` (which also regenerates the CLI reference pages).

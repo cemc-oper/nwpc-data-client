@@ -35,7 +35,8 @@ test-integration: $(BIN_PATH)/nwpc_data_client
 docs-cli:
 	go run ./tools/gen-cli-docs ./docs/reference/cli
 
-# Build the Sphinx documentation (requires: pip install -r docs/requirements.txt).
+# Build the Sphinx documentation (requires an activated venv with the docs
+# dependencies installed, see docs/development/setup.md).
 docs: docs-cli
 	sphinx-build -b html docs docs/_build/html
 
