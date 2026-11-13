@@ -1,6 +1,6 @@
 // Command gen-cli-docs generates Markdown reference pages for all
 // nwpc_data_client commands into the Sphinx documentation tree
-// (default: ./docs/reference/cli). Run from the repository root:
+// (default: ./docs/source/reference/cli). Run from the repository root:
 //
 //	go run ./tools/gen-cli-docs
 //
@@ -22,7 +22,7 @@ import (
 )
 
 func main() {
-	outputDir := "./docs/reference/cli"
+	outputDir := "./docs/source/reference/cli"
 	if len(os.Args) > 1 {
 		outputDir = os.Args[1]
 	}

@@ -61,8 +61,8 @@ jobs:
       # regenerating them.
       - name: Check CLI reference pages are up to date
         run: |
-          go run ./tools/gen-cli-docs ./docs/reference/cli
-          git diff --exit-code docs/reference/cli
+          go run ./tools/gen-cli-docs ./docs/source/reference/cli
+          git diff --exit-code docs/source/reference/cli
 
       - name: Build HTML
-        run: .venv/bin/sphinx-build -W --keep-going -b html docs docs/_build/html
+        run: .venv/bin/sphinx-build -W --keep-going -b html docs/source docs/build/html

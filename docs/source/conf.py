@@ -4,14 +4,14 @@
 #
 #   uv venv --python 3.14 .venv
 #   uv pip install --python .venv -r docs/requirements.txt
-#   uv run --no-project --python .venv sphinx-build -b html docs docs/_build/html
+#   uv run --no-project --python .venv sphinx-build -b html docs/source docs/build/html
 #
 # Or simply `uv run --no-project --python .venv make docs`
 # (which also regenerates the CLI reference pages).
 
 from pathlib import Path
 
-repo_root = Path(__file__).resolve().parent.parent
+repo_root = Path(__file__).resolve().parent.parent.parent
 
 # -- Project information -----------------------------------------------------
 

@@ -31,15 +31,15 @@ test-e2e: $(BIN_PATH)/nwpc_data_client
 test-integration: $(BIN_PATH)/nwpc_data_client
 	go test -tags=integration -count=1 -v ./tests/integration/...
 
-# Regenerate the CLI reference pages under docs/reference/cli/.
+# Regenerate the CLI reference pages under docs/source/reference/cli/.
 docs-cli:
-	go run ./tools/gen-cli-docs ./docs/reference/cli
+	go run ./tools/gen-cli-docs ./docs/source/reference/cli
 
 # Build the Sphinx documentation through uv (install the docs dependencies
-# first, see docs/development/setup.md):
+# first, see docs/source/development/setup.md):
 #   uv run --no-project --python .venv make docs
 docs: docs-cli
-	sphinx-build -b html docs docs/_build/html
+	sphinx-build -b html docs/source docs/build/html
 
 clean:
-	rm -rf $(BIN_PATH) docs/_build
+	rm -rf $(BIN_PATH) docs/build

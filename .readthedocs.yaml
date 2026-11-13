@@ -1,6 +1,6 @@
 # Read the Docs configuration for nwpc-data-client.
 #
-# The generated CLI reference pages under docs/reference/cli/ are committed
+# The generated CLI reference pages under docs/source/reference/cli/ are committed
 # to the repository (RTD build jobs have no network access, so `go run`
 # cannot be executed there). CI enforces that they are up to date; regenerate
 # locally with `make docs-cli` after changing any cobra command definition.
@@ -13,7 +13,7 @@ build:
     python: "3.14"
 
 sphinx:
-  configuration: docs/conf.py
+  configuration: docs/source/conf.py
 
 # uv is used only as the installer here: the dependencies stay in
 # docs/requirements.txt, so there is no lockfile to keep in sync.

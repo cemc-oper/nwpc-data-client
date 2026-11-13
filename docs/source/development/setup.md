@@ -25,9 +25,9 @@ make docs-cli   # 重新生成 CLI 参考页（修改 cmd/ 下命令定义后必
 uv run --no-project --python .venv make docs   # 构建 Sphinx 文档
 ```
 
-文档使用 Sphinx + MyST，依赖声明在 `docs/requirements.txt`，
-本地、CI 与 Read the Docs 统一用 [uv](https://docs.astral.sh/uv/) 安装
-（不使用 lockfile）。首次准备：
+文档使用 Sphinx + MyST，源文件位于 `docs/source/`，依赖声明在
+`docs/requirements.txt`。本地、CI 与 Read the Docs 统一用
+[uv](https://docs.astral.sh/uv/) 安装（不使用 lockfile）。首次准备：
 
 ```bash
 uv venv --python 3.14 .venv   # 与 CI / Read the Docs 的 Python 版本保持一致
@@ -37,7 +37,7 @@ uv pip install --python .venv -r docs/requirements.txt
 之后通过 `uv run` 直接使用 `.venv`，无需激活虚拟环境：
 
 ```bash
-# 先重新生成 CLI 参考页，再构建到 docs/_build/html
+# 先重新生成 CLI 参考页，再构建到 docs/build/html
 uv run --no-project --python .venv make docs
 ```
 
@@ -45,13 +45,13 @@ uv run --no-project --python .venv make docs
 （`-W --keep-going` 与 CI 一致，警告视为错误）：
 
 ```bash
-uv run --no-project --python .venv sphinx-build -W --keep-going -b html docs docs/_build/html
+uv run --no-project --python .venv sphinx-build -W --keep-going -b html docs/source docs/build/html
 ```
 
 预览：
 
 ```bash
-uv run --no-project --python .venv python -m http.server 8000 -d docs/_build/html
+uv run --no-project --python .venv python -m http.server 8000 -d docs/build/html
 ```
 
 浏览器打开 `http://localhost:8000`。

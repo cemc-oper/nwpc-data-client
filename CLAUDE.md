@@ -29,4 +29,4 @@ goreleaser build --snapshot --clean --single-target   # fast local release-style
 
 - `cmd/` is Cobra wiring only; implementation lives in `internal/` (`dataconfig`, `finder`, `checker`, `embedded`, `buildinfo`).
 - Resolution flow: `dataconfig.LoadConfigContent` → `ParseConfigContent` (template execution) → `finder.FindLocalFile`.
-- Full user/developer documentation is in `docs/` (e.g. `docs/reference/data-config-format.md`, `docs/guide/checking-files.md`, `docs/reference/checker-config.md`) — prefer reading/pointing there over duplicating details here.
+- Full user/developer documentation sources are in `docs/source/` (e.g. `docs/source/reference/data-config-format.md`, `docs/source/guide/check-local/basic-usage.md`, `docs/source/reference/checker-config.md`); HTML builds go to `docs/build/` — prefer reading/pointing there over duplicating details here.
