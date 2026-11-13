@@ -22,7 +22,7 @@ gofmt -l .    # 格式检查（CI 强制）
 
 ```bash
 make docs-cli   # 重新生成 CLI 参考页（修改 cmd/ 下命令定义后必须执行）
-make docs       # 构建 Sphinx 文档（需先按下文准备好 Python 环境）
+uv run --no-project --python .venv make docs   # 构建 Sphinx 文档
 ```
 
 文档使用 Sphinx + MyST，依赖声明在 `docs/requirements.txt`，
@@ -32,23 +32,28 @@ make docs       # 构建 Sphinx 文档（需先按下文准备好 Python 环境�
 ```bash
 uv venv --python 3.14 .venv   # 与 CI / Read the Docs 的 Python 版本保持一致
 uv pip install --python .venv -r docs/requirements.txt
-source .venv/bin/activate
 ```
 
-之后构建：
+之后通过 `uv run` 直接使用 `.venv`，无需激活虚拟环境：
 
 ```bash
-make docs   # 先重新生成 CLI 参考页，再构建到 docs/_build/html
+# 先重新生成 CLI 参考页，再构建到 docs/_build/html
+uv run --no-project --python .venv make docs
 ```
 
 只改文档、不需要重新生成 CLI 参考页时，可直接调用 Sphinx
 （`-W --keep-going` 与 CI 一致，警告视为错误）：
 
 ```bash
-sphinx-build -W --keep-going -b html docs docs/_build/html
+uv run --no-project --python .venv sphinx-build -W --keep-going -b html docs docs/_build/html
 ```
 
-预览可执行 `python -m http.server 8000 -d docs/_build/html`，
+预览：
+
+```bash
+uv run --no-project --python .venv python -m http.server 8000 -d docs/_build/html
+```
+
 浏览器打开 `http://localhost:8000`。
 
 Windows 环境请使用 Git Bash 或兼容的 make；HPC 等无 git 环境下

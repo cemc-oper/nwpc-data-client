@@ -35,8 +35,9 @@ test-integration: $(BIN_PATH)/nwpc_data_client
 docs-cli:
 	go run ./tools/gen-cli-docs ./docs/reference/cli
 
-# Build the Sphinx documentation (requires an activated venv with the docs
-# dependencies installed, see docs/development/setup.md).
+# Build the Sphinx documentation through uv (install the docs dependencies
+# first, see docs/development/setup.md):
+#   uv run --no-project --python .venv make docs
 docs: docs-cli
 	sphinx-build -b html docs docs/_build/html
 
