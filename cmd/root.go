@@ -15,6 +15,7 @@ files until they are generated, running commands once they are found.
 
 Common subcommands:
   local         Find a local file.
+  fetch         Copy or link one local file into a target directory.
   check local   Wait for several files and run a command(s) when each file is found.
   version       Print version information.
 

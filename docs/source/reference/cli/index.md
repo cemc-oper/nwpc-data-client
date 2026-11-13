@@ -13,6 +13,7 @@
 
    nwpc_data_client
    nwpc_data_client_local
+   nwpc_data_client_fetch
    nwpc_data_client_check
    nwpc_data_client_check_local
    nwpc_data_client_check_lint

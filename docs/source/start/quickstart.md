@@ -40,6 +40,23 @@ nwpc_data_client local --show-types
 
 加 `--debug` 可以看到每个候选路径的检查过程，排查“为什么没找到”时很有用。
 
+## 将文件复制或链接到指定目录
+
+`fetch` 在 `local` 的查找结果上增加数据落位。下面把选中的文件复制到工作目录，
+stdout 返回最终绝对路径：
+
+```bash
+nwpc_data_client fetch \
+    --data-type=cma_gfs_gmf/current/grib2/orig \
+    --start-time=2026062400 \
+    --forecast-time=24h \
+    --target-dir=/work/input
+```
+
+默认方法为 `copy`；`--method=symlink` 创建本地源链接，`--method=auto` 对
+runtime/archive 使用链接、对 storage 使用复制。源文件需要通过非空和稳定性检查，
+已有目标不会被覆盖。fetch 是一次性操作，不会等待尚未生成的数据。
+
 ## 等待文件并执行命令
 
 `check local` 可以等待一组预报时效对应的文件，并在每个文件就绪后执行命令。
@@ -64,6 +81,7 @@ echo "0h 3h 6h" | nwpc_data_client check local 2026062400 \
 ## 下一步
 
 - 查找文件的完整参数与搜索规则：[指南：local 命令](../guide/local/index.md)
+- 复制、链接与目标冲突规则：[指南：fetch 命令](../guide/fetch/index.md)
 - 等待任务的配置与命令写法：[指南：check local 基本用法](../guide/check-local/basic-usage.md)
 - 选择轮询模式：[指南：轮询模式与到达顺序](../guide/check-local/polling-modes.md)
 - 编写自己的数据配置：[指南：编写数据配置](../guide/data-config/writing-configs.md)

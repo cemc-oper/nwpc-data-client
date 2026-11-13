@@ -13,40 +13,17 @@ func FindLocalFile(config dataconfig.DataConfig, locationLevels []string, startT
 	forecastTimeStr := dataconfig.FormatForecastTimeShort(forecastTime)
 	currentLog := log.WithFields(log.Fields{"forecastTime": forecastTimeStr})
 
-	var fileNames []string
-	if len(config.FileNames) > 0 {
-		currentLog.Debugf("using file_names...")
-		fileNames = config.FileNames
-	}
-	if len(config.FileName) > 0 {
-		currentLog.Debugf("using file_name...")
-		fileNames = append(fileNames, config.FileName)
-	}
-
-	for _, item := range config.Paths {
-		dirPath := item.Path
-		pathType := item.PathType
-		locationLevelType := item.LevelType
-
-		if !InLocationLevelTypes(locationLevels, locationLevelType) {
-			currentLog.Debugf("skip location level type %s for %s", locationLevelType, dirPath)
+	for _, item := range CandidatePaths(config, locationLevels) {
+		if item.PathType != "local" {
+			currentLog.Debugf("skip path type %s for %s", item.PathType, item.Path)
 			continue
 		}
-
-		for _, fileName := range fileNames {
-			filePath := filepath.Join(dirPath, fileName)
-			currentLog.Debugf("find file path: %s", filePath)
-
-			if CheckLocalFile(filePath) {
-				currentLog.Debugf("check file path success: %s", filePath)
-				return dataconfig.PathItem{
-					Path:     filePath,
-					PathType: pathType,
-				}
-			} else {
-				currentLog.Debugf("check file path failed: %s", filePath)
-			}
+		currentLog.Debugf("find file path: %s", item.Path)
+		if CheckLocalFile(item.Path) {
+			currentLog.Debugf("find file path success: %s", item.Path)
+			return item
 		}
+		currentLog.Debugf("find file path failed: %s", item.Path)
 	}
 
 	return dataconfig.PathItem{

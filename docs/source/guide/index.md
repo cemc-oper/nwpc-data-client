@@ -7,6 +7,7 @@
    :maxdepth: 2
 
    local/index
+   fetch/index
    check-local/index
    data-config/index
 ```

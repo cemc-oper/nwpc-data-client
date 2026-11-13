@@ -14,6 +14,7 @@
 ## 功能
 
 - 在一组目录中查找数值预报业务系统数据文件路径
+- 将本地数据文件复制或链接到指定目录，内置稳定检查、原子发布和并发保护
 - 批量监视数据文件是否生成，当文件就绪后执行命令
 
 ## 快速开始
@@ -28,6 +29,16 @@ nwpc_data_client local \
     --data-type=cma_gfs_gmf/current/grib2/orig \
     --start-time 2026062212 \
     --forecast-time 24h
+```
+
+将选中的数据文件复制到工作目录，并输出最终绝对路径：
+
+```bash
+nwpc_data_client fetch \
+    --data-type=cma_gfs_gmf/current/grib2/orig \
+    --start-time 2026062212 \
+    --forecast-time 24h \
+    --target-dir /work/input
 ```
 
 批量监视数据文件，文件生成且大小稳定后执行命令：

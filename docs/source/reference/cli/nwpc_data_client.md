@@ -11,6 +11,7 @@ files until they are generated, running commands once they are found.
 
 Common subcommands:
   local         Find a local file.
+  fetch         Copy or link one local file into a target directory.
   check local   Wait for several files and run a command(s) when each file is found.
   version       Print version information.
 
@@ -30,6 +31,7 @@ nwpc_data_client [flags]
 
 * [nwpc_data_client check](nwpc_data_client_check.md)	 - Wait for operational data and act when it is ready.
 * [nwpc_data_client config](nwpc_data_client_config.md)	 - Validate and maintain data config files.
+* [nwpc_data_client fetch](nwpc_data_client_fetch.md)	 - Find one local data file and copy or link it into a target directory.
 * [nwpc_data_client local](nwpc_data_client_local.md)	 - Find the local file path for model output data.
 * [nwpc_data_client version](nwpc_data_client_version.md)	 - Print version information.
 

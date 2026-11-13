@@ -14,6 +14,7 @@ Documentation (Chinese): <https://nwpc-data-client.readthedocs.io/>
 ## Features
 
 - Locate data files from operational numerical weather prediction systems across multiple directories
+- Copy or link a local data file into a target directory with stability, atomic-publication, and concurrency checks
 - Monitor batches of data files and execute commands once the files are ready
 
 ## Quick Start
@@ -27,6 +28,16 @@ nwpc_data_client local \
     --data-type=cma_gfs_gmf/current/grib2/orig \
     --start-time 2026062212 \
     --forecast-time 24h
+```
+
+Copy the selected file into a work directory and print its final absolute path:
+
+```bash
+nwpc_data_client fetch \
+    --data-type=cma_gfs_gmf/current/grib2/orig \
+    --start-time 2026062212 \
+    --forecast-time 24h \
+    --target-dir /work/input
 ```
 
 Monitor a batch of data files and execute a command after each file has been generated and its size has stabilized:

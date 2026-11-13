@@ -16,6 +16,13 @@ nwpc-data-client 是面向 CEMC（NWPC/CMA）业务模式的数据文件查找�
 将起报时次、预报时效和集合成员代入配置模板，按优先级检查运行、归档等多个存储位置，返回第一个实际存在的文件。
 :::
 
+:::{grid-item-card} 一键复制或链接数据
+:link: guide/fetch/index
+:link-type: doc
+
+选中本地数据后直接落位到指定目录，内置稳定检查、原子发布、重复执行和并发保护，后续程序只需使用返回路径。
+:::
+
 :::{grid-item-card} 等待文件并触发任务
 :link: guide/check-local/index
 :link-type: doc
