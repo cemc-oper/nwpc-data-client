@@ -1,25 +1,26 @@
 # NWPC Data Client
 
+**English** | [简体中文](README.zh-CN.md)
+
 [![Maturity-Incubating](https://img.shields.io/badge/Maturity-Incubating-56B4E9)](https://github.com/cemc-oper/nwpc-data-client)
 [![GitHub Release](https://img.shields.io/github/v/release/cemc-oper/nwpc-data-client)](https://github.com/cemc-oper/nwpc-data-client/releases)
 [![CI](https://github.com/cemc-oper/nwpc-data-client/actions/workflows/ci.yml/badge.svg)](https://github.com/cemc-oper/nwpc-data-client/actions/workflows/ci.yml)
 [![Documentation Status](https://readthedocs.org/projects/nwpc-data-client/badge/?version=latest)](https://nwpc-data-client.readthedocs.io/)
 
-面向 CMA 超算平台开发的 CEMC/CMA 数值天气预报业务系统数据查找命令行工具。
+A command-line tool for locating data files from CEMC/CMA operational numerical weather prediction systems on CMA supercomputing platforms.
 
-中文文档：<https://nwpc-data-client.readthedocs.io/>
+Documentation (Chinese): <https://nwpc-data-client.readthedocs.io/>
 
-## 功能
+## Features
 
-- 在一组目录中查找数值预报业务系统数据文件路径
-- 批量监视数据文件是否生成，当文件就绪后执行命令
+- Locate data files from operational numerical weather prediction systems across multiple directories
+- Monitor batches of data files and execute commands once the files are ready
 
-## 快速开始
+## Quick Start
 
-从 [Releases](https://github.com/cemc-oper/nwpc-data-client/releases) 下载
-对应平台的二进制，或从源码构建（`make`，产物在 `bin/`）。
+Download a binary for your platform from [Releases](https://github.com/cemc-oper/nwpc-data-client/releases), or build from source with `make` (the output is written to `bin/`).
 
-查找 CMA-GFS 预报系统 2026 年 6 月 22 日 12 时次 24 小时的基础 GRIB2 数据文件：
+Find the base GRIB2 file for the 24-hour forecast from the CMA-GFS 2026-06-22 12 cycle:
 
 ```bash
 nwpc_data_client local \
@@ -28,7 +29,7 @@ nwpc_data_client local \
     --forecast-time 24h
 ```
 
-批量监视数据文件，文件生成且大小稳定后执行命令：
+Monitor a batch of data files and execute a command after each file has been generated and its size has stabilized:
 
 ```bash
 echo "000h 024h" |
@@ -38,25 +39,25 @@ echo "000h 024h" |
         --execute-command 'cp {{.FilePath}} /path/to/archive/'
 ```
 
-## 构建与开发
+## Build and Development
 
 ```bash
-make            # 构建到 ./bin
-make test       # 单元测试
-make generate   # 修改 conf/ 后重新生成内嵌配置
+make            # Build into ./bin
+make test       # Run unit tests
+make generate   # Regenerate embedded configs after modifying conf/
 ```
 
-交叉编译与本地发版构建使用 GoReleaser 快照模式：
+Cross-compilation and local release builds use GoReleaser snapshot mode:
 
 ```bash
-goreleaser release --snapshot --clean               # 全平台构建，产物在 dist/
-goreleaser build --snapshot --clean --single-target # 仅构建本机平台的二进制，速度最快
+goreleaser release --snapshot --clean               # Build for all platforms; output goes to dist/
+goreleaser build --snapshot --clean --single-target # Build only for the current platform (faster)
 ```
 
-版本号规则、交叉编译、集成测试、发版流程等见文档站"开发"分类。
+See the Development section of the documentation site for versioning, cross-compilation, integration testing, and the release process.
 
-## 许可证
+## License
 
 Copyright &copy; 2019-2026 developers at cemc-oper.
 
-`nwpc-data-client` 基于 [The MIT License](https://opensource.org/licenses/MIT) 授权。
+`nwpc-data-client` is licensed under [The MIT License](https://opensource.org/licenses/MIT).
