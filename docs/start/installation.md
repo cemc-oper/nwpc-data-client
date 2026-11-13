@@ -37,4 +37,4 @@ nwpc_data_client version
 ## 内嵌配置
 
 二进制内置了 CEMC 主要业务系统的数据配置（`conf/local/` 目录树编译
-嵌入），开箱即用；需要自定义时见[指南：使用自定义配置](../guide/custom-configs.md)。
+嵌入），开箱即用；需要自定义时见[指南：使用自定义配置](../guide/data-config/custom-configs.md)。

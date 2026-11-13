@@ -16,4 +16,4 @@ make generate
 
 加载时的优先级：`--data-config-file` > `--data-config-dir` >
 内嵌配置（`config.EmbeddedConfigs`）。详见
-[指南：使用自定义配置](../guide/custom-configs.md)。
+[指南：使用自定义配置](../guide/data-config/custom-configs.md)。

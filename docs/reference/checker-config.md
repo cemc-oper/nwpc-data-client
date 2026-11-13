@@ -69,7 +69,7 @@ YAML 与 CLI 按以下优先级合并（`MergeCheckerConfig`）：
 
 ## 部署前校验
 
-提供两层互补的检查，详见[等待文件并执行命令](../guide/checking-files.md)：
+提供两层互补的检查，详见[校验、错误与运行报告](../guide/check-local/validation-and-reports.md)：
 
 - `check lint`：只做 checker YAML 的严格加载、默认值合并和静态字段校验；
   不需要起报时次、完整 data config 或非空 `forecast_times`；
@@ -79,7 +79,7 @@ YAML 与 CLI 按以下优先级合并（`MergeCheckerConfig`）：
 ## JSON 报告结构
 
 `report_file` 非空时生成以下 versioned 结构；完整状态和耗时口径见
-[等待文件并执行命令](../guide/checking-files.md#json-运行报告)。
+[JSON 运行报告](../guide/check-local/validation-and-reports.md#json-运行报告)。
 
 ```json
 {

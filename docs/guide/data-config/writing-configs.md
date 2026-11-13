@@ -2,7 +2,7 @@
 
 数据配置是一个 YAML 文件，**整体作为 Go 模板**先渲染再解析（当前格式
 版本 v3 使用 `{{...}}` 定界符）。渲染时可用起报时次、预报时效、集合
-成员等变量，完整清单见[模板变量与函数](../reference/template-variables.md)。
+成员等变量，完整清单见[模板变量与函数](../../reference/template-variables.md)。
 
 ## 最小示例
 
@@ -103,4 +103,4 @@ file_name: modelvar{{getYear $startTime}}{{getMonth $startTime}}{{getDay $startT
 nwpc_data_client config lint --data-config-file=./my_config.yaml
 ```
 
-字段的完整约束见[参考：数据配置格式](../reference/data-config-format.md)。
+字段的完整约束见[参考：数据配置格式](../../reference/data-config-format.md)。

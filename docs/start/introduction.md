@@ -21,7 +21,7 @@ nwpc-data-client 是面向 CEMC（NWPC/CMA）业务模式系统的数据文件�
 ## 核心概念
 
 - **数据类型（data type）**：层级相对路径，唯一确定一个数据配置
-  文件，详见[指南：数据类型](../guide/data-types.md)。
+  文件，详见[指南：数据类型](../guide/data-config/data-types.md)。
 - **起报时次（start time）**：模式起报时间，格式 `YYYYMMDDHH`。
 - **预报时效（forecast time）**：相对起报时间的预报时长，Go
   duration 格式，如 `24h`、`1h30m`。

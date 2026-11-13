@@ -48,4 +48,4 @@ nwpc_data_client local --show-types
 nwpc_data_client local --data-config-dir=./config --show-types
 ```
 
-内置数据类型完整清单见[参考：内置数据类型清单](../reference/embedded-data-types.md)。
+内置数据类型完整清单见[参考：内置数据类型清单](../../reference/embedded-data-types.md)。

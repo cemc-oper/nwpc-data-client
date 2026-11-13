@@ -1,15 +1,12 @@
 # 指南
 
-面向日常使用者的任务式文档：查找文件、编写与迁移配置、等待文件并执行命令。
+面向日常使用者的任务式文档，按命令和数据配置分为三个大章节。
 
 ```{eval-rst}
 .. toctree::
-   :maxdepth: 1
+   :maxdepth: 2
 
-   finding-files
-   data-types
-   custom-configs
-   writing-configs
-   config-versions
-   checking-files
+   local/index
+   check-local/index
+   data-config/index
 ```
