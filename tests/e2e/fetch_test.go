@@ -86,3 +86,51 @@ func TestFetchTargetConflictCLI(t *testing.T) {
 	require.NoError(t, readErr)
 	assert.Equal(t, []byte("do not overwrite"), content)
 }
+
+func TestFetchTargetNameCLI(t *testing.T) {
+	rootDir := t.TempDir()
+	source := filepath.Join(rootDir, "runtime", "2026101200", "data.2026101200024.grb2")
+	require.NoError(t, os.MkdirAll(filepath.Dir(source), 0755))
+	require.NoError(t, os.WriteFile(source, []byte("fetch data"), 0644))
+	configDir := writeConfigWithRoot(t, e2eDemoConfigPath, rootDir)
+	targetDir := filepath.Join(rootDir, "work", "input")
+
+	args := fetchArgs(configDir, targetDir,
+		"--target-name=gfs_{{.Year}}{{.Month}}{{.Day}}{{.Hour}}_{{.ForecastHour}}.grb2")
+	cmd := exec.Command(getBinaryPath(t), args...)
+	var stdout, stderr bytes.Buffer
+	cmd.Stdout = &stdout
+	cmd.Stderr = &stderr
+	require.NoError(t, cmd.Run(), "fetch failed: %s", stderr.String())
+
+	target := filepath.Join(targetDir, "gfs_2026101200_024.grb2")
+	assert.Equal(t, target, strings.TrimSpace(stdout.String()))
+	content, err := os.ReadFile(target)
+	require.NoError(t, err)
+	assert.Equal(t, []byte("fetch data"), content)
+}
+
+func TestFetchTargetNameEscapeCLI(t *testing.T) {
+	rootDir := t.TempDir()
+	source := filepath.Join(rootDir, "runtime", "2026101200", "data.2026101200024.grb2")
+	require.NoError(t, os.MkdirAll(filepath.Dir(source), 0755))
+	require.NoError(t, os.WriteFile(source, []byte("fetch data"), 0644))
+	configDir := writeConfigWithRoot(t, e2eDemoConfigPath, rootDir)
+	targetDir := filepath.Join(rootDir, "work", "input")
+
+	args := fetchArgs(configDir, targetDir, "--target-name=../escape.grb2")
+	cmd := exec.Command(getBinaryPath(t), args...)
+	var stdout, stderr bytes.Buffer
+	cmd.Stdout = &stdout
+	cmd.Stderr = &stderr
+	err := cmd.Run()
+	var exitErr *exec.ExitError
+	require.ErrorAs(t, err, &exitErr, "stderr: %s", stderr.String())
+	assert.Equal(t, 1, exitErr.ExitCode())
+	assert.Empty(t, stdout.String())
+	assert.Contains(t, stderr.String(), "target name")
+	_, statErr := os.Stat(filepath.Join(rootDir, "work", "escape.grb2"))
+	assert.True(t, os.IsNotExist(statErr))
+	_, statErr = os.Stat(targetDir)
+	assert.True(t, os.IsNotExist(statErr))
+}

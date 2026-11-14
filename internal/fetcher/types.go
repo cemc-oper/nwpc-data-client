@@ -8,6 +8,8 @@ import (
 	"slices"
 	"strings"
 	"time"
+
+	"github.com/cemc-oper/nwpc-data-client/internal/dataconfig"
 )
 
 type Method string
@@ -30,9 +32,14 @@ var (
 
 type Config struct {
 	TargetDir      string
+	TargetName     string
 	Method         Method
 	StableInterval time.Duration
 	CmafsBackend   RemoteBackend
+	// TemplateVariable supplies the start time, forecast time, member and
+	// storage base used to render TargetName. It is ignored when TargetName
+	// is empty.
+	TemplateVariable dataconfig.ConfigTemplateVariable
 }
 
 type Result struct {

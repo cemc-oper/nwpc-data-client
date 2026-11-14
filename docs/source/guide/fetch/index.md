@@ -31,7 +31,7 @@ nwpc_data_client fetch \
 /work/input/gmf.gra.2026062400024.grb2
 ```
 
-目标文件名继承实际源文件的 basename，目标目录不存在时会自动创建。可以将结果
+目标文件名默认继承实际源文件的 basename，目标目录不存在时会自动创建。可以将结果
 保存为 Shell 变量：
 
 ```bash
@@ -46,6 +46,30 @@ input_file="$(
 
 日志和错误写 stderr，不会混入上述 stdout 路径。不同存储来源的文件名可能不同，
 后续程序应使用返回路径，不要自行拼接或假定文件名。
+
+## 自定义目标文件名
+
+需要固定或按起报时次命名时，使用 `--target-name`，不必在 fetch 之后再改名：
+
+```bash
+nwpc_data_client fetch \
+    --data-type=cma_gfs_gmf/current/grib2/orig \
+    --start-time=2026062400 \
+    --forecast-time=24h \
+    --target-dir=/work/input \
+    --target-name='gfs_{{.Year}}{{.Month}}{{.Day}}{{.Hour}}_{{.ForecastHour}}.grb2'
+```
+
+成功后输出 `/work/input/gfs_2026062400_024.grb2`。
+
+参数值是 Go 模板，可用变量和函数与数据配置相同（`{{.Year}}`、`{{.ForecastHour}}`、
+`{{.Member}}`、`generateStartTime` 等，见[模板变量与函数](../../reference/template-variables.md)），
+另提供 `{{.SourceName}}` 表示实际选中源的 basename，例如 `pre_{{.SourceName}}`。
+不含 `{{` 的纯字符串直接作为文件名使用。
+
+渲染结果必须是**单个文件名**，不允许包含路径分隔符、`.`、`..` 或空串，因此文件始终
+落在 `--target-dir` 内；非法名字会在创建目录和复制之前报错。目标复用、冲突检测与
+无覆盖发布规则与默认命名完全一致，只是作用在自定义名字上。
 
 ## copy、symlink 与 auto
 
@@ -80,6 +104,7 @@ storage 使用 copy 是为了避免生成仅在特定存储节点可见的链接
 | 参数 | 默认值 | 说明 |
 |---|---|---|
 | `--target-dir` | 无，必选 | 最终文件所在目录 |
+| `--target-name` | 空，取源 basename | 目标文件名，支持 Go 模板，只能是文件名 |
 | `--backend-config` | 空 | 机器后端 YAML；只有实际需要 cmafs 时必需 |
 | `--method` | `copy` | `copy`、`symlink` 或 `auto` |
 | `--stable-interval` | `1s` | 两次源稳定性检查的间隔 |

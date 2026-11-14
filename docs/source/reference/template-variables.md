@@ -1,6 +1,7 @@
 # 模板变量与函数
 
-数据配置文件和 `check local` 的命令模板都使用 Go 模板（`{{...}}` 定界符）。
+数据配置文件、`check local` 的命令模板和 `fetch --target-name` 都使用 Go 模板
+（`{{...}}` 定界符）。
 本页列出全部可用变量与函数（实现见 `internal/dataconfig/config_template.go` 与
 `internal/dataconfig/time.go`）。
 
@@ -34,6 +35,15 @@
 | 变量 | 说明 |
 |---|---|
 | `{{.FilePath}}` | 检测到并已稳定的文件完整路径 |
+
+`fetch` 的 `--target-name` 参数使用同一套变量与函数，并额外提供：
+
+| 变量 | 说明 |
+|---|---|
+| `{{.SourceName}}` | 实际选中源文件的 basename |
+
+例如 `--target-name='gfs_{{.Year}}{{.Month}}{{.Day}}{{.Hour}}_{{.ForecastHour}}.grb2'`。
+参数为空（默认）时沿用源 basename；非空时渲染结果必须是单个文件名，不允许路径分隔符。
 
 ## 模板函数
 

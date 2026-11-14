@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"os/signal"
+	"path/filepath"
 	"strings"
 	"syscall"
 	"time"
@@ -39,6 +40,8 @@ func init() {
 		"Ensemble member, MMM, such as 000, 014.")
 	fetchCmd.Flags().StringVar(&fetchTargetDir, "target-dir", "",
 		"Directory in which the fetched file is published. (required)")
+	fetchCmd.Flags().StringVar(&fetchTargetName, "target-name", "",
+		"Target file name as a Go template, such as 'gfs_{{.Year}}{{.Month}}{{.Day}}{{.Hour}}_{{.ForecastHour}}.grb2'. Empty keeps the source basename. Must render to a file name, not a path.")
 	fetchCmd.Flags().StringVar(&fetchMethod, "method", "copy",
 		"Materialization method: copy, symlink, or auto. Auto copies storage-level sources.")
 	fetchCmd.Flags().StringVar(&fetchStableInterval, "stable-interval", "1s",
@@ -61,7 +64,11 @@ SSH/rsync transport.
 
 The source must be non-empty and have unchanged size and modification time
 across two observations separated by --stable-interval. The destination name
-is the source basename. Copy mode writes a unique temporary file in the target
+is the source basename unless --target-name is set. That option is a Go
+template evaluated with the data config variables and functions plus
+{{.SourceName}}, the selected source basename; it must render to a plain file
+name without path separators, so the file always lands in --target-dir.
+Copy mode writes a unique temporary file in the target
 directory, verifies it, and publishes it without replacing an existing file.
 Symlink mode creates an absolute symbolic link to the selected local source.
 Auto uses symlink for runtime/archive local sources and copy for storage local
@@ -83,6 +90,11 @@ const fetchCommandExample = `  # Copy a CMA-GFS file into a work directory.
   nwpc_data_client fetch --data-type=cma_gfs_gmf/current/grib2/orig \
       --start-time=2026062400 --forecast-time=24h \
       --target-dir=/work/input --method=symlink
+
+  # Save the file under a name built from the start time and forecast hour.
+  nwpc_data_client fetch --data-type=cma_gfs_gmf/current/grib2/orig \
+      --start-time=2026062400 --forecast-time=24h --target-dir=/work/input \
+      --target-name='gfs_{{.Year}}{{.Month}}{{.Day}}{{.Hour}}_{{.ForecastHour}}.grb2'
 
   # Use a single config file and automatic method selection.
   nwpc_data_client fetch --data-config-file=./my_config.yaml \
@@ -116,6 +128,11 @@ var fetchCmd = &cobra.Command{
 		if err != nil {
 			return fmt.Errorf("invalid --stable-interval %q: %w", fetchStableInterval, err)
 		}
+		// Match the storage base normalization applied to the data config.
+		storageBase := fetchStorageBase
+		if storageBase != "" {
+			storageBase = filepath.Clean(storageBase)
+		}
 
 		var cmafsBackend fetcher.RemoteBackend
 		if fetchBackendConfig != "" {
@@ -147,10 +164,12 @@ var fetchCmd = &cobra.Command{
 		ctx, stop := signal.NotifyContext(cmd.Context(), syscall.SIGHUP, syscall.SIGINT, syscall.SIGTERM, syscall.SIGQUIT)
 		defer stop()
 		result, err := fetcher.Fetch(ctx, fetcher.Config{
-			TargetDir:      fetchTargetDir,
-			Method:         fetcher.Method(fetchMethod),
-			StableInterval: stableInterval,
-			CmafsBackend:   cmafsBackend,
+			TargetDir:        fetchTargetDir,
+			TargetName:       fetchTargetName,
+			Method:           fetcher.Method(fetchMethod),
+			StableInterval:   stableInterval,
+			CmafsBackend:     cmafsBackend,
+			TemplateVariable: dataconfig.GenerateConfigTemplateVariableWithStorageBase(startTime, forecastTime, fetchMember, storageBase),
 		}, dataConfig, strings.Split(fetchLocationLevels, ","))
 		if err != nil {
 			if ctx.Err() != nil {

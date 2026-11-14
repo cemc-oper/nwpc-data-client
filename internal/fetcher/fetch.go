@@ -7,6 +7,7 @@ import (
 	"os"
 	"path"
 	"path/filepath"
+	"strings"
 
 	"github.com/cemc-oper/nwpc-data-client/internal/dataconfig"
 	"github.com/cemc-oper/nwpc-data-client/internal/filecheck"
@@ -80,7 +81,7 @@ func Fetch(ctx context.Context, config Config, dataConfig dataconfig.DataConfig,
 }
 
 func fetchLocalSelected(ctx context.Context, config Config, source dataconfig.PathItem) (Result, error) {
-	targetPath, err := targetPathForSource(config.TargetDir, source)
+	targetPath, err := targetPathForSource(config, source)
 	if err != nil {
 		return Result{}, err
 	}
@@ -138,7 +139,7 @@ func fetchLocalSelected(ctx context.Context, config Config, source dataconfig.Pa
 }
 
 func fetchRemoteSelected(ctx context.Context, config Config, source dataconfig.PathItem, metadata RemoteMetadata) (Result, error) {
-	targetPath, err := targetPathForSource(config.TargetDir, source)
+	targetPath, err := targetPathForSource(config, source)
 	if err != nil {
 		return Result{}, err
 	}
@@ -212,19 +213,49 @@ func fetchRemoteSelected(ctx context.Context, config Config, source dataconfig.P
 	return newResult(targetPath, source, metadata.Size, MethodCopy, reused), nil
 }
 
-func targetPathForSource(targetDir string, source dataconfig.PathItem) (string, error) {
-	name := filepath.Base(source.Path)
+// targetPathForSource resolves the published path. The name defaults to the
+// source basename and is replaced by the rendered Config.TargetName template
+// when one is supplied.
+func targetPathForSource(config Config, source dataconfig.PathItem) (string, error) {
+	sourceName := filepath.Base(source.Path)
 	if source.PathType == "cmafs" {
-		name = path.Base(source.Path)
+		sourceName = path.Base(source.Path)
 	}
-	if name == "" || name == "." || name == ".." || name == "/" || name == "\\" {
-		return "", fmt.Errorf("invalid source basename %q", name)
+	if sourceName == "" || sourceName == "." || sourceName == ".." || sourceName == "/" || sourceName == "\\" {
+		return "", fmt.Errorf("invalid source basename %q", sourceName)
 	}
-	absoluteTargetDir, err := filepath.Abs(targetDir)
+
+	name, err := dataconfig.RenderTargetName(config.TargetName, config.TemplateVariable, sourceName)
 	if err != nil {
-		return "", fmt.Errorf("resolve target directory %s: %w", targetDir, err)
+		return "", err
+	}
+	if err := validateTargetName(name); err != nil {
+		return "", err
+	}
+
+	absoluteTargetDir, err := filepath.Abs(config.TargetDir)
+	if err != nil {
+		return "", fmt.Errorf("resolve target directory %s: %w", config.TargetDir, err)
 	}
 	return filepath.Join(absoluteTargetDir, name), nil
+}
+
+// validateTargetName keeps the published file directly inside the target
+// directory: the name must be a single file name, never a path.
+func validateTargetName(name string) error {
+	if name == "" {
+		return fmt.Errorf("target name must not be empty")
+	}
+	if strings.ContainsAny(name, "/\\\x00\r\n") {
+		return fmt.Errorf("target name %q must be a file name without path separators, NUL or newlines", name)
+	}
+	if name == "." || name == ".." {
+		return fmt.Errorf("invalid target name %q", name)
+	}
+	if filepath.IsAbs(name) || filepath.Base(name) != name {
+		return fmt.Errorf("target name %q must not be a path", name)
+	}
+	return nil
 }
 
 func newResult(targetPath string, source dataconfig.PathItem, size int64, method Method, reused bool) Result {

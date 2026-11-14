@@ -15,7 +15,11 @@ SSH/rsync transport.
 
 The source must be non-empty and have unchanged size and modification time
 across two observations separated by --stable-interval. The destination name
-is the source basename. Copy mode writes a unique temporary file in the target
+is the source basename unless --target-name is set. That option is a Go
+template evaluated with the data config variables and functions plus
+{{.SourceName}}, the selected source basename; it must render to a plain file
+name without path separators, so the file always lands in --target-dir.
+Copy mode writes a unique temporary file in the target
 directory, verifies it, and publishes it without replacing an existing file.
 Symlink mode creates an absolute symbolic link to the selected local source.
 Auto uses symlink for runtime/archive local sources and copy for storage local
@@ -45,6 +49,11 @@ nwpc_data_client fetch [flags]
       --start-time=2026062400 --forecast-time=24h \
       --target-dir=/work/input --method=symlink
 
+  # Save the file under a name built from the start time and forecast hour.
+  nwpc_data_client fetch --data-type=cma_gfs_gmf/current/grib2/orig \
+      --start-time=2026062400 --forecast-time=24h --target-dir=/work/input \
+      --target-name='gfs_{{.Year}}{{.Month}}{{.Day}}{{.Hour}}_{{.ForecastHour}}.grb2'
+
   # Use a single config file and automatic method selection.
   nwpc_data_client fetch --data-config-file=./my_config.yaml \
       --start-time=2026062400 --forecast-time=3h \
@@ -64,6 +73,7 @@ nwpc_data_client fetch [flags]
       --forecast-time string      Forecast time, such as 0h, 24h, 120h. (required)
       --member string             Ensemble member, MMM, such as 000, 014.
       --target-dir string         Directory in which the fetched file is published. (required)
+      --target-name string        Target file name as a Go template, such as 'gfs_{{.Year}}{{.Month}}{{.Day}}{{.Hour}}_{{.ForecastHour}}.grb2'. Empty keeps the source basename. Must render to a file name, not a path.
       --method string             Materialization method: copy, symlink, or auto. Auto copies storage-level sources. (default "copy")
       --stable-interval string    Interval between two source size/mtime stability checks, such as 1s or 500ms. (default "1s")
       --debug                     Enable debug logging.

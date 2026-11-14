@@ -11,6 +11,7 @@ var (
 	fetchForecastTimeString string
 	fetchMember             string
 	fetchTargetDir          string
+	fetchTargetName         string
 	fetchMethod             string
 	fetchStableInterval     string
 	fetchDebug              bool
