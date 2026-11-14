@@ -1,6 +1,7 @@
 package dataconfig
 
 import (
+	"path/filepath"
 	"strings"
 	"testing"
 	"time"
@@ -13,7 +14,8 @@ func TestCMADAASRepsCrossYearPaths(t *testing.T) {
 	content, err := LoadConfigContent("", "local/cma_reps/current/grib2/orig")
 	require.NoError(t, err)
 	startTime := time.Date(2026, 12, 31, 18, 0, 0, 0, time.UTC)
-	config, err := ParseConfigContentWithStorageBase(content, startTime, 24*time.Hour, "001", "/mnt/cmadaas")
+	storageBase := filepath.Join(t.TempDir(), "cmadaas")
+	config, err := ParseConfigContentWithStorageBase(content, startTime, 24*time.Hour, "001", storageBase)
 	require.NoError(t, err)
 
 	assert.Equal(t, []string{"mef.gra.001.2026123118024.grb2"}, config.FileNames)
@@ -23,7 +25,7 @@ func TestCMADAASRepsCrossYearPaths(t *testing.T) {
 
 	var cmadaasPaths []PathItem
 	for _, item := range config.Paths {
-		if strings.HasPrefix(item.Path, "/mnt/cmadaas/") {
+		if strings.HasPrefix(item.Path, storageBase+"/") {
 			cmadaasPaths = append(cmadaasPaths, item)
 		}
 	}
@@ -31,12 +33,12 @@ func TestCMADAASRepsCrossYearPaths(t *testing.T) {
 	assert.Equal(t, PathItem{
 		PathType:  "local",
 		LevelType: "archive",
-		Path:      "/mnt/cmadaas/ORIG-DATA/NAFP/CMA-REPS/2026/20261231",
+		Path:      storageBase + "/ORIG-DATA/NAFP/CMA-REPS/2026/20261231",
 	}, cmadaasPaths[0])
 	assert.Equal(t, PathItem{
 		PathType:  "local",
 		LevelType: "archive",
-		Path:      "/mnt/cmadaas/ORIG-DATA/NAFP/CMA-REPS/2027/20270101",
+		Path:      storageBase + "/ORIG-DATA/NAFP/CMA-REPS/2027/20270101",
 	}, cmadaasPaths[1])
 }
 

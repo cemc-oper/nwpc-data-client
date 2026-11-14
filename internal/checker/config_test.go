@@ -115,10 +115,11 @@ func TestMergeCheckerConfigDefaults(t *testing.T) {
 
 func TestMergeCheckerConfigYAMLValues(t *testing.T) {
 	cmd := newTestLocalCommand(t)
+	storageBase := filepath.Join(t.TempDir(), "yaml-cmadaas")
 	fileConfig := CheckerConfig{
 		DataType:        "cma_gfs_gmf/current/grib2/orig",
 		LocationLevels:  "runtime",
-		StorageBase:     "/mnt/yaml-cmadaas",
+		StorageBase:     storageBase,
 		MaxCheckCount:   100,
 		CheckInterval:   "10s",
 		DelayTime:       "5s",
@@ -134,7 +135,7 @@ func TestMergeCheckerConfigYAMLValues(t *testing.T) {
 
 	assert.Equal(t, "cma_gfs_gmf/current/grib2/orig", cfg.DataType)
 	assert.Equal(t, "runtime", cfg.LocationLevels)
-	assert.Equal(t, "/mnt/yaml-cmadaas", cfg.StorageBase)
+	assert.Equal(t, storageBase, cfg.StorageBase)
 	assert.Equal(t, 100, cfg.MaxCheckCount)
 	assert.Equal(t, "10s", cfg.CheckInterval)
 	assert.Equal(t, "5s", cfg.DelayTime)
@@ -147,8 +148,10 @@ func TestMergeCheckerConfigYAMLValues(t *testing.T) {
 
 func TestMergeCheckerConfigCLIOverridesYAML(t *testing.T) {
 	cmd := newTestLocalCommand(t)
+	storageBase := filepath.Join(t.TempDir(), "yaml-cmadaas")
+	cliStorageBase := filepath.Join(t.TempDir(), "cli-cmadaas")
 	require.NoError(t, cmd.Flags().Set("data-type", "override/type"))
-	require.NoError(t, cmd.Flags().Set("storage-base", "/mnt/cli-cmadaas"))
+	require.NoError(t, cmd.Flags().Set("storage-base", cliStorageBase))
 	require.NoError(t, cmd.Flags().Set("max-check-count", "50"))
 	require.NoError(t, cmd.Flags().Set("check-interval", "20s"))
 	require.NoError(t, cmd.Flags().Set("check-interval-jitter", "0.3"))
@@ -158,7 +161,7 @@ func TestMergeCheckerConfigCLIOverridesYAML(t *testing.T) {
 
 	fileConfig := CheckerConfig{
 		DataType:                  "original/type",
-		StorageBase:               "/mnt/yaml-cmadaas",
+		StorageBase:               storageBase,
 		MaxCheckCount:             100,
 		CheckInterval:             "10s",
 		CheckIntervalJitter:       0.2,
@@ -168,7 +171,7 @@ func TestMergeCheckerConfigCLIOverridesYAML(t *testing.T) {
 	}
 	flagConfig := CheckerConfig{
 		DataType:                  "override/type",
-		StorageBase:               "/mnt/cli-cmadaas",
+		StorageBase:               cliStorageBase,
 		MaxCheckCount:             50,
 		CheckInterval:             "20s",
 		CheckIntervalJitter:       0.3,
@@ -181,7 +184,7 @@ func TestMergeCheckerConfigCLIOverridesYAML(t *testing.T) {
 	require.NoError(t, err)
 
 	assert.Equal(t, "override/type", cfg.DataType)
-	assert.Equal(t, "/mnt/cli-cmadaas", cfg.StorageBase)
+	assert.Equal(t, cliStorageBase, cfg.StorageBase)
 	assert.Equal(t, 50, cfg.MaxCheckCount)
 	assert.Equal(t, "20s", cfg.CheckInterval)
 	assert.Equal(t, 0.3, cfg.CheckIntervalJitter)

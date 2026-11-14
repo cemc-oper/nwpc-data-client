@@ -1,6 +1,7 @@
 package e2e
 
 import (
+	"fmt"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -54,12 +55,14 @@ func TestFetchExplicitBackendValidatedForLocalSourceCLI(t *testing.T) {
 }
 
 func TestConfigLintBackendCLI(t *testing.T) {
-	backendPath := filepath.Join(t.TempDir(), "backend.yaml")
-	content := `version: 1
+	dir := t.TempDir()
+	backendPath := filepath.Join(dir, "backend.yaml")
+	knownHostsPath := filepath.Join(dir, "known_hosts")
+	content := fmt.Sprintf(`version: 1
 cmafs:
   host: 10.40.150.126
-  known_hosts_file: /g1/u/wangdp/.ssh/known_hosts
-`
+  known_hosts_file: %q
+`, knownHostsPath)
 	require.NoError(t, os.WriteFile(backendPath, []byte(content), 0644))
 	output := runCLI(t, "config", "lint", "--backend-config="+backendPath)
 	assert.Contains(t, output, "backend config lint passed")
