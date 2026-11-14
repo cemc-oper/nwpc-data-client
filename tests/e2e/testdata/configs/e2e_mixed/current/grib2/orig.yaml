@@ -1,0 +1,21 @@
+_config_version: 3
+default: NOTFOUND
+file_names:
+  - hpc.{{.Year}}{{.Month}}{{.Day}}{{.Hour}}{{.ForecastHour}}.grb2
+file_name: cmadaas.{{.Year}}{{.Month}}{{.Day}}{{.Hour}}{{.ForecastHour}}.grib2
+paths:
+  - type: local
+    level: runtime
+    path: '%ROOT%/runtime/{{.Year}}{{.Month}}{{.Day}}{{.Hour}}'
+  - type: local
+    level: archive
+    path: '%ROOT%/archive/{{.Year}}{{.Month}}{{.Day}}{{.Hour}}'
+  - type: local
+    level: storage
+    path: '%ROOT%/storage/{{.Year}}{{.Month}}{{.Day}}{{.Hour}}'
+  - type: local
+    level: archive
+    path: '%ROOT%/cmadaas/{{.Year}}/{{.Year}}{{.Month}}{{.Day}}'
+  - type: cmafs
+    level: storage
+    path: /remote/storage/{{.Year}}{{.Month}}{{.Day}}{{.Hour}}
