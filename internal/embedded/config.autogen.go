@@ -26,10 +26,10 @@ paths:
     level: storage
     path: /sstorage/COMMONDATA/OPER/CEMC/GEPS/Prod-grib/{{.Year}}{{.Month}}{{.Day}}{{.Hour}}/grib2.0p25
 
-  # WSL reads the mounted CMADAAS archive directly; keep before cmafs.
+  # Read the mounted CMADAAS archive directly; keep before cmafs.
   - type: local
     level: archive
-    path: /CMADAAS/DATA/NAFP/NMC/GRAPES-GEPS/{{.Year}}/{{.Year}}{{.Month}}{{.Day}}
+    path: '{{.StorageBase}}/DATA/NAFP/NMC/GRAPES-GEPS/{{.Year}}/{{.Year}}{{.Month}}{{.Day}}'
 
   - type: cmafs
     level: storage
@@ -281,10 +281,10 @@ paths:
     level: storage
     path: /sstorage/COMMONDATA/OPER/CEMC/GFS_GMF/Prod-grib/{{.Year}}{{.Month}}{{.Day}}{{.Hour}}/ORIG
 
-  # WSL reads the mounted CMADAAS archive directly; keep before cmafs.
+  # Read the mounted CMADAAS archive directly; keep before cmafs.
   - type: local
     level: archive
-    path: /CMADAAS/DATA/NAFP/NMC/GRAPES-GFS-GLB/{{.Year}}/{{.Year}}{{.Month}}{{.Day}}
+    path: '{{.StorageBase}}/DATA/NAFP/NMC/GRAPES-GFS-GLB/{{.Year}}/{{.Year}}{{.Month}}{{.Day}}'
 
   - type: cmafs
     level: storage
@@ -420,10 +420,10 @@ paths:
     level: storage
     path: /sstorage/COMMONDATA/OPER/CEMC/MESO_1KM/Prod-grib/{{.Year}}{{.Month}}{{.Day}}{{.Hour}}/ORIG
 
-  # WSL reads the mounted CMADAAS archive directly; keep before cmafs.
+  # Read the mounted CMADAAS archive directly; keep before cmafs.
   - type: local
     level: archive
-    path: /CMADAAS/DATA/NAFP/CEMC/MESO_1KM/ORI/{{.Year}}/{{.Year}}{{.Month}}{{.Day}}
+    path: '{{.StorageBase}}/DATA/NAFP/CEMC/MESO_1KM/ORI/{{.Year}}/{{.Year}}{{.Month}}{{.Day}}'
 
   - type: cmafs
     level: storage
@@ -714,10 +714,10 @@ paths:
     level: storage
     path: /sstorage/COMMONDATA/OPER/CEMC/MESO_3KM/Prod-grib/{{.Year}}{{.Month}}{{.Day}}{{.Hour}}/ORIG
 
-  # WSL reads the mounted CMADAAS archive directly; keep before cmafs.
+  # Read the mounted CMADAAS archive directly; keep before cmafs.
   - type: local
     level: archive
-    path: /CMADAAS/DATA/NAFP/GRAPES/RAFS/{{.Year}}/{{.Year}}{{.Month}}{{.Day}}
+    path: '{{.StorageBase}}/DATA/NAFP/GRAPES/RAFS/{{.Year}}/{{.Year}}{{.Month}}{{.Day}}'
 
   - type: cmafs
     level: storage
@@ -750,11 +750,11 @@ paths:
   # REPS 06 UTC files use the start date; 18 UTC files use the next day.
   - type: local
     level: archive
-    path: /CMADAAS/ORIG-DATA/NAFP/CMA-REPS/{{.Year}}/{{.Year}}{{.Month}}{{.Day}}
+    path: '{{.StorageBase}}/ORIG-DATA/NAFP/CMA-REPS/{{.Year}}/{{.Year}}{{.Month}}{{.Day}}'
 
   - type: local
     level: archive
-    path: /CMADAAS/ORIG-DATA/NAFP/CMA-REPS/{{ generateStartTime .StartTime 24 | getYear }}/{{ generateStartTime .StartTime 24 | getYear }}{{ generateStartTime .StartTime 24 | getMonth }}{{ generateStartTime .StartTime 24 | getDay }}
+    path: '{{.StorageBase}}/ORIG-DATA/NAFP/CMA-REPS/{{ generateStartTime .StartTime 24 | getYear }}/{{ generateStartTime .StartTime 24 | getYear }}{{ generateStartTime .StartTime 24 | getMonth }}{{ generateStartTime .StartTime 24 | getDay }}'
 
   - type: cmafs
     level: storage
@@ -872,10 +872,10 @@ paths:
     level: storage
     path: /sstorage/COMMONDATA/OPER/CEMC/TYM/Prod-grib/{{.Year}}{{.Month}}{{.Day}}{{.Hour}}/ORIG
 
-  # WSL reads the mounted CMADAAS archive directly; keep before cmafs.
+  # Read the mounted CMADAAS archive directly; keep before cmafs.
   - type: local
     level: archive
-    path: /CMADAAS/DATA/NAFP/NMC/GRAPES-TYM/{{.Year}}/{{.Year}}{{.Month}}{{.Day}}
+    path: '{{.StorageBase}}/DATA/NAFP/NMC/GRAPES-TYM/{{.Year}}/{{.Year}}{{.Month}}{{.Day}}'
 
   - type: cmafs
     level: storage

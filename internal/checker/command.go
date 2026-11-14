@@ -23,10 +23,14 @@ type CheckerTemplateVariable struct {
 }
 
 func runCommand(ctx context.Context, timeout time.Duration, commandTemplate *template.Template, startTime time.Time, forecastTime time.Duration, member string, filePath string) error {
+	return runCommandWithStorageBase(ctx, timeout, commandTemplate, startTime, forecastTime, member, "", filePath)
+}
+
+func runCommandWithStorageBase(ctx context.Context, timeout time.Duration, commandTemplate *template.Template, startTime time.Time, forecastTime time.Duration, member string, storageBase string, filePath string) error {
 	if err := ctx.Err(); err != nil {
 		return err
 	}
-	tpVar := dataconfig.GenerateConfigTemplateVariable(startTime, forecastTime, member)
+	tpVar := dataconfig.GenerateConfigTemplateVariableWithStorageBase(startTime, forecastTime, member, storageBase)
 	var checkerVar CheckerTemplateVariable
 	checkerVar.ConfigTemplateVariable = tpVar
 	checkerVar.FilePath = filePath
@@ -74,12 +78,12 @@ func runCommand(ctx context.Context, timeout time.Duration, commandTemplate *tem
 	return nil
 }
 
-func runCommands(ctx context.Context, timeout time.Duration, commandTemplates []*template.Template, startTime time.Time, forecastTime time.Duration, member string, filePath string) error {
+func runCommands(ctx context.Context, timeout time.Duration, commandTemplates []*template.Template, startTime time.Time, forecastTime time.Duration, member string, storageBase string, filePath string) error {
 	for _, commandTemplate := range commandTemplates {
 		if err := ctx.Err(); err != nil {
 			return err
 		}
-		if err := runCommand(ctx, timeout, commandTemplate, startTime, forecastTime, member, filePath); err != nil {
+		if err := runCommandWithStorageBase(ctx, timeout, commandTemplate, startTime, forecastTime, member, storageBase, filePath); err != nil {
 			return err
 		}
 	}

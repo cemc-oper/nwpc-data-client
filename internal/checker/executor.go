@@ -29,12 +29,17 @@ type commandExecutor struct {
 	commandTemplates []*template.Template
 	startTime        time.Time
 	member           string
+	storageBase      string
 	onTaskDone       func(CheckResult)
 	tracker          *runTracker
 	err              error
 }
 
 func newCommandExecutor(ctx context.Context, commandTimeout time.Duration, capacity int, commandTemplates []*template.Template, startTime time.Time, member string, onTaskDone func(CheckResult), tracker *runTracker) *commandExecutor {
+	return newCommandExecutorWithStorageBase(ctx, commandTimeout, capacity, commandTemplates, startTime, member, "", onTaskDone, tracker)
+}
+
+func newCommandExecutorWithStorageBase(ctx context.Context, commandTimeout time.Duration, capacity int, commandTemplates []*template.Template, startTime time.Time, member string, storageBase string, onTaskDone func(CheckResult), tracker *runTracker) *commandExecutor {
 	runCtx, cancel := context.WithCancel(ctx)
 	e := &commandExecutor{
 		ctx:              runCtx,
@@ -45,6 +50,7 @@ func newCommandExecutor(ctx context.Context, commandTimeout time.Duration, capac
 		commandTemplates: commandTemplates,
 		startTime:        startTime,
 		member:           member,
+		storageBase:      storageBase,
 		onTaskDone:       onTaskDone,
 		tracker:          tracker,
 	}
@@ -134,7 +140,7 @@ func (e *commandExecutor) consume() {
 				}
 			} else {
 				commandStarted := time.Now()
-				err := runCommands(e.ctx, e.commandTimeout, e.commandTemplates, e.startTime, result.ForecastTime, e.member, result.FilePath)
+				err := runCommands(e.ctx, e.commandTimeout, e.commandTemplates, e.startTime, result.ForecastTime, e.member, e.storageBase, result.FilePath)
 				if e.tracker != nil {
 					e.tracker.completeCommand(result.targetIndex, time.Since(commandStarted), err)
 				}

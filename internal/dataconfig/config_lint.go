@@ -17,6 +17,7 @@ var (
 	lintDummyStartTime    = time.Date(2026, 9, 9, 0, 0, 0, 0, time.UTC)
 	lintDummyForecastTime = 24 * time.Hour
 	lintDummyMember       = "000"
+	lintDummyStorageBase  = "/storage"
 )
 
 // ConfigTemplateFuncMap returns the custom template functions registered for
@@ -146,7 +147,7 @@ func LintConfigContent(content string) error {
 		}
 		return lintWholeFileTemplate(content, "{", "}", varV2)
 	case ConfigVersion3:
-		tpVar := GenerateConfigTemplateVariable(lintDummyStartTime, lintDummyForecastTime, lintDummyMember)
+		tpVar := GenerateConfigTemplateVariableWithStorageBase(lintDummyStartTime, lintDummyForecastTime, lintDummyMember, lintDummyStorageBase)
 		return lintWholeFileTemplate(content, "{{", "}}", tpVar)
 	default:
 		return fmt.Errorf("version detect: unsupported config format version %d", version)

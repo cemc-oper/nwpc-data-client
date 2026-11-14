@@ -67,6 +67,7 @@ nwpc_data_client check local <start_time> [flags]
       --checker-config string              Path to the checker runtime config YAML. CLI flags override values in this file.
       --data-type string                   Data type used to locate the config (embedded as local/<data-type>, or <dir>/<data-type>.yaml).
       --location-level string              Location levels to search, split by ',', such as 'runtime,archive'. Empty searches all.
+      --storage-base string                Absolute local mount root for {{.StorageBase}} in data config and command templates.
       --max-check-count int                Maximum number of existence/size checks per forecast time. (default 2880)
       --check-interval string              Interval between checks, a duration such as 5s, 30s, or 1m. (default "5s")
       --execute-command string             Go template for a command to run once a file becomes stable. Mutually exclusive with execute_commands.

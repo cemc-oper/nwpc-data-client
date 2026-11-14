@@ -19,6 +19,14 @@
 | `{{.ForecastHour}}` | string | 预报时效小时数，3 位补零 | `024` |
 | `{{.ForecastMinute}}` | string | 预报时效的分钟部分（总分钟对 60 取余），2 位补零 | `30` |
 | `{{.Member}}` | string | 集合成员编号（`--member` 传入），非集合预报为空 | `014` |
+| `{{.StorageBase}}` | string | 机器相关的本地存储挂载根，由 `--storage-base` 或 checker YAML 的 `storage_base` 传入 | `/CMADAAS` |
+
+`StorageBase` 没有默认挂载路径，非空时必须是绝对本地路径。配置实际引用该变量而调用方
+未提供时会明确报错；不引用该变量的配置不受影响。`local`、`fetch`、`check local` 均
+支持 `--storage-base`，checker 的命令模板也可以使用该变量。
+
+引用 `StorageBase` 的配置与旧 client 不兼容：旧版本没有该变量，会在整文件模板渲染时
+报错。必须先升级 client，再发布此类配置。
 
 `check local` 的命令模板额外提供：
 

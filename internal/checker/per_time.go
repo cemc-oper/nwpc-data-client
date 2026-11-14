@@ -40,7 +40,7 @@ func Run(ctx context.Context, config CheckerConfig, startTime time.Time, stdin i
 		return nil, err
 	}
 
-	exec := newCommandExecutor(ctx, plan.commandTimeout, len(plan.targets), plan.commandTemplates, startTime, "", nil, plan.tracker)
+	exec := newCommandExecutorWithStorageBase(ctx, plan.commandTimeout, len(plan.targets), plan.commandTemplates, startTime, "", plan.config.StorageBase, nil, plan.tracker)
 	if plan.config.CheckMode == CheckModeBatched {
 		if plan.config.DelayTime != "" {
 			log.Infof("delay-time is ignored in batched check mode")

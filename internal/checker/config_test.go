@@ -29,6 +29,7 @@ func TestLoadCheckerConfig(t *testing.T) {
 	content := `
 data_type: gmfsgrapes_global
 location_levels: runtime,storage
+storage_base: /mnt/cmadaas
 max_check_count: 100
 check_interval: 10s
 delay_time: 5s
@@ -55,6 +56,7 @@ execute_commands:
 
 	assert.Equal(t, "gmfsgrapes_global", cfg.DataType)
 	assert.Equal(t, "runtime,storage", cfg.LocationLevels)
+	assert.Equal(t, "/mnt/cmadaas", cfg.StorageBase)
 	assert.Equal(t, 100, cfg.MaxCheckCount)
 	assert.Equal(t, "10s", cfg.CheckInterval)
 	assert.Equal(t, "5s", cfg.DelayTime)
@@ -116,6 +118,7 @@ func TestMergeCheckerConfigYAMLValues(t *testing.T) {
 	fileConfig := CheckerConfig{
 		DataType:        "cma_gfs_gmf/current/grib2/orig",
 		LocationLevels:  "runtime",
+		StorageBase:     "/mnt/yaml-cmadaas",
 		MaxCheckCount:   100,
 		CheckInterval:   "10s",
 		DelayTime:       "5s",
@@ -131,6 +134,7 @@ func TestMergeCheckerConfigYAMLValues(t *testing.T) {
 
 	assert.Equal(t, "cma_gfs_gmf/current/grib2/orig", cfg.DataType)
 	assert.Equal(t, "runtime", cfg.LocationLevels)
+	assert.Equal(t, "/mnt/yaml-cmadaas", cfg.StorageBase)
 	assert.Equal(t, 100, cfg.MaxCheckCount)
 	assert.Equal(t, "10s", cfg.CheckInterval)
 	assert.Equal(t, "5s", cfg.DelayTime)
@@ -144,6 +148,7 @@ func TestMergeCheckerConfigYAMLValues(t *testing.T) {
 func TestMergeCheckerConfigCLIOverridesYAML(t *testing.T) {
 	cmd := newTestLocalCommand(t)
 	require.NoError(t, cmd.Flags().Set("data-type", "override/type"))
+	require.NoError(t, cmd.Flags().Set("storage-base", "/mnt/cli-cmadaas"))
 	require.NoError(t, cmd.Flags().Set("max-check-count", "50"))
 	require.NoError(t, cmd.Flags().Set("check-interval", "20s"))
 	require.NoError(t, cmd.Flags().Set("check-interval-jitter", "0.3"))
@@ -153,6 +158,7 @@ func TestMergeCheckerConfigCLIOverridesYAML(t *testing.T) {
 
 	fileConfig := CheckerConfig{
 		DataType:                  "original/type",
+		StorageBase:               "/mnt/yaml-cmadaas",
 		MaxCheckCount:             100,
 		CheckInterval:             "10s",
 		CheckIntervalJitter:       0.2,
@@ -162,6 +168,7 @@ func TestMergeCheckerConfigCLIOverridesYAML(t *testing.T) {
 	}
 	flagConfig := CheckerConfig{
 		DataType:                  "override/type",
+		StorageBase:               "/mnt/cli-cmadaas",
 		MaxCheckCount:             50,
 		CheckInterval:             "20s",
 		CheckIntervalJitter:       0.3,
@@ -174,6 +181,7 @@ func TestMergeCheckerConfigCLIOverridesYAML(t *testing.T) {
 	require.NoError(t, err)
 
 	assert.Equal(t, "override/type", cfg.DataType)
+	assert.Equal(t, "/mnt/cli-cmadaas", cfg.StorageBase)
 	assert.Equal(t, 50, cfg.MaxCheckCount)
 	assert.Equal(t, "20s", cfg.CheckInterval)
 	assert.Equal(t, 0.3, cfg.CheckIntervalJitter)
@@ -207,6 +215,11 @@ func TestMergeCheckerConfigRejectsInvalidExplicitYAMLValues(t *testing.T) {
 		yaml      string
 		wantError string
 	}{
+		{
+			name:      "relative storage base",
+			yaml:      "storage_base: relative/mount",
+			wantError: "storage base",
+		},
 		{
 			name:      "zero max check count",
 			yaml:      "max_check_count: 0",
@@ -323,6 +336,7 @@ func newTestLocalCommand(t *testing.T) *cobra.Command {
 	cmd.Flags().String("checker-config", "", "")
 	cmd.Flags().String("data-type", "", "")
 	cmd.Flags().String("location-level", "", "")
+	cmd.Flags().String("storage-base", "", "")
 	cmd.Flags().Int("max-check-count", 2880, "")
 	cmd.Flags().String("check-interval", "5s", "")
 	cmd.Flags().String("execute-command", "", "")

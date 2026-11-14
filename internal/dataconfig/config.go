@@ -93,10 +93,45 @@ func LoadConfigContentFromFile(configFilePath string) (string, error) {
 	return content, nil
 }
 
-// ParseConfigContent parse config content template with start time and forecast time.
+// ParseConfigContent parses a config without a machine-specific storage base.
+// Configs that reference .StorageBase should use ParseConfigContentWithStorageBase.
 func ParseConfigContent(content string, startTime time.Time, forecastTime time.Duration, member string) (DataConfig, error) {
+	return ParseConfigContentWithStorageBase(content, startTime, forecastTime, member, "")
+}
+
+const missingStorageBaseMarker = "__NWPC_DATA_CLIENT_MISSING_STORAGE_BASE__"
+
+// ValidateStorageBase validates an explicitly supplied machine mount root.
+// Empty is valid here; template rendering reports an error only if it is used.
+func ValidateStorageBase(storageBase string) error {
+	if storageBase == "" {
+		return nil
+	}
+	if strings.ContainsAny(storageBase, "\x00\r\n") {
+		return fmt.Errorf("storage base must not contain NUL or newlines")
+	}
+	if !filepath.IsAbs(storageBase) {
+		return fmt.Errorf("storage base must be an absolute local path, got %q", storageBase)
+	}
+	return nil
+}
+
+// ParseConfigContentWithStorageBase parses a data config template with an
+// optional, machine-specific absolute local mount root. The marker makes a
+// missing value an explicit error only when the template actually uses it.
+func ParseConfigContentWithStorageBase(content string, startTime time.Time, forecastTime time.Duration, member string, storageBase string) (DataConfig, error) {
+	if err := ValidateStorageBase(storageBase); err != nil {
+		return DataConfig{}, err
+	}
+	if storageBase != "" {
+		storageBase = filepath.Clean(storageBase)
+	}
+
 	dataConfig := DataConfig{}
-	tpVar := GenerateConfigTemplateVariable(startTime, forecastTime, member)
+	tpVar := GenerateConfigTemplateVariableWithStorageBase(startTime, forecastTime, member, storageBase)
+	if storageBase == "" {
+		tpVar.StorageBase = missingStorageBaseMarker
+	}
 
 	forecastTimeStr := FormatForecastTimeShort(forecastTime)
 	currentLog := log.WithFields(log.Fields{"forecastTime": forecastTimeStr})
@@ -112,6 +147,9 @@ func ParseConfigContent(content string, startTime time.Time, forecastTime time.D
 		return dataConfig, err
 	}
 	parsedContent := configBuilder.String()
+	if strings.Contains(parsedContent, missingStorageBaseMarker) {
+		return DataConfig{}, fmt.Errorf("storage base is required by this data config; set --storage-base or checker storage_base")
+	}
 
 	dataConfig, err = LoadDataConfigFromContent(parsedContent)
 	if err != nil {

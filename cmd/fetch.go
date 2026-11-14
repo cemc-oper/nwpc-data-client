@@ -29,6 +29,8 @@ func init() {
 		"Path to machine backend YAML. Required only when a cmafs source is needed.")
 	fetchCmd.Flags().StringVar(&fetchLocationLevels, "location-level", "",
 		"Location levels to search, split by ',', such as 'runtime,archive'. Empty searches all.")
+	fetchCmd.Flags().StringVar(&fetchStorageBase, "storage-base", "",
+		"Absolute local mount root for {{.StorageBase}} in data config templates.")
 	fetchCmd.Flags().StringVar(&fetchStartTimeString, "start-time", "",
 		"Start time, YYYYMMDDHH, such as 2026062400. (required)")
 	fetchCmd.Flags().StringVar(&fetchForecastTimeString, "forecast-time", "",
@@ -137,7 +139,7 @@ var fetchCmd = &cobra.Command{
 		if err != nil {
 			return fmt.Errorf("load config failed: %w", err)
 		}
-		dataConfig, err := dataconfig.ParseConfigContent(configContent, startTime, forecastTime, fetchMember)
+		dataConfig, err := dataconfig.ParseConfigContentWithStorageBase(configContent, startTime, forecastTime, fetchMember, fetchStorageBase)
 		if err != nil {
 			return fmt.Errorf("render data config: %w", err)
 		}

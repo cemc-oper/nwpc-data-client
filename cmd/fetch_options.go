@@ -6,6 +6,7 @@ var (
 	fetchBackendConfig      string
 	fetchDataType           string
 	fetchLocationLevels     string
+	fetchStorageBase        string
 	fetchStartTimeString    string
 	fetchForecastTimeString string
 	fetchMember             string

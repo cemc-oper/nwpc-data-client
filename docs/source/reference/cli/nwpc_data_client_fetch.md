@@ -59,6 +59,7 @@ nwpc_data_client fetch [flags]
       --data-config-file string   Path to a single data config file. If set, --data-config-dir and --data-type are ignored.
       --backend-config string     Path to machine backend YAML. Required only when a cmafs source is needed.
       --location-level string     Location levels to search, split by ',', such as 'runtime,archive'. Empty searches all.
+      --storage-base string       Absolute local mount root for {{.StorageBase}} in data config templates.
       --start-time string         Start time, YYYYMMDDHH, such as 2026062400. (required)
       --forecast-time string      Forecast time, such as 0h, 24h, 120h. (required)
       --member string             Ensemble member, MMM, such as 000, 014.

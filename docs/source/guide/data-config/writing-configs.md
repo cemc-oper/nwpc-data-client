@@ -47,7 +47,8 @@ file_name: modelvar.{{.Year}}{{.Month}}{{.Day}}{{.Hour}}.grb2
 **`paths`**：候选目录列表，按顺序搜索。每个条目包含：
 
 - `type`：`local` 表示本地或直接挂载路径，`cmafs` 表示通过机器 backend 访问的
-  二级存储路径；CMADAAS 挂载目录使用 `local`；
+  二级存储路径；CMADAAS 挂载目录使用 `local`，挂载根用
+  [`{{.StorageBase}}`](../../reference/template-variables.md) 表示；
 - `level`：位置级别，`runtime` / `archive` / `storage`（可 `/` 组合），
   与命令行 `--location-level` 配合控制搜索范围；
 - `path`：目录路径模板，不含文件名。

@@ -26,10 +26,10 @@ paths:
     level: storage
     path: /sstorage/COMMONDATA/OPER/CEMC/TYM/Prod-grib/{{.Year}}{{.Month}}{{.Day}}{{.Hour}}/ORIG
 
-  # WSL reads the mounted CMADAAS archive directly; keep before cmafs.
+  # Read the mounted CMADAAS archive directly; keep before cmafs.
   - type: local
     level: archive
-    path: /CMADAAS/DATA/NAFP/NMC/GRAPES-TYM/{{.Year}}/{{.Year}}{{.Month}}{{.Day}}
+    path: '{{.StorageBase}}/DATA/NAFP/NMC/GRAPES-TYM/{{.Year}}/{{.Year}}{{.Month}}{{.Day}}'
 
   - type: cmafs
     level: storage

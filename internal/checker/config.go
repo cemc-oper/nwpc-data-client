@@ -26,6 +26,7 @@ type CheckerConfig struct {
 	DataConfigFile  string   `yaml:"data_config_file" flag:"data-config-file"`
 	DataType        string   `yaml:"data_type" flag:"data-type"`
 	LocationLevels  string   `yaml:"location_levels" flag:"location-level"`
+	StorageBase     string   `yaml:"storage_base" flag:"storage-base"`
 	MaxCheckCount   int      `yaml:"max_check_count" flag:"max-check-count"`
 	CheckInterval   string   `yaml:"check_interval" flag:"check-interval"`
 	DelayTime       string   `yaml:"delay_time" flag:"delay-time"`
@@ -141,6 +142,10 @@ func (c CheckerConfig) Validate() error {
 		return fmt.Errorf(
 			"requires data_type (--data-type) or data_config_file (--data-config-file); " +
 				"data_config_dir (--data-config-dir) is optional and cannot be used alone")
+	}
+
+	if err := dataconfig.ValidateStorageBase(c.StorageBase); err != nil {
+		return err
 	}
 
 	checkInterval, err := time.ParseDuration(c.CheckInterval)

@@ -94,6 +94,7 @@ func cmadaasArgs(tc cmadaasTestCase) []string {
 		"--start-time=" + tc.startTime,
 		"--forecast-time=24h",
 		"--location-level=archive",
+		"--storage-base=/CMADAAS",
 	}
 	if tc.member != "" {
 		args = append(args, "--member="+tc.member)

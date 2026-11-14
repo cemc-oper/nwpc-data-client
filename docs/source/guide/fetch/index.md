@@ -52,26 +52,28 @@ storage 使用 copy 是为了避免生成仅在特定存储节点可见的链接
 
 ## 从 CMADAAS 挂载目录落位
 
-对于已经挂载的 `/CMADAAS`，fetch 使用本地源链路，不经过 SSH/rsync，也不需要
-`--backend-config`。例如复制 CMA-GFS-GMF 归档文件：
+对于 CMADAAS 挂载目录，fetch 使用本地源链路，不经过 SSH/rsync，也不需要
+`--backend-config`。配置使用 `{{.StorageBase}}` 表示机器相关的挂载根，调用时必须
+通过 `--storage-base` 提供绝对路径。例如当前 WSL 的挂载根为 `/CMADAAS`：
 
 ```bash
 nwpc_data_client fetch \
     --data-type=cma_gfs_gmf/current/grib2/orig \
     --start-time=2026111300 --forecast-time=24h \
-    --location-level=archive \
+    --storage-base=/CMADAAS --location-level=archive \
     --target-dir=/work/input --method=copy
 ```
 
 | 方法 | CMADAAS archive 源的行为 | 使用约束 |
 |---|---|---|
 | `copy`（默认） | 复制为独立普通文件 | 后续使用不依赖挂载；需要目标磁盘空间和复制时间 |
-| `symlink` | 创建指向 `/CMADAAS` 源文件的链接 | 下游必须能访问同一挂载路径，并接受源清理或修改的影响 |
+| `symlink` | 创建指向实际挂载根下源文件的链接 | 下游必须能访问同一挂载路径，并接受源清理或修改的影响 |
 | `auto` | archive 按普通本地归档规则选择 symlink | 需要独立副本时应显式使用 `copy`，不要依赖 auto |
 
 CMADAAS local 候选位于 cmafs 之前，命中后不会访问 cmafs。使用
 `--location-level=archive` 还会跳过 storage local 和 cmafs；因此纯 CMADAAS 查询即使
-未命中，也不会因为机器未配置 cmafs backend 而报后端错误。
+未命中，也不会因为机器未配置 cmafs backend 而报后端错误。未提供 `--storage-base`
+则会在渲染配置时明确失败，因为六份 CMADAAS 配置都引用了该变量。
 
 目标文件名继承实际源的 basename。CMADAAS 文件通常采用 `Z_NAFP_C_BABJ_...` 命名，
 与原 HPC 文件名不同，后续程序必须使用 fetch stdout 返回的路径，不能假定为
@@ -151,7 +153,7 @@ backend 使用系统 SSH/rsync，不需要 `module load cmafs/cmafs`。只有远
 ## 参数与退出码
 
 数据配置参数与 `local` 相同：`--data-type`、`--data-config-dir`、
-`--data-config-file`、`--location-level`、`--start-time`、`--forecast-time`
+`--data-config-file`、`--location-level`、`--storage-base`、`--start-time`、`--forecast-time`
 和 `--member`。fetch 特有参数：
 
 | 参数 | 默认值 | 说明 |

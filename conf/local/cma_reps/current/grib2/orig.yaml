@@ -25,11 +25,11 @@ paths:
   # REPS 06 UTC files use the start date; 18 UTC files use the next day.
   - type: local
     level: archive
-    path: /CMADAAS/ORIG-DATA/NAFP/CMA-REPS/{{.Year}}/{{.Year}}{{.Month}}{{.Day}}
+    path: '{{.StorageBase}}/ORIG-DATA/NAFP/CMA-REPS/{{.Year}}/{{.Year}}{{.Month}}{{.Day}}'
 
   - type: local
     level: archive
-    path: /CMADAAS/ORIG-DATA/NAFP/CMA-REPS/{{ generateStartTime .StartTime 24 | getYear }}/{{ generateStartTime .StartTime 24 | getYear }}{{ generateStartTime .StartTime 24 | getMonth }}{{ generateStartTime .StartTime 24 | getDay }}
+    path: '{{.StorageBase}}/ORIG-DATA/NAFP/CMA-REPS/{{ generateStartTime .StartTime 24 | getYear }}/{{ generateStartTime .StartTime 24 | getYear }}{{ generateStartTime .StartTime 24 | getMonth }}{{ generateStartTime .StartTime 24 | getDay }}'
 
   - type: cmafs
     level: storage

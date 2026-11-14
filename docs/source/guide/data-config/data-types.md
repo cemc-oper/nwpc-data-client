@@ -40,8 +40,9 @@ cma_gfs_gmf/current/grib2/orig
 
 ## 支持 CMADAAS 挂载归档的数据类型
 
-以下现有 data type 同时包含原 HPC 路径和 `/CMADAAS` 挂载路径，不需要使用新的
-数据类型名称：
+以下现有 data type 同时包含原 HPC 路径和 CMADAAS 挂载路径，不需要使用新的
+数据类型名称。CMADAAS 挂载根由 `--storage-base` 或 checker YAML 的 `storage_base`
+显式指定，不固定为某台机器的目录：
 
 | 系统 | data type |
 |---|---|

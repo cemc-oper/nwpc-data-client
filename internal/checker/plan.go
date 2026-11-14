@@ -97,13 +97,13 @@ func buildRunPlan(config CheckerConfig, startTime time.Time, stdin io.Reader) (*
 		return nil, fmt.Errorf("load config content failed: %w", err)
 	}
 	locationLevels := strings.Split(config.LocationLevels, ",")
-	targets, err := expandCheckTargets(configContent, startTime, forecastTimeList, locationLevels)
+	targets, err := expandCheckTargetsWithStorageBase(configContent, startTime, forecastTimeList, locationLevels, config.StorageBase)
 	if err != nil {
 		return nil, err
 	}
 
 	for _, target := range targets {
-		if err := validateCommandTemplates(commandTemplates, startTime, target.forecastTime); err != nil {
+		if err := validateCommandTemplates(commandTemplates, startTime, target.forecastTime, config.StorageBase); err != nil {
 			return nil, err
 		}
 	}
@@ -137,17 +137,29 @@ func loadCheckerDataConfig(config CheckerConfig) (string, error) {
 	return dataconfig.LoadConfigContent(config.DataConfigDir, dataType)
 }
 
-// expandCheckTargets renders every forecast time and applies location-level
-// filtering in the same order used by both polling modes.
+// expandCheckTargets preserves the test/helper behavior for configs that do
+// not use a machine-specific storage base.
 func expandCheckTargets(
 	configContent string,
 	startTime time.Time,
 	forecastTimeList []time.Duration,
 	levels []string,
 ) ([]*checkTarget, error) {
+	return expandCheckTargetsWithStorageBase(configContent, startTime, forecastTimeList, levels, "")
+}
+
+// expandCheckTargetsWithStorageBase renders every forecast time and applies
+// location-level filtering in the same order used by both polling modes.
+func expandCheckTargetsWithStorageBase(
+	configContent string,
+	startTime time.Time,
+	forecastTimeList []time.Duration,
+	levels []string,
+	storageBase string,
+) ([]*checkTarget, error) {
 	var targets []*checkTarget
 	for index, forecastTime := range forecastTimeList {
-		dataConfig, err := dataconfig.ParseConfigContent(configContent, startTime, forecastTime, "")
+		dataConfig, err := dataconfig.ParseConfigContentWithStorageBase(configContent, startTime, forecastTime, "", storageBase)
 		if err != nil {
 			return nil, fmt.Errorf("parse config content for forecast time %s failed: %w",
 				dataconfig.FormatForecastTimeShort(forecastTime), err)
@@ -188,9 +200,9 @@ func expandCheckTargets(
 // validateCommandTemplates executes the Go templates with a dummy path to
 // catch unknown variables and template function errors. It does not run the
 // rendered strings as shell commands.
-func validateCommandTemplates(commandTemplates []*template.Template, startTime time.Time, forecastTime time.Duration) error {
+func validateCommandTemplates(commandTemplates []*template.Template, startTime time.Time, forecastTime time.Duration, storageBase string) error {
 	checkerVar := CheckerTemplateVariable{
-		ConfigTemplateVariable: dataconfig.GenerateConfigTemplateVariable(startTime, forecastTime, ""),
+		ConfigTemplateVariable: dataconfig.GenerateConfigTemplateVariableWithStorageBase(startTime, forecastTime, "", storageBase),
 		FilePath:               "dry-run-file",
 	}
 	for i, commandTemplate := range commandTemplates {

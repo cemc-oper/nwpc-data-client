@@ -9,6 +9,7 @@ var (
 	localDataConfigFile     = ""
 	localDataType           = ""
 	localLocationLevels     = ""
+	localStorageBase        = ""
 	localStartTimeString    = ""
 	localForecastTimeString = ""
 	localMember             = ""

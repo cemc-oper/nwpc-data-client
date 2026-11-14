@@ -51,8 +51,12 @@ cmafs 的 `path` 必须是 POSIX 绝对路径且不能包含换行。同一业�
 ## CMADAAS 挂载目录示例
 
 CMADAAS 已经挂载到当前机器时，挂载目录使用 `type: local`，不需要新增
-`cmadaas` 类型或远端 backend。若 HPC 与 CMADAAS 的文件名不同，可以同时使用
-`file_names` 和 `file_name`。例如 CMA-GFS-GMF ORIG：
+`cmadaas` 类型或远端 backend。挂载根是机器相关输入，基线配置使用
+`{{.StorageBase}}`，由 `local`/`fetch` 的 `--storage-base` 或 checker YAML 的
+`storage_base` 显式指定；非空值必须是绝对本地路径。配置引用该变量而未提供时会报错。
+
+若 HPC 与 CMADAAS 的文件名不同，可以同时使用 `file_names` 和 `file_name`。
+例如 CMA-GFS-GMF ORIG：
 
 ```yaml
 _config_version: 3
@@ -71,10 +75,10 @@ paths:
   - type: local
     level: storage
     path: /sstorage/COMMONDATA/OPER/CEMC/GFS_GMF/Prod-grib/{{.Year}}{{.Month}}{{.Day}}{{.Hour}}/ORIG
-  # 已挂载 /CMADAAS 的机器直接读取，必须在 cmafs 之前。
+  # 挂载根由 --storage-base 或 checker storage_base 指定，必须在 cmafs 之前。
   - type: local
     level: archive
-    path: /CMADAAS/DATA/NAFP/NMC/GRAPES-GFS-GLB/{{.Year}}/{{.Year}}{{.Month}}{{.Day}}
+    path: '{{.StorageBase}}/DATA/NAFP/NMC/GRAPES-GFS-GLB/{{.Year}}/{{.Year}}{{.Month}}{{.Day}}'
   - type: cmafs
     level: storage
     path: /sstorage/COMMONDATA/OPER/CEMC/GFS_GMF/Prod-grib/{{.Year}}{{.Month}}{{.Day}}{{.Hour}}/ORIG
@@ -87,6 +91,9 @@ paths:
 `fetch` 对 CMADAAS archive 源遵循普通本地归档的规则：默认 `copy`，显式
 `symlink` 创建链接，`auto` 选择 symlink。需要独立副本时不要依赖 auto。实际命中
 HPC 或 CMADAAS 时 basename 不同，调用方必须使用命令输出的路径。
+
+引用 `{{.StorageBase}}` 的配置不能提前发布给旧 client；旧版本会在整文件模板渲染时
+因未知变量而失败。必须先升级安装根的 client，再部署新配置。
 
 ## 校验规则
 

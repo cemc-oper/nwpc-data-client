@@ -15,9 +15,15 @@ type ConfigTemplateVariable struct {
 	ForecastHour   string
 	ForecastMinute string
 	Member         string
+	// StorageBase is a machine-specific local mount root supplied by the caller.
+	StorageBase string
 }
 
 func GenerateConfigTemplateVariable(startTime time.Time, forecastTime time.Duration, member string) ConfigTemplateVariable {
+	return GenerateConfigTemplateVariableWithStorageBase(startTime, forecastTime, member, "")
+}
+
+func GenerateConfigTemplateVariableWithStorageBase(startTime time.Time, forecastTime time.Duration, member string, storageBase string) ConfigTemplateVariable {
 	forecastHour := int(forecastTime.Hours())
 	forecastMinute := int(forecastTime.Minutes()) % 60
 
@@ -31,6 +37,7 @@ func GenerateConfigTemplateVariable(startTime time.Time, forecastTime time.Durat
 		ForecastHour:   fmt.Sprintf("%03d", forecastHour),
 		ForecastMinute: fmt.Sprintf("%02d", forecastMinute),
 		Member:         member,
+		StorageBase:    storageBase,
 	}
 	return tpVariable
 }

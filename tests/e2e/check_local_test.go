@@ -20,6 +20,7 @@ type checkerConfig struct {
 	DataConfigDir  string   `yaml:"data_config_dir,omitempty"`
 	DataConfigFile string   `yaml:"data_config_file,omitempty"`
 	DataType       string   `yaml:"data_type,omitempty"`
+	StorageBase    string   `yaml:"storage_base,omitempty"`
 	CheckInterval  string   `yaml:"check_interval,omitempty"`
 	MaxCheckCount  int      `yaml:"max_check_count,omitempty"`
 	DelayTime      string   `yaml:"delay_time,omitempty"`

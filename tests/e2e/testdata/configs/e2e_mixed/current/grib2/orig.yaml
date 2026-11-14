@@ -15,7 +15,7 @@ paths:
     path: '%ROOT%/storage/{{.Year}}{{.Month}}{{.Day}}{{.Hour}}'
   - type: local
     level: archive
-    path: '%ROOT%/cmadaas/{{.Year}}/{{.Year}}{{.Month}}{{.Day}}'
+    path: '{{.StorageBase}}/{{.Year}}/{{.Year}}{{.Month}}{{.Day}}'
   - type: cmafs
     level: storage
     path: /remote/storage/{{.Year}}{{.Month}}{{.Day}}{{.Hour}}

@@ -29,6 +29,8 @@ func init() {
 
 	checkLocalCmd.Flags().StringVar(&checkFlagConfig.LocationLevels, "location-level", "",
 		"Location levels to search, split by ',', such as 'runtime,archive'. Empty searches all.")
+	checkLocalCmd.Flags().StringVar(&checkFlagConfig.StorageBase, "storage-base", "",
+		"Absolute local mount root for {{.StorageBase}} in data config and command templates.")
 
 	checkLocalCmd.Flags().IntVar(&checkFlagConfig.MaxCheckCount, "max-check-count", 2880,
 		"Maximum number of existence/size checks per forecast time.")

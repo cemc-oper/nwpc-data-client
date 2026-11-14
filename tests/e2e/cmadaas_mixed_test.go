@@ -17,13 +17,14 @@ const (
 	e2eMixedConfigPath = e2eMixedDataType + ".yaml"
 )
 
-func mixedLocalArgs(configDir string, extra ...string) []string {
+func mixedLocalArgs(configDir string, storageBase string, extra ...string) []string {
 	args := []string{
 		"local",
 		"--data-type=" + e2eMixedDataType,
 		"--data-config-dir=" + configDir,
 		"--start-time=2026101200",
 		"--forecast-time=24h",
+		"--storage-base=" + storageBase,
 	}
 	return append(args, extra...)
 }
@@ -34,16 +35,17 @@ func writeMixedFile(t *testing.T, path string, content string) {
 	require.NoError(t, os.WriteFile(path, []byte(content), 0644))
 }
 
-func mixedCMADAASOnly(t *testing.T) (string, string) {
+func mixedCMADAASOnly(t *testing.T) (string, string, string) {
 	t.Helper()
 	rootDir := t.TempDir()
 	configDir := writeConfigWithRoot(t, e2eMixedConfigPath, rootDir)
-	source := filepath.Join(rootDir, "cmadaas", "2026", "20261012", "cmadaas.2026101200024.grib2")
+	storageBase := filepath.Join(rootDir, "cmadaas")
+	source := filepath.Join(storageBase, "2026", "20261012", "cmadaas.2026101200024.grib2")
 	writeMixedFile(t, source, "cmadaas data")
-	return configDir, source
+	return configDir, storageBase, source
 }
 
-func runMixedFetch(t *testing.T, configDir string, targetDir string, extra ...string) (string, string, error) {
+func runMixedFetch(t *testing.T, configDir string, storageBase string, targetDir string, extra ...string) (string, string, error) {
 	t.Helper()
 	args := []string{
 		"fetch",
@@ -53,6 +55,7 @@ func runMixedFetch(t *testing.T, configDir string, targetDir string, extra ...st
 		"--forecast-time=24h",
 		"--target-dir=" + targetDir,
 		"--stable-interval=1ms",
+		"--storage-base=" + storageBase,
 	}
 	args = append(args, extra...)
 	cmd := exec.Command(getBinaryPath(t), args...)
@@ -66,13 +69,14 @@ func runMixedFetch(t *testing.T, configDir string, targetDir string, extra ...st
 func TestMixedSourceFilenamePriority(t *testing.T) {
 	rootDir := t.TempDir()
 	configDir := writeConfigWithRoot(t, e2eMixedConfigPath, rootDir)
-	directory := filepath.Join(rootDir, "cmadaas", "2026", "20261012")
+	storageBase := filepath.Join(rootDir, "cmadaas")
+	directory := filepath.Join(storageBase, "2026", "20261012")
 	hpcFile := filepath.Join(directory, "hpc.2026101200024.grb2")
 	cmadaasFile := filepath.Join(directory, "cmadaas.2026101200024.grib2")
 	writeMixedFile(t, hpcFile, "hpc name")
 	writeMixedFile(t, cmadaasFile, "cmadaas name")
 
-	got := runCLI(t, mixedLocalArgs(configDir)...)
+	got := runCLI(t, mixedLocalArgs(configDir, storageBase)...)
 
 	assert.Equal(t, hpcFile, got, "file_names must take precedence over file_name within each path")
 }
@@ -80,16 +84,17 @@ func TestMixedSourceFilenamePriority(t *testing.T) {
 func TestMixedSourceOriginalLocalPathPriority(t *testing.T) {
 	rootDir := t.TempDir()
 	configDir := writeConfigWithRoot(t, e2eMixedConfigPath, rootDir)
+	storageBase := filepath.Join(rootDir, "cmadaas")
 	hpcFile := filepath.Join(rootDir, "archive", "2026101200", "hpc.2026101200024.grb2")
-	cmadaasFile := filepath.Join(rootDir, "cmadaas", "2026", "20261012", "cmadaas.2026101200024.grib2")
+	cmadaasFile := filepath.Join(storageBase, "2026", "20261012", "cmadaas.2026101200024.grib2")
 	writeMixedFile(t, hpcFile, "original local source")
 	writeMixedFile(t, cmadaasFile, "CMADAAS fallback")
 
-	got := runCLI(t, mixedLocalArgs(configDir)...)
+	got := runCLI(t, mixedLocalArgs(configDir, storageBase)...)
 	assert.Equal(t, hpcFile, got)
 
 	targetDir := filepath.Join(rootDir, "target")
-	stdout, stderr, err := runMixedFetch(t, configDir, targetDir, "--method=copy")
+	stdout, stderr, err := runMixedFetch(t, configDir, storageBase, targetDir, "--method=copy")
 	require.NoError(t, err, "fetch failed: %s", stderr)
 	target := filepath.Join(targetDir, filepath.Base(hpcFile))
 	assert.Equal(t, target, stdout)
@@ -102,15 +107,15 @@ func TestMixedSourceOriginalLocalPathPriority(t *testing.T) {
 
 func TestMixedSourceCMADAASFallbackAcrossCommands(t *testing.T) {
 	t.Run("local", func(t *testing.T) {
-		configDir, source := mixedCMADAASOnly(t)
-		got := runCLI(t, mixedLocalArgs(configDir)...)
+		configDir, storageBase, source := mixedCMADAASOnly(t)
+		got := runCLI(t, mixedLocalArgs(configDir, storageBase)...)
 		assert.Equal(t, source, got)
 	})
 
 	t.Run("fetch without cmafs backend", func(t *testing.T) {
-		configDir, source := mixedCMADAASOnly(t)
+		configDir, storageBase, source := mixedCMADAASOnly(t)
 		targetDir := t.TempDir()
-		stdout, stderr, err := runMixedFetch(t, configDir, targetDir, "--method=copy")
+		stdout, stderr, err := runMixedFetch(t, configDir, storageBase, targetDir, "--method=copy")
 		require.NoError(t, err, "CMADAAS must be selected before the unconfigured cmafs source: %s", stderr)
 		target := filepath.Join(targetDir, filepath.Base(source))
 		assert.Equal(t, target, stdout)
@@ -122,17 +127,18 @@ func TestMixedSourceCMADAASFallbackAcrossCommands(t *testing.T) {
 
 	for _, mode := range []string{"per_time", "batched"} {
 		t.Run("check local "+mode, func(t *testing.T) {
-			configDir, source := mixedCMADAASOnly(t)
+			configDir, storageBase, source := mixedCMADAASOnly(t)
 			reportFile := filepath.Join(t.TempDir(), "report.json")
 			checkerConfigPath := writeCheckerConfig(t, checkerConfig{
 				DataConfigDir:  filepath.ToSlash(configDir),
 				DataType:       e2eMixedDataType,
+				StorageBase:    filepath.ToSlash(storageBase),
 				CheckInterval:  "10ms",
 				MaxCheckCount:  20,
 				DelayTime:      "1ms",
 				CheckMode:      mode,
 				ForecastTimes:  []string{"24h"},
-				ExecuteCommand: doneCommand,
+				ExecuteCommand: `echo {{.StorageBase}} > {{.FilePath}}.storage-base`,
 				ReportFile:     reportFile,
 			})
 
@@ -143,6 +149,9 @@ func TestMixedSourceCMADAASFallbackAcrossCommands(t *testing.T) {
 			require.Len(t, report.Results, 1)
 			assert.Equal(t, source, report.Results[0].FilePath)
 			assert.Equal(t, "success", report.Results[0].Status)
+			content, err := os.ReadFile(source + ".storage-base")
+			require.NoError(t, err)
+			assert.Equal(t, filepath.ToSlash(storageBase), strings.TrimSpace(string(content)))
 		})
 	}
 }
@@ -150,18 +159,35 @@ func TestMixedSourceCMADAASFallbackAcrossCommands(t *testing.T) {
 func TestMixedSourceArchiveLevelSkipsStorageAndCmafs(t *testing.T) {
 	rootDir := t.TempDir()
 	configDir := writeConfigWithRoot(t, e2eMixedConfigPath, rootDir)
+	storageBase := filepath.Join(rootDir, "cmadaas")
 	storageFile := filepath.Join(rootDir, "storage", "2026101200", "hpc.2026101200024.grb2")
 	writeMixedFile(t, storageFile, "storage data")
 
-	got := runCLI(t, mixedLocalArgs(configDir, "--location-level=archive")...)
+	got := runCLI(t, mixedLocalArgs(configDir, storageBase, "--location-level=archive")...)
 	assert.Equal(t, "NOTFOUND", got)
 
 	targetDir := filepath.Join(rootDir, "target-must-not-exist")
-	stdout, stderr, err := runMixedFetch(t, configDir, targetDir, "--location-level=archive")
+	stdout, stderr, err := runMixedFetch(t, configDir, storageBase, targetDir, "--location-level=archive")
 	require.Error(t, err)
 	assert.Empty(t, stdout)
 	assert.Contains(t, stderr, "data not found")
 	assert.NotContains(t, stderr, "backend not configured", "archive filtering must skip the cmafs source")
 	_, statErr := os.Stat(targetDir)
 	assert.True(t, os.IsNotExist(statErr), "a not-found fetch must not create the target directory")
+}
+
+func TestMixedSourceRequiresStorageBase(t *testing.T) {
+	rootDir := t.TempDir()
+	configDir := writeConfigWithRoot(t, e2eMixedConfigPath, rootDir)
+	cmd := exec.Command(getBinaryPath(t),
+		"local",
+		"--data-type="+e2eMixedDataType,
+		"--data-config-dir="+configDir,
+		"--start-time=2026101200",
+		"--forecast-time=24h",
+	)
+	output, err := cmd.CombinedOutput()
+	require.Error(t, err)
+	assert.Contains(t, string(output), "storage base is required")
+	assert.Contains(t, string(output), "--storage-base")
 }

@@ -27,6 +27,8 @@ func init() {
 
 	localCmd.Flags().StringVar(&localLocationLevels, "location-level", "",
 		"Location levels to search, split by ',', such as 'runtime,archive'. Empty searches all.")
+	localCmd.Flags().StringVar(&localStorageBase, "storage-base", "",
+		"Absolute local mount root for {{.StorageBase}} in data config templates.")
 	localCmd.Flags().StringVar(&localStartTimeString, "start-time", "",
 		"Start time, YYYYMMDDHH, such as 2026062400. (required)")
 	localCmd.Flags().StringVar(&localForecastTimeString, "forecast-time", "",
@@ -135,7 +137,7 @@ func findLocalFile(cmd *cobra.Command, args []string) {
 		return
 	}
 
-	dataConfig, err := dataconfig.ParseConfigContent(configContent, localStartTime, localForecastTime, localMember)
+	dataConfig, err := dataconfig.ParseConfigContentWithStorageBase(configContent, localStartTime, localForecastTime, localMember, localStorageBase)
 	if err != nil {
 		log.Fatalf("load config from content has error: %s", err)
 		return
