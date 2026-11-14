@@ -176,18 +176,24 @@ func TestMixedSourceArchiveLevelSkipsStorageAndCmafs(t *testing.T) {
 	assert.True(t, os.IsNotExist(statErr), "a not-found fetch must not create the target directory")
 }
 
-func TestMixedSourceRequiresStorageBase(t *testing.T) {
-	rootDir := t.TempDir()
-	configDir := writeConfigWithRoot(t, e2eMixedConfigPath, rootDir)
-	cmd := exec.Command(getBinaryPath(t),
-		"local",
-		"--data-type="+e2eMixedDataType,
-		"--data-config-dir="+configDir,
-		"--start-time=2026101200",
-		"--forecast-time=24h",
-	)
-	output, err := cmd.CombinedOutput()
-	require.Error(t, err)
-	assert.Contains(t, string(output), "storage base is required")
-	assert.Contains(t, string(output), "--storage-base")
+func TestMixedSourceWithoutStorageBaseUsesOtherSources(t *testing.T) {
+	newLocalCommand := func(configDir string) *exec.Cmd {
+		return exec.Command(getBinaryPath(t),
+			"local",
+			"--data-type="+e2eMixedDataType,
+			"--data-config-dir="+configDir,
+			"--start-time=2026101200",
+			"--forecast-time=24h",
+		)
+	}
+
+	t.Run("original local source remains available", func(t *testing.T) {
+		rootDir := t.TempDir()
+		configDir := writeConfigWithRoot(t, e2eMixedConfigPath, rootDir)
+		hpcFile := filepath.Join(rootDir, "archive", "2026101200", "hpc.2026101200024.grb2")
+		writeMixedFile(t, hpcFile, "HPC data")
+		output, err := newLocalCommand(configDir).CombinedOutput()
+		require.NoError(t, err, "local failed without storage base: %s", output)
+		assert.Equal(t, hpcFile, strings.TrimSpace(string(output)))
+	})
 }

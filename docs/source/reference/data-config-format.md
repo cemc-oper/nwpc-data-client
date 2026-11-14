@@ -53,7 +53,8 @@ cmafs 的 `path` 必须是 POSIX 绝对路径且不能包含换行。同一业�
 CMADAAS 已经挂载到当前机器时，挂载目录使用 `type: local`，不需要新增
 `cmadaas` 类型或远端 backend。挂载根是机器相关输入，基线配置使用
 `{{.StorageBase}}`，由 `local`/`fetch` 的 `--storage-base` 或 checker YAML 的
-`storage_base` 显式指定；非空值必须是绝对本地路径。配置引用该变量而未提供时会报错。
+`storage_base` 显式指定；非空值必须是绝对本地路径。空字符串直接参与整文件模板渲染，
+例如 `{{.StorageBase}}/DATA` 会得到 `/DATA`，调用方负责提供适合当前机器的挂载根。
 
 若 HPC 与 CMADAAS 的文件名不同，可以同时使用 `file_names` 和 `file_name`。
 例如 CMA-GFS-GMF ORIG：

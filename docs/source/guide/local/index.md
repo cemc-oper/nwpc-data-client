@@ -32,7 +32,7 @@ nwpc_data_client local \
 | `--data-config-dir` | 自定义配置目录，与 `--data-type` 联用，替代内嵌配置 |
 | `--data-config-file` | 直接指定单个配置文件，优先级最高 |
 | `--location-level` | 逗号分隔的位置级别（如 `runtime,archive`），只搜索对应级别的路径条目；空为全部 |
-| `--storage-base` | `{{.StorageBase}}` 使用的本地存储挂载根；非空时必须是绝对路径，配置引用该变量时必填 |
+| `--storage-base` | `{{.StorageBase}}` 使用的本地存储挂载根；非空时必须是绝对路径，空字符串直接参与模板渲染 |
 | `--member` | 集合成员编号，如 `000`、`014`，代入模板变量 `{{.Member}}` |
 | `--show-types` | 列出可用数据类型并退出（配合 `--data-config-dir` 时列目录中的配置） |
 | `--debug` | 输出调试日志，可看到每个候选路径的检查过程 |
@@ -62,9 +62,11 @@ nwpc_data_client local \
     --storage-base=/CMADAAS --location-level=archive
 ```
 
-其他机器可传入自己的绝对挂载路径，例如 `--storage-base=/mnt/cmadaas`。这六份配置
-实际引用该变量，因此未提供 `--storage-base` 时会明确报错，不会尝试 `/DATA` 等错误
-路径。`check local` 除同名 CLI 参数外，也可在 checker YAML 中设置：
+其他机器可传入自己的绝对挂载路径，例如 `--storage-base=/mnt/cmadaas`。如果不需要
+CMADAAS，可以不设置该参数，原 HPC local 候选仍按原顺序优先查找。空字符串会直接
+参与模板渲染，例如 CMADAAS 路径可能成为 `/DATA/...`；该路径不会被人为过滤，若实际
+存在也会按普通 local 候选参与查找，因此调用方负责提供适合当前机器的值。
+`check local` 除同名 CLI 参数外，也可在 checker YAML 中设置：
 
 ```yaml
 storage_base: /CMADAAS

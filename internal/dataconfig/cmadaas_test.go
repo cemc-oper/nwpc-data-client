@@ -40,17 +40,22 @@ func TestCMADAASRepsCrossYearPaths(t *testing.T) {
 	}, cmadaasPaths[1])
 }
 
-func TestParseConfigContentRequiresStorageBaseWhenUsed(t *testing.T) {
+func TestParseConfigContentAllowsEmptyStorageBase(t *testing.T) {
 	content := `default: NOTFOUND
 file_name: data.grb2
 paths:
   - type: local
+    level: runtime
+    path: /hpc/data
+  - type: local
     level: archive
     path: '{{.StorageBase}}/DATA'
 `
-	_, err := ParseConfigContent(content, time.Now(), 0, "")
-	require.Error(t, err)
-	assert.Contains(t, err.Error(), "storage base is required")
+	config, err := ParseConfigContent(content, time.Now(), 0, "")
+	require.NoError(t, err)
+	require.Len(t, config.Paths, 2)
+	assert.Equal(t, "/hpc/data", config.Paths[0].Path)
+	assert.Equal(t, "/DATA", config.Paths[1].Path)
 }
 
 func TestParseConfigContentRejectsRelativeStorageBase(t *testing.T) {

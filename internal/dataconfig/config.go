@@ -99,10 +99,8 @@ func ParseConfigContent(content string, startTime time.Time, forecastTime time.D
 	return ParseConfigContentWithStorageBase(content, startTime, forecastTime, member, "")
 }
 
-const missingStorageBaseMarker = "__NWPC_DATA_CLIENT_MISSING_STORAGE_BASE__"
-
 // ValidateStorageBase validates an explicitly supplied machine mount root.
-// Empty is valid here; template rendering reports an error only if it is used.
+// Empty is allowed and is passed directly to the whole-file template.
 func ValidateStorageBase(storageBase string) error {
 	if storageBase == "" {
 		return nil
@@ -116,9 +114,8 @@ func ValidateStorageBase(storageBase string) error {
 	return nil
 }
 
-// ParseConfigContentWithStorageBase parses a data config template with an
-// optional, machine-specific absolute local mount root. The marker makes a
-// missing value an explicit error only when the template actually uses it.
+// ParseConfigContentWithStorageBase parses a data config template with a
+// machine-specific local mount root. Empty is a valid template value.
 func ParseConfigContentWithStorageBase(content string, startTime time.Time, forecastTime time.Duration, member string, storageBase string) (DataConfig, error) {
 	if err := ValidateStorageBase(storageBase); err != nil {
 		return DataConfig{}, err
@@ -129,9 +126,6 @@ func ParseConfigContentWithStorageBase(content string, startTime time.Time, fore
 
 	dataConfig := DataConfig{}
 	tpVar := GenerateConfigTemplateVariableWithStorageBase(startTime, forecastTime, member, storageBase)
-	if storageBase == "" {
-		tpVar.StorageBase = missingStorageBaseMarker
-	}
 
 	forecastTimeStr := FormatForecastTimeShort(forecastTime)
 	currentLog := log.WithFields(log.Fields{"forecastTime": forecastTimeStr})
@@ -147,9 +141,6 @@ func ParseConfigContentWithStorageBase(content string, startTime time.Time, fore
 		return dataConfig, err
 	}
 	parsedContent := configBuilder.String()
-	if strings.Contains(parsedContent, missingStorageBaseMarker) {
-		return DataConfig{}, fmt.Errorf("storage base is required by this data config; set --storage-base or checker storage_base")
-	}
 
 	dataConfig, err = LoadDataConfigFromContent(parsedContent)
 	if err != nil {

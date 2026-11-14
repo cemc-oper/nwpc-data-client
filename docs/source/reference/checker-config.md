@@ -12,7 +12,7 @@ CheckerConfig 是 `check local` 的运行时配置（定义于
 | `data_config_dir` | `--data-config-dir` | `""` | 完整配置树目录，可选，不能单独使用；不是内嵌配置的增量覆盖层 |
 | `data_config_file` | `--data-config-file` | `""` | 单个配置文件。设置后忽略 `data_config_dir` 与 `data_type` |
 | `location_levels` | `--location-level` | `""` | 逗号分隔的位置级别，空表示搜索全部 |
-| `storage_base` | `--storage-base` | `""` | 机器相关的本地存储挂载根，代入 `{{.StorageBase}}`；非空时必须是绝对路径，配置引用该变量时必填 |
+| `storage_base` | `--storage-base` | `""` | 机器相关的本地存储挂载根，代入 `{{.StorageBase}}`；非空时必须是绝对路径，空字符串直接参与模板渲染 |
 | `max_check_count` | `--max-check-count` | `2880` | 每个预报时效的最大检查次数，必须大于 0；存在性检查与大小稳定检查共用同一预算 |
 | `check_interval` | `--check-interval` | `5s` | 两次检查的间隔（Go duration 格式），必须大于 0 |
 | `check_interval_jitter` | `--check-interval-jitter` | `0.1` | 逐轮抖动比例：每轮实际间隔在 `interval×(1±j)` 内随机，取值 `[0, 0.5]`，`0` 关闭 |

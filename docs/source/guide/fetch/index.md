@@ -53,8 +53,9 @@ storage 使用 copy 是为了避免生成仅在特定存储节点可见的链接
 ## 从 CMADAAS 挂载目录落位
 
 对于 CMADAAS 挂载目录，fetch 使用本地源链路，不经过 SSH/rsync，也不需要
-`--backend-config`。配置使用 `{{.StorageBase}}` 表示机器相关的挂载根，调用时必须
-通过 `--storage-base` 提供绝对路径。例如当前 WSL 的挂载根为 `/CMADAAS`：
+`--backend-config`。配置使用 `{{.StorageBase}}` 表示机器相关的挂载根。需要从 CMADAAS
+获取文件时，通过 `--storage-base` 提供绝对路径；不需要该数据源时无需设置。例如当前
+WSL 的挂载根为 `/CMADAAS`：
 
 ```bash
 nwpc_data_client fetch \
@@ -72,8 +73,9 @@ nwpc_data_client fetch \
 
 CMADAAS local 候选位于 cmafs 之前，命中后不会访问 cmafs。使用
 `--location-level=archive` 还会跳过 storage local 和 cmafs；因此纯 CMADAAS 查询即使
-未命中，也不会因为机器未配置 cmafs backend 而报后端错误。未提供 `--storage-base`
-则会在渲染配置时明确失败，因为六份 CMADAAS 配置都引用了该变量。
+未命中，也不会因为机器未配置 cmafs backend 而报后端错误。未设置 `--storage-base`
+时空字符串直接参与模板渲染，例如得到 `/DATA/...`；该路径仍作为普通 local 候选参与
+查找，调用方负责正确设置挂载根。
 
 目标文件名继承实际源的 basename。CMADAAS 文件通常采用 `Z_NAFP_C_BABJ_...` 命名，
 与原 HPC 文件名不同，后续程序必须使用 fetch stdout 返回的路径，不能假定为
