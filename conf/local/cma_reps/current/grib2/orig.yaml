@@ -8,7 +8,9 @@ _arrival_order: unordered
 
 default: NOTFOUND
 
-file_name: mef.gra.{{.Member}}.{{.Year}}{{.Month}}{{.Day}}{{.Hour}}{{.ForecastHour}}.grb2
+file_names:
+  - mef.gra.{{.Member}}.{{.Year}}{{.Month}}{{.Day}}{{.Hour}}{{.ForecastHour}}.grb2
+file_name: Z_NAFP_C_BABJ_{{.Year}}{{.Month}}{{.Day}}{{.Hour}}0000_P_NWPC-GRAPES-REPS-CN-{{.ForecastHour}}00-m{{.Member}}.grib2
 
 paths:
   - type: local
@@ -19,6 +21,15 @@ paths:
   - type: local
     level: storage
     path: /sstorage/COMMONDATA/OPER/CEMC/REPS/Prod-grib/{{.Year}}{{.Month}}{{.Day}}{{.Hour}}/grib2
+
+  # REPS 06 UTC files use the start date; 18 UTC files use the next day.
+  - type: local
+    level: archive
+    path: /CMADAAS/ORIG-DATA/NAFP/CMA-REPS/{{.Year}}/{{.Year}}{{.Month}}{{.Day}}
+
+  - type: local
+    level: archive
+    path: /CMADAAS/ORIG-DATA/NAFP/CMA-REPS/{{ generateStartTime .StartTime 24 | getYear }}/{{ generateStartTime .StartTime 24 | getYear }}{{ generateStartTime .StartTime 24 | getMonth }}{{ generateStartTime .StartTime 24 | getDay }}
 
   - type: cmafs
     level: storage

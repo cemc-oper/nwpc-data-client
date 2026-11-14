@@ -12,7 +12,9 @@ _arrival_order: unordered
 
 default: NOTFOUND
 
-file_name: gef.gra.{{.Member}}.{{.Year}}{{.Month}}{{.Day}}{{.Hour}}{{.ForecastHour}}.grb2
+file_names:
+  - gef.gra.{{.Member}}.{{.Year}}{{.Month}}{{.Day}}{{.Hour}}{{.ForecastHour}}.grb2
+file_name: Z_NAFP_C_BABJ_{{.Year}}{{.Month}}{{.Day}}{{.Hour}}0000_P_NWPC-GRAPES-GEPS-GLB-{{.ForecastHour}}00-m{{.Member}}.grib2
 
 paths:
   - type: local
@@ -23,6 +25,11 @@ paths:
   - type: local
     level: storage
     path: /sstorage/COMMONDATA/OPER/CEMC/GEPS/Prod-grib/{{.Year}}{{.Month}}{{.Day}}{{.Hour}}/grib2.0p25
+
+  # WSL reads the mounted CMADAAS archive directly; keep before cmafs.
+  - type: local
+    level: archive
+    path: /CMADAAS/DATA/NAFP/NMC/GRAPES-GEPS/{{.Year}}/{{.Year}}{{.Month}}{{.Day}}
 
   - type: cmafs
     level: storage
@@ -256,7 +263,9 @@ _arrival_order: unordered
 
 default: NOTFOUND
 
-file_name: gmf.gra.{{.Year}}{{.Month}}{{.Day}}{{.Hour}}{{.ForecastHour}}.grb2
+file_names:
+  - gmf.gra.{{.Year}}{{.Month}}{{.Day}}{{.Hour}}{{.ForecastHour}}.grb2
+file_name: Z_NAFP_C_BABJ_{{.Year}}{{.Month}}{{.Day}}{{.Hour}}0000_P_NWPC-GRAPES-GFS-GLB-{{.ForecastHour}}00.grib2
 
 paths:
   - type: local
@@ -271,6 +280,11 @@ paths:
   - type: local
     level: storage
     path: /sstorage/COMMONDATA/OPER/CEMC/GFS_GMF/Prod-grib/{{.Year}}{{.Month}}{{.Day}}{{.Hour}}/ORIG
+
+  # WSL reads the mounted CMADAAS archive directly; keep before cmafs.
+  - type: local
+    level: archive
+    path: /CMADAAS/DATA/NAFP/NMC/GRAPES-GFS-GLB/{{.Year}}/{{.Year}}{{.Month}}{{.Day}}
 
   - type: cmafs
     level: storage
@@ -388,7 +402,9 @@ _arrival_order: unordered
 
 default: NOTFOUND
 
-file_name: rmf.hgra.{{.Year}}{{.Month}}{{.Day}}{{.Hour}}{{.ForecastHour}}.grb2
+file_names:
+  - rmf.hgra.{{.Year}}{{.Month}}{{.Day}}{{.Hour}}{{.ForecastHour}}.grb2
+file_name: Z_NAFP_C_BABJ_{{.Year}}{{.Month}}{{.Day}}{{.Hour}}0000_P_CEMC-CMA-MESO-1KM-ORIG-{{.ForecastHour}}00.grb2
 
 paths:
   - type: local
@@ -403,6 +419,11 @@ paths:
   - type: local
     level: storage
     path: /sstorage/COMMONDATA/OPER/CEMC/MESO_1KM/Prod-grib/{{.Year}}{{.Month}}{{.Day}}{{.Hour}}/ORIG
+
+  # WSL reads the mounted CMADAAS archive directly; keep before cmafs.
+  - type: local
+    level: archive
+    path: /CMADAAS/DATA/NAFP/CEMC/MESO_1KM/ORI/{{.Year}}/{{.Year}}{{.Month}}{{.Day}}
 
   - type: cmafs
     level: storage
@@ -675,7 +696,9 @@ _arrival_order: unordered
 
 default: NOTFOUND
 
-file_name: rmf.hgra.{{.Year}}{{.Month}}{{.Day}}{{.Hour}}{{.ForecastHour}}.grb2
+file_names:
+  - rmf.hgra.{{.Year}}{{.Month}}{{.Day}}{{.Hour}}{{.ForecastHour}}.grb2
+file_name: Z_NAFP_C_BABJ_{{.Year}}{{.Month}}{{.Day}}{{.Hour}}0000_P_NWPC-GRAPES-3KM-ORIG-{{.ForecastHour}}00.grb2
 
 paths:
   - type: local
@@ -691,6 +714,11 @@ paths:
     level: storage
     path: /sstorage/COMMONDATA/OPER/CEMC/MESO_3KM/Prod-grib/{{.Year}}{{.Month}}{{.Day}}{{.Hour}}/ORIG
 
+  # WSL reads the mounted CMADAAS archive directly; keep before cmafs.
+  - type: local
+    level: archive
+    path: /CMADAAS/DATA/NAFP/GRAPES/RAFS/{{.Year}}/{{.Year}}{{.Month}}{{.Day}}
+
   - type: cmafs
     level: storage
     path: /sstorage/COMMONDATA/OPER/CEMC/MESO_3KM/Prod-grib/{{.Year}}{{.Month}}{{.Day}}{{.Hour}}/ORIG
@@ -705,7 +733,9 @@ _arrival_order: unordered
 
 default: NOTFOUND
 
-file_name: mef.gra.{{.Member}}.{{.Year}}{{.Month}}{{.Day}}{{.Hour}}{{.ForecastHour}}.grb2
+file_names:
+  - mef.gra.{{.Member}}.{{.Year}}{{.Month}}{{.Day}}{{.Hour}}{{.ForecastHour}}.grb2
+file_name: Z_NAFP_C_BABJ_{{.Year}}{{.Month}}{{.Day}}{{.Hour}}0000_P_NWPC-GRAPES-REPS-CN-{{.ForecastHour}}00-m{{.Member}}.grib2
 
 paths:
   - type: local
@@ -716,6 +746,15 @@ paths:
   - type: local
     level: storage
     path: /sstorage/COMMONDATA/OPER/CEMC/REPS/Prod-grib/{{.Year}}{{.Month}}{{.Day}}{{.Hour}}/grib2
+
+  # REPS 06 UTC files use the start date; 18 UTC files use the next day.
+  - type: local
+    level: archive
+    path: /CMADAAS/ORIG-DATA/NAFP/CMA-REPS/{{.Year}}/{{.Year}}{{.Month}}{{.Day}}
+
+  - type: local
+    level: archive
+    path: /CMADAAS/ORIG-DATA/NAFP/CMA-REPS/{{ generateStartTime .StartTime 24 | getYear }}/{{ generateStartTime .StartTime 24 | getYear }}{{ generateStartTime .StartTime 24 | getMonth }}{{ generateStartTime .StartTime 24 | getDay }}
 
   - type: cmafs
     level: storage
@@ -815,7 +854,9 @@ _arrival_order: unordered
 
 default: NOTFOUND
 
-file_name: rmf.tcgra.{{.Year}}{{.Month}}{{.Day}}{{.Hour}}{{.ForecastHour}}.grb2
+file_names:
+  - rmf.tcgra.{{.Year}}{{.Month}}{{.Day}}{{.Hour}}{{.ForecastHour}}.grb2
+file_name: Z_NAFP_C_BABJ_{{.Year}}{{.Month}}{{.Day}}{{.Hour}}0000_P_NWPC-GRAPES-TYM-ACWP-{{.ForecastHour}}00.grib2
 
 paths:
   - type: local
@@ -830,6 +871,11 @@ paths:
   - type: local
     level: storage
     path: /sstorage/COMMONDATA/OPER/CEMC/TYM/Prod-grib/{{.Year}}{{.Month}}{{.Day}}{{.Hour}}/ORIG
+
+  # WSL reads the mounted CMADAAS archive directly; keep before cmafs.
+  - type: local
+    level: archive
+    path: /CMADAAS/DATA/NAFP/NMC/GRAPES-TYM/{{.Year}}/{{.Year}}{{.Month}}{{.Day}}
 
   - type: cmafs
     level: storage

@@ -8,7 +8,9 @@ _arrival_order: unordered
 
 default: NOTFOUND
 
-file_name: rmf.tcgra.{{.Year}}{{.Month}}{{.Day}}{{.Hour}}{{.ForecastHour}}.grb2
+file_names:
+  - rmf.tcgra.{{.Year}}{{.Month}}{{.Day}}{{.Hour}}{{.ForecastHour}}.grb2
+file_name: Z_NAFP_C_BABJ_{{.Year}}{{.Month}}{{.Day}}{{.Hour}}0000_P_NWPC-GRAPES-TYM-ACWP-{{.ForecastHour}}00.grib2
 
 paths:
   - type: local
@@ -23,6 +25,11 @@ paths:
   - type: local
     level: storage
     path: /sstorage/COMMONDATA/OPER/CEMC/TYM/Prod-grib/{{.Year}}{{.Month}}{{.Day}}{{.Hour}}/ORIG
+
+  # WSL reads the mounted CMADAAS archive directly; keep before cmafs.
+  - type: local
+    level: archive
+    path: /CMADAAS/DATA/NAFP/NMC/GRAPES-TYM/{{.Year}}/{{.Year}}{{.Month}}{{.Day}}
 
   - type: cmafs
     level: storage
