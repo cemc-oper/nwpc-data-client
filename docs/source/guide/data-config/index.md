@@ -1,6 +1,9 @@
 # 数据配置
 
-数据配置用 YAML 描述数据文件的目录、命名规则和候选位置。`local` 与 `check local` 共用同一套配置解析规则，数据类型则用于定位具体配置文件。
+数据配置用 YAML 描述数据文件的目录、命名规则和候选位置。`local`、`fetch` 与
+`check local` 共用同一套配置解析规则，数据类型用于定位具体配置文件。`local` 和
+`check local` 只检查 local 候选并跳过 cmafs；`fetch` 还可以通过机器 backend
+获取 cmafs 文件。
 
 ```{eval-rst}
 .. toctree::

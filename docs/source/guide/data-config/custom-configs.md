@@ -46,11 +46,11 @@ nwpc_data_client local --data-config-dir=./myconf/local \
 `config export` 导出基线 → 修改路径指向本地存储 → 分发整个目录 →
 各节点用 `--data-config-dir` 引用。
 
-**场景三：checker 任务**
+**场景三：checker 任务与其他数据命令**
 
-`check local` 同样支持以上三种方式，通过 `--checker-config` YAML 中的
-`data_config_dir` / `data_config_file` / `data_type` 字段或对应 CLI
-参数指定。
+`local`、`fetch` 和 `check local` 均支持以上三种方式。`check local` 还可以通过
+`--checker-config` YAML 中的 `data_config_dir` / `data_config_file` / `data_type`
+字段或对应 CLI 参数指定。
 
 ## 校验自定义配置
 

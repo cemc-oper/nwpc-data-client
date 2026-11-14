@@ -17,7 +17,7 @@
 check_mode: batched
 data_type: cma_gfs_gmf/current/grib2/orig
 forecast_times: ["0h", "3h", "6h"]
-execute_command: "echo ready: {{.FilePath}}"
+execute_command: 'echo "ready: {{.FilePath}}"'
 ```
 
 ```bash

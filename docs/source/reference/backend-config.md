@@ -2,7 +2,8 @@
 
 `fetch --backend-config` 指定机器级后端 YAML。它描述 cmafs 二级存储的 SSH/rsync
 连接方式，与 data config 中的数据位置分离。只有实际需要 cmafs 候选时才要求后端；
-纯本地 fetch 不需要该文件。
+纯本地 fetch 不需要该文件。完整的候选配置、认证准备和获取步骤见
+[指南：从 cmafs 二级存储获取](../guide/fetch/cmafs.md)。
 
 配置解析是离线的。可用以下命令单独校验，不会连接服务器：
 

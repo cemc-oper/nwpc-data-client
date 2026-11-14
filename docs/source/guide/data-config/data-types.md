@@ -1,7 +1,7 @@
 # 数据类型
 
 数据类型是**层级相对路径**，而不是扁平名称。它唯一确定一个数据配置
-文件，是 `local` 与 `check local` 命令定位数据的核心参数。
+文件，是 `local`、`fetch` 与 `check local` 命令定位数据的核心参数。
 
 ## 组织方式
 
@@ -41,8 +41,7 @@ cma_gfs_gmf/current/grib2/orig
 ## 支持 CMADAAS 挂载归档的数据类型
 
 以下现有 data type 同时包含原 HPC 路径和 CMADAAS 挂载路径，不需要使用新的
-数据类型名称。CMADAAS 挂载根由 `--storage-base` 或 checker YAML 的 `storage_base`
-显式指定，不固定为某台机器的目录：
+数据类型名称：
 
 | 系统 | data type |
 |---|---|
@@ -54,9 +53,8 @@ cma_gfs_gmf/current/grib2/orig
 | CMA-MESO 1KM | `cma_meso_1km/current/grib2/orig` |
 
 支持范围仅限上述 `current/grib2/orig` 配置，不包括 `orig.cold`、其他产品或部署仓库
-中的版本化业务配置。CMADAAS 文件与 HPC 文件的命名不同，但共用同一数据身份，按配置
-中的候选顺序查找。使用示例和挂载前提见[local 指南](../local/index.md)，落位方法见
-[fetch 指南](../fetch/index.md)。
+中的版本化业务配置。挂载前提、`--storage-base`、候选顺序以及 local/fetch/check local
+示例统一见[CMADAAS 挂载归档](../cmadaas.md)。
 
 ## 查看可用数据类型
 

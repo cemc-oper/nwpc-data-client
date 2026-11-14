@@ -1,11 +1,19 @@
-# fetch 命令：将本地或二级存储数据落位到目标目录
+# fetch 命令：将数据落位到目标目录
 
 `nwpc_data_client fetch` 使用与 `local` 相同的数据配置和候选顺序，选中第一个
 已经存在的普通文件，再将本地或 cmafs 二级存储文件复制到用户指定的目录；本地源
 还可以使用符号链接。成功时 stdout 只输出最终绝对路径，便于直接传给后续程序。
 
-它是一次性操作，**不会等待尚未生成的文件**；需要轮询等待时仍使用
-`check local`。
+它是一次性操作，**不会等待尚未生成的文件**；需要轮询等待本地文件时使用
+[`check local`](../check-local/index.md)。
+
+```{eval-rst}
+.. toctree::
+   :maxdepth: 1
+
+   cmafs
+   reliability
+```
 
 ## 基本用法
 
@@ -23,8 +31,8 @@ nwpc_data_client fetch \
 /work/input/gmf.gra.2026062400024.grb2
 ```
 
-目标文件名继承源文件 basename。目标目录不存在时会自动创建。可以将结果保存为
-Shell 变量：
+目标文件名继承实际源文件的 basename，目标目录不存在时会自动创建。可以将结果
+保存为 Shell 变量：
 
 ```bash
 input_file="$(
@@ -36,7 +44,8 @@ input_file="$(
 )"
 ```
 
-日志和错误写 stderr，不会混入上述 stdout 路径。
+日志和错误写 stderr，不会混入上述 stdout 路径。不同存储来源的文件名可能不同，
+后续程序应使用返回路径，不要自行拼接或假定文件名。
 
 ## copy、symlink 与 auto
 
@@ -48,115 +57,25 @@ input_file="$(
 
 storage 使用 copy 是为了避免生成仅在特定存储节点可见的链接。显式
 `--method=symlink` 时，调用方需要自行确认下游能够访问源路径，并接受源文件被
-清理或修改的影响。第一版不提供硬链接模式。
+清理或修改的影响。cmafs 不支持显式 symlink。
 
-## 从 CMADAAS 挂载目录落位
+## 选择数据来源
 
-对于 CMADAAS 挂载目录，fetch 使用本地源链路，不经过 SSH/rsync，也不需要
-`--backend-config`。配置使用 `{{.StorageBase}}` 表示机器相关的挂载根。需要从 CMADAAS
-获取文件时，通过 `--storage-base` 提供绝对路径；不需要该数据源时无需设置。例如当前
-WSL 的挂载根为 `/CMADAAS`：
+- 普通本地或直接挂载目录不需要额外 backend。
+- CMADAAS 挂载目录按本地源处理，通过 `--storage-base` 指定挂载根；完整示例见
+  [CMADAAS 挂载归档](../cmadaas.md)。
+- 没有直接挂载二级存储时，可以通过机器 backend 使用 SSH/rsync 获取 cmafs 文件，
+  见[从 cmafs 二级存储获取](cmafs.md)。
 
-```bash
-nwpc_data_client fetch \
-    --data-type=cma_gfs_gmf/current/grib2/orig \
-    --start-time=2026111300 --forecast-time=24h \
-    --storage-base=/CMADAAS --location-level=archive \
-    --target-dir=/work/input --method=copy
-```
-
-| 方法 | CMADAAS archive 源的行为 | 使用约束 |
-|---|---|---|
-| `copy`（默认） | 复制为独立普通文件 | 后续使用不依赖挂载；需要目标磁盘空间和复制时间 |
-| `symlink` | 创建指向实际挂载根下源文件的链接 | 下游必须能访问同一挂载路径，并接受源清理或修改的影响 |
-| `auto` | archive 按普通本地归档规则选择 symlink | 需要独立副本时应显式使用 `copy`，不要依赖 auto |
-
-CMADAAS local 候选位于 cmafs 之前，命中后不会访问 cmafs。使用
-`--location-level=archive` 还会跳过 storage local 和 cmafs；因此纯 CMADAAS 查询即使
-未命中，也不会因为机器未配置 cmafs backend 而报后端错误。未设置 `--storage-base`
-时空字符串直接参与模板渲染，例如得到 `/DATA/...`；该路径仍作为普通 local 候选参与
-查找，调用方负责正确设置挂载根。
-
-目标文件名继承实际源的 basename。CMADAAS 文件通常采用 `Z_NAFP_C_BABJ_...` 命名，
-与原 HPC 文件名不同，后续程序必须使用 fetch stdout 返回的路径，不能假定为
-`gmf.gra...` 等 HPC 名称。复制、稳定检查、原子发布和目标复用规则与普通本地源相同。
-
-## 从 cmafs 二级存储获取
-
-数据配置可以同时声明直接挂载和 cmafs 后备路径，例如 GFS_GMF ORIG：
-
-```yaml
-paths:
-  - type: local
-    level: storage
-    path: /sstorage/COMMONDATA/OPER/CEMC/GFS_GMF/Prod-grib/{{.Year}}{{.Month}}{{.Day}}{{.Hour}}/ORIG
-  - type: cmafs
-    level: storage
-    path: /sstorage/COMMONDATA/OPER/CEMC/GFS_GMF/Prod-grib/{{.Year}}{{.Month}}{{.Day}}{{.Hour}}/ORIG
-```
-
-在 datatrans 上，第一个 local 候选直接命中 NFS 文件；在登录节点没有该挂载时，
-候选明确不存在才回退到 cmafs。此时提供机器 backend：
-
-```bash
-nwpc_data_client fetch \
-    --data-config-file=./my_config.yaml \
-    --backend-config=./backend.yaml \
-    --start-time=2026111300 \
-    --forecast-time=0h \
-    --target-dir=/work/input
-```
-
-backend 使用系统 SSH/rsync，不需要 `module load cmafs/cmafs`。只有远端明确不存在
-才继续其他候选；权限、认证、主机密钥、网络和传输错误都会直接失败。cmafs 不支持
-显式 symlink，auto 始终下载为普通文件。
-
-下载前后都会核对远端大小和 mtime，本地临时文件也要通过相同元数据校验，然后才
-无覆盖发布。字段、认证要求及 SC1 的 known_hosts 特殊配置见
-[机器后端配置](../../reference/backend-config.md)。
-
-## 源文件就绪检查
-
-本地源文件必须：
-
-1. 是普通文件且大小非零；
-2. 在 `--stable-interval`（默认 `1s`）间隔的两次检查中，大小和修改时间不变；
-3. copy 完成后仍保持相同大小和修改时间。
-
-复制使用同一个已打开源文件描述符完成检查和读取，避免检查后被替换成另一个
-文件。两次稳定观察只是就绪启发式，不进行 GRIB、NetCDF 等内容格式校验。
-
-候选路径只在明确不存在时继续下一个；权限错误、目录、空文件或正在变化的文件
-都会直接失败，不会改选其他数据源。
-
-## 原子发布、重复执行与并发
-
-复制流程为：
-
-```text
-目标目录内唯一临时文件 → 复制与校验 → 无覆盖发布 → 删除临时名称
-```
-
-正式目标不会暴露仍在写入的半份文件。同一目标使用同目录锁文件进行跨进程互斥；
-锁文件会保留，不能直接删除后假设没有其他等待者。进程异常退出可能留下唯一命名的
-临时文件，清理由业务运行目录的维护策略负责。
-
-已有目标按以下规则处理：
-
-- copy 可复用大小非零且大小、mtime（Unix 秒）与源一致的普通文件；
-- symlink 可复用指向完全相同源路径的符号链接；
-- auto 可以复用合法普通文件；只有非 storage 的本地源可以复用同向 symlink，cmafs 不复用远端链接；
-- 方法与目标类型不符、内容元数据不符、空文件或目录均报目标冲突；
-- 任何情况下都不覆盖已有目标。
-
-复用是操作幂等判断，不是密码学完整性校验。由于需要重新读取源元数据，源文件已经
-删除时不能仅凭目标存在就判定为同一结果。
+所有来源都要求源文件非空并通过稳定性检查。目标以临时文件和无覆盖发布方式写入，
+重复执行可以复用匹配的目标，但不会自动覆盖冲突文件。详细规则见
+[源文件检查与目标发布](reliability.md)。
 
 ## 参数与退出码
 
 数据配置参数与 `local` 相同：`--data-type`、`--data-config-dir`、
-`--data-config-file`、`--location-level`、`--storage-base`、`--start-time`、`--forecast-time`
-和 `--member`。fetch 特有参数：
+`--data-config-file`、`--location-level`、`--storage-base`、`--start-time`、
+`--forecast-time` 和 `--member`。fetch 特有参数：
 
 | 参数 | 默认值 | 说明 |
 |---|---|---|
@@ -170,4 +89,5 @@ backend 使用系统 SSH/rsync，不需要 `module load cmafs/cmafs`。只有远
 - 未找到、配置错误、源未稳定、目标冲突或复制失败：退出码 1；
 - 收到 SIGHUP、SIGINT、SIGTERM 或 SIGQUIT：退出码 3，并清理本进程临时文件。
 
-完整参数见[命令行参考](../../reference/cli/nwpc_data_client_fetch.md)。
+完整参数见[命令行参考](../../reference/cli/nwpc_data_client_fetch.md)，脚本中的输出
+检查和常见错误处理见[脚本接入与故障排查](../troubleshooting.md)。

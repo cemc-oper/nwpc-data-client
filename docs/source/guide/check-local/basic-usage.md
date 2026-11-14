@@ -36,7 +36,7 @@ forecast_times:
   - 0h
   - 6h
   - 24h
-execute_command: "echo file ready: {{.FilePath}}"
+execute_command: 'echo "file ready: {{.FilePath}}"'
 ```
 
 ```bash

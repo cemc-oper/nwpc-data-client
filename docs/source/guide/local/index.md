@@ -1,7 +1,7 @@
 # local 命令：查找本地数据文件
 
 `nwpc_data_client local` 按配置模板计算候选文件路径，依次检查并输出
-第一个实际存在的文件路径。
+第一个实际存在的文件路径。它只检查 `type: local` 条目，跳过 cmafs。
 
 ## 基本用法
 
@@ -13,9 +13,12 @@ nwpc_data_client local \
 ```
 
 - 找到文件：输出完整路径，退出码 0；
-- 未找到：输出配置中的 `default` 值（通常为 `NOTFOUND`）。
+- 未找到：输出配置中的 `default` 值（通常为 `NOTFOUND`），退出码仍为 0。
 
-## 参数
+脚本中需要同时判断退出码和 `default` 输出，示例见
+[脚本接入与故障排查](../troubleshooting.md)。
+
+## 常用参数
 
 必选（除非使用 `--data-config-file` 或 `--show-types`）：
 
@@ -32,59 +35,25 @@ nwpc_data_client local \
 | `--data-config-dir` | 自定义配置目录，与 `--data-type` 联用，替代内嵌配置 |
 | `--data-config-file` | 直接指定单个配置文件，优先级最高 |
 | `--location-level` | 逗号分隔的位置级别（如 `runtime,archive`），只搜索对应级别的路径条目；空为全部 |
-| `--storage-base` | `{{.StorageBase}}` 使用的本地存储挂载根；非空时必须是绝对路径，空字符串直接参与模板渲染 |
+| `--storage-base` | `{{.StorageBase}}` 使用的本地存储挂载根，见[CMADAAS 挂载归档](../cmadaas.md) |
 | `--member` | 集合成员编号，如 `000`、`014`，代入模板变量 `{{.Member}}` |
 | `--show-types` | 列出可用数据类型并退出（配合 `--data-config-dir` 时列目录中的配置） |
 | `--debug` | 输出调试日志，可看到每个候选路径的检查过程 |
 
+完整参数见[命令行参考](../../reference/cli/nwpc_data_client_local.md)。
+
 ## 搜索顺序
 
-1. 按配置中 `paths` 列表的顺序遍历目录，`--location-level` 不匹配的
-   条目跳过；
-2. 每个目录依次拼接候选文件名（`file_names` 列表在前，`file_name`
-   追加在最后）；
+1. 按配置中 `paths` 列表的顺序遍历目录，`--location-level` 不匹配的条目跳过；
+2. 每个目录依次拼接候选文件名（`file_names` 列表在前，`file_name` 追加在最后）；
 3. 返回第一个存在的文件；全部未命中时返回 `default`。
 
 ## CMADAAS 挂载目录
 
-六个 `current/grib2/orig` 内嵌配置支持直接读取 CMADAAS 挂载目录；具体 data type
-见[数据类型指南](../data-config/data-types.md)。挂载目录在配置中是
-`type: local, level: archive`，不使用 CMADaaS API，也不需要 cmafs backend。
-
-**挂载根不写死在配置中。** CMADAAS 路径以 `{{.StorageBase}}/DATA/...` 或
-`{{.StorageBase}}/ORIG-DATA/...` 开头，调用方通过 `--storage-base` 指定当前机器的
-实际挂载根。例如当前 WSL 使用 `/CMADAAS`：
-
-```bash
-nwpc_data_client local \
-    --data-type=cma_gfs_gmf/current/grib2/orig \
-    --start-time=2026111300 --forecast-time=24h \
-    --storage-base=/CMADAAS --location-level=archive
-```
-
-其他机器可传入自己的绝对挂载路径，例如 `--storage-base=/mnt/cmadaas`。如果不需要
-CMADAAS，可以不设置该参数，原 HPC local 候选仍按原顺序优先查找。空字符串会直接
-参与模板渲染，例如 CMADAAS 路径可能成为 `/DATA/...`；该路径不会被人为过滤，若实际
-存在也会按普通 local 候选参与查找，因此调用方负责提供适合当前机器的值。
-`check local` 除同名 CLI 参数外，也可在 checker YAML 中设置：
-
-```yaml
-storage_base: /CMADAAS
-```
-
-`--location-level=archive` 只搜索归档 local 条目，跳过 storage 和 cmafs。原 HPC
-archive 路径仍排在 CMADAAS 之前；两者都存在时返回原 HPC 文件。HPC 与 CMADAAS 的
-文件名不同，调用方应直接使用 stdout 返回的实际路径。
-
-GEPS、REPS 需要同时传入三位成员编号，例如 `--member=001`。REPS 配置包含起报当日
-和次日两个目录候选，以兼容当前 06/18 时次的归档布局。
-
-运行前必须确认传入的挂载根已挂载且当前用户可读。`local` 沿用现有 Stat 错误处理，
-挂载不存在或不可读时可能最终输出 `NOTFOUND`；可使用 `--debug` 查看候选检查过程，
-并直接检查挂载目录进行诊断。
-
-引用 `{{.StorageBase}}` 的配置只能由支持该变量的 client 使用；旧 client 会在整文件
-模板渲染时报错。部署时必须先升级 client，再发布这些配置。
+六个 `current/grib2/orig` 内嵌配置支持直接读取 CMADAAS 挂载目录。调用方通过
+`--storage-base` 提供挂载根，并可用 `--location-level=archive` 限定归档候选。
+挂载前提、候选顺序和完整示例见[CMADAAS 挂载归档](../cmadaas.md)，支持的数据类型见
+[数据类型指南](../data-config/data-types.md)。
 
 ## 示例
 

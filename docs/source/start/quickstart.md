@@ -85,3 +85,5 @@ echo "0h 3h 6h" | nwpc_data_client check local 2026062400 \
 - 等待任务的配置与命令写法：[指南：check local 基本用法](../guide/check-local/basic-usage.md)
 - 选择轮询模式：[指南：轮询模式与到达顺序](../guide/check-local/polling-modes.md)
 - 编写自己的数据配置：[指南：编写数据配置](../guide/data-config/writing-configs.md)
+- 使用 CMADAAS 挂载数据：[指南：CMADAAS 挂载归档](../guide/cmadaas.md)
+- 在脚本中判断输出并排查错误：[指南：脚本接入与故障排查](../guide/troubleshooting.md)
