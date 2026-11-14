@@ -50,6 +50,33 @@ storage 使用 copy 是为了避免生成仅在特定存储节点可见的链接
 `--method=symlink` 时，调用方需要自行确认下游能够访问源路径，并接受源文件被
 清理或修改的影响。第一版不提供硬链接模式。
 
+## 从 CMADAAS 挂载目录落位
+
+对于已经挂载的 `/CMADAAS`，fetch 使用本地源链路，不经过 SSH/rsync，也不需要
+`--backend-config`。例如复制 CMA-GFS-GMF 归档文件：
+
+```bash
+nwpc_data_client fetch \
+    --data-type=cma_gfs_gmf/current/grib2/orig \
+    --start-time=2026111300 --forecast-time=24h \
+    --location-level=archive \
+    --target-dir=/work/input --method=copy
+```
+
+| 方法 | CMADAAS archive 源的行为 | 使用约束 |
+|---|---|---|
+| `copy`（默认） | 复制为独立普通文件 | 后续使用不依赖挂载；需要目标磁盘空间和复制时间 |
+| `symlink` | 创建指向 `/CMADAAS` 源文件的链接 | 下游必须能访问同一挂载路径，并接受源清理或修改的影响 |
+| `auto` | archive 按普通本地归档规则选择 symlink | 需要独立副本时应显式使用 `copy`，不要依赖 auto |
+
+CMADAAS local 候选位于 cmafs 之前，命中后不会访问 cmafs。使用
+`--location-level=archive` 还会跳过 storage local 和 cmafs；因此纯 CMADAAS 查询即使
+未命中，也不会因为机器未配置 cmafs backend 而报后端错误。
+
+目标文件名继承实际源的 basename。CMADAAS 文件通常采用 `Z_NAFP_C_BABJ_...` 命名，
+与原 HPC 文件名不同，后续程序必须使用 fetch stdout 返回的路径，不能假定为
+`gmf.gra...` 等 HPC 名称。复制、稳定检查、原子发布和目标复用规则与普通本地源相同。
+
 ## 从 cmafs 二级存储获取
 
 数据配置可以同时声明直接挂载和 cmafs 后备路径，例如 GFS_GMF ORIG：

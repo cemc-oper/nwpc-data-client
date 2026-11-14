@@ -44,6 +44,32 @@ nwpc_data_client local \
    追加在最后）；
 3. 返回第一个存在的文件；全部未命中时返回 `default`。
 
+## CMADAAS 挂载目录
+
+六个 `current/grib2/orig` 内嵌配置支持直接读取已挂载的 `/CMADAAS`；具体 data type
+见[数据类型指南](../data-config/data-types.md)。挂载目录在配置中是
+`type: local, level: archive`，不使用 CMADaaS API，也不需要 cmafs backend。
+
+例如：
+
+```bash
+nwpc_data_client local \
+    --data-type=cma_gfs_gmf/current/grib2/orig \
+    --start-time=2026111300 --forecast-time=24h \
+    --location-level=archive
+```
+
+`--location-level=archive` 只搜索归档 local 条目，跳过 storage 和 cmafs。原 HPC
+archive 路径仍排在 CMADAAS 之前；两者都存在时返回原 HPC 文件。HPC 与 CMADAAS 的
+文件名不同，调用方应直接使用 stdout 返回的实际路径。
+
+GEPS、REPS 需要同时传入三位成员编号，例如 `--member=001`。REPS 配置包含起报当日
+和次日两个目录候选，以兼容当前 06/18 时次的归档布局。
+
+运行前必须确认 `/CMADAAS` 已挂载且当前用户可读。`local` 沿用现有 Stat 错误处理，
+挂载不存在或不可读时可能最终输出 `NOTFOUND`；可使用 `--debug` 查看候选检查过程，
+并直接检查挂载目录进行诊断。
+
 ## 示例
 
 只搜索 runtime 级别的目录：

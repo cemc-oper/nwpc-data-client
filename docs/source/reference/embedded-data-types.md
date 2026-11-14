@@ -12,8 +12,10 @@
   例外，与 warm 配置内容相同，仅保留数据类型名）；
 - 集合预报（`cma_geps`、`cma_reps`）需配合 `--member` 使用。
 
-下表"文件名模式"为渲染后的样式（`FF`/`FFF` 为预报时效，`MMM` 为集合
-成员），准确模板以 `conf/local/` 下对应配置文件为准。
+下表"文件名模式"为渲染后的 HPC 文件名样式（`FF`/`FFF` 为预报时效，`MMM` 为集合
+成员），准确模板以 `conf/local/` 下对应配置文件为准。六个 `current/grib2/orig`
+配置还包含 `Z_NAFP_C_BABJ_...` 形式的 CMADAAS 文件名；支持范围见
+[数据类型指南](../guide/data-config/data-types.md)。
 
 ## CMA-GFS 全球模式（gmf 区域）
 

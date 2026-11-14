@@ -34,7 +34,8 @@ paths:
 
 **`file_name` / `file_names`**：候选文件名。两者可同时使用，
 `file_names` 列表在前、`file_name` 追加在最后，按顺序尝试。
-`file_names` 适合同一产品存在新旧两种命名的情况：
+`file_names` 适合同一产品存在新旧两种命名，或不同存储来源使用不同文件名的情况；
+文件名列表会与每个候选目录按顺序组合：
 
 ```yaml
 file_names:
@@ -45,7 +46,8 @@ file_name: modelvar.{{.Year}}{{.Month}}{{.Day}}{{.Hour}}.grb2
 
 **`paths`**：候选目录列表，按顺序搜索。每个条目包含：
 
-- `type`：目前仅支持 `local`；
+- `type`：`local` 表示本地或直接挂载路径，`cmafs` 表示通过机器 backend 访问的
+  二级存储路径；CMADAAS 挂载目录使用 `local`；
 - `level`：位置级别，`runtime` / `archive` / `storage`（可 `/` 组合），
   与命令行 `--location-level` 配合控制搜索范围；
 - `path`：目录路径模板，不含文件名。

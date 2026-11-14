@@ -48,6 +48,46 @@ cmafs 的 `path` 必须是 POSIX 绝对路径且不能包含换行。同一业�
 `type: local, level: storage`，再写 `type: cmafs`：有直接 NFS 挂载的节点命中前者，
 没有挂载的登录节点回退到后者。机器连接参数见[后端配置](backend-config.md)。
 
+## CMADAAS 挂载目录示例
+
+CMADAAS 已经挂载到当前机器时，挂载目录使用 `type: local`，不需要新增
+`cmadaas` 类型或远端 backend。若 HPC 与 CMADAAS 的文件名不同，可以同时使用
+`file_names` 和 `file_name`。例如 CMA-GFS-GMF ORIG：
+
+```yaml
+_config_version: 3
+default: NOTFOUND
+
+# 每个目录内优先检查原 HPC 文件名。
+file_names:
+  - gmf.gra.{{.Year}}{{.Month}}{{.Day}}{{.Hour}}{{.ForecastHour}}.grb2
+# 最后检查 CMADAAS 文件名。
+file_name: Z_NAFP_C_BABJ_{{.Year}}{{.Month}}{{.Day}}{{.Hour}}0000_P_NWPC-GRAPES-GFS-GLB-{{.ForecastHour}}00.grib2
+
+paths:
+  - type: local
+    level: archive
+    path: /g3/COMMONDATA/OPER/CEMC/GFS_GMF/Prod-grib/{{.Year}}{{.Month}}{{.Day}}{{.Hour}}/ORIG
+  - type: local
+    level: storage
+    path: /sstorage/COMMONDATA/OPER/CEMC/GFS_GMF/Prod-grib/{{.Year}}{{.Month}}{{.Day}}{{.Hour}}/ORIG
+  # 已挂载 /CMADAAS 的机器直接读取，必须在 cmafs 之前。
+  - type: local
+    level: archive
+    path: /CMADAAS/DATA/NAFP/NMC/GRAPES-GFS-GLB/{{.Year}}/{{.Year}}{{.Month}}{{.Day}}
+  - type: cmafs
+    level: storage
+    path: /sstorage/COMMONDATA/OPER/CEMC/GFS_GMF/Prod-grib/{{.Year}}{{.Month}}{{.Day}}{{.Hour}}/ORIG
+```
+
+文件名列表会与每个候选目录按顺序组合；目录优先级仍高于文件名优先级。CMADAAS
+条目位于 cmafs 之前时，挂载文件命中后不需要 `--backend-config`。纯归档查询可使用
+`--location-level=archive` 跳过 storage local 和 cmafs 条目。
+
+`fetch` 对 CMADAAS archive 源遵循普通本地归档的规则：默认 `copy`，显式
+`symlink` 创建链接，`auto` 选择 symlink。需要独立副本时不要依赖 auto。实际命中
+HPC 或 CMADAAS 时 basename 不同，调用方必须使用命令输出的路径。
+
 ## 校验规则
 
 `config lint` 与 `internal/dataconfig.ValidateDataConfig` 对渲染后的配置执行：

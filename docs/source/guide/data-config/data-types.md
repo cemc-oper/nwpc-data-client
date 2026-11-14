@@ -38,6 +38,25 @@ cma_gfs_gmf/current/grib2/orig
 
 数据类型中包含 `..` 以逃出配置目录的写法会被拒绝。
 
+## 支持 CMADAAS 挂载归档的数据类型
+
+以下现有 data type 同时包含原 HPC 路径和 `/CMADAAS` 挂载路径，不需要使用新的
+数据类型名称：
+
+| 系统 | data type |
+|---|---|
+| CMA-GFS-GMF | `cma_gfs_gmf/current/grib2/orig` |
+| CMA-GEPS | `cma_geps/current/grib2/orig` |
+| CMA-REPS | `cma_reps/current/grib2/orig` |
+| CMA-TYM | `cma_tym/current/grib2/orig` |
+| CMA-MESO 3KM | `cma_meso_3km/current/grib2/orig` |
+| CMA-MESO 1KM | `cma_meso_1km/current/grib2/orig` |
+
+支持范围仅限上述 `current/grib2/orig` 配置，不包括 `orig.cold`、其他产品或部署仓库
+中的版本化业务配置。CMADAAS 文件与 HPC 文件的命名不同，但共用同一数据身份，按配置
+中的候选顺序查找。使用示例和挂载前提见[local 指南](../local/index.md)，落位方法见
+[fetch 指南](../fetch/index.md)。
+
 ## 查看可用数据类型
 
 ```bash
