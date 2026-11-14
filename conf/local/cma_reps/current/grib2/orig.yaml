@@ -14,3 +14,12 @@ paths:
   - type: local
     level: archive
     path: /g3/COMMONDATA/OPER/CEMC/REPS/Prod-grib/{{.Year}}{{.Month}}{{.Day}}{{.Hour}}/grib2
+
+  # datatrans reads secondary storage directly; login nodes fall back to cmafs.
+  - type: local
+    level: storage
+    path: /sstorage/COMMONDATA/OPER/CEMC/REPS/Prod-grib/{{.Year}}{{.Month}}{{.Day}}{{.Hour}}/grib2
+
+  - type: cmafs
+    level: storage
+    path: /sstorage/COMMONDATA/OPER/CEMC/REPS/Prod-grib/{{.Year}}{{.Month}}{{.Day}}{{.Hour}}/grib2

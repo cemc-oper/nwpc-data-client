@@ -20,3 +20,12 @@ paths:
   - type: local
     level: archive
     path: /g3/COMMONDATA/OPER/CEMC/GFS_GMF/Prod-grib/{{.Year}}{{.Month}}{{.Day}}{{.Hour}}/MODELVAR
+
+  # datatrans reads secondary storage directly; login nodes fall back to cmafs.
+  - type: local
+    level: storage
+    path: /sstorage/COMMONDATA/OPER/CEMC/GFS_GMF/Prod-grib/{{.Year}}{{.Month}}{{.Day}}{{.Hour}}/MODELVAR
+
+  - type: cmafs
+    level: storage
+    path: /sstorage/COMMONDATA/OPER/CEMC/GFS_GMF/Prod-grib/{{.Year}}{{.Month}}{{.Day}}{{.Hour}}/MODELVAR

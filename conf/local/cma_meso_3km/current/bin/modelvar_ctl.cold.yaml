@@ -22,3 +22,12 @@ paths:
   - type: local
     level: archive
     path: /g3/COMMONDATA/OPER/CEMC/MESO_3KM/Fcst-main/{{.Year}}{{.Month}}{{.Day}}{{.Hour}}
+
+  # datatrans reads secondary storage directly; login nodes fall back to cmafs.
+  - type: local
+    level: storage
+    path: /sstorage/COMMONDATA/OPER/CEMC/MESO_3KM/Fcst-main/{{.Year}}{{.Month}}{{.Day}}{{.Hour}}
+
+  - type: cmafs
+    level: storage
+    path: /sstorage/COMMONDATA/OPER/CEMC/MESO_3KM/Fcst-main/{{.Year}}{{.Month}}{{.Day}}{{.Hour}}

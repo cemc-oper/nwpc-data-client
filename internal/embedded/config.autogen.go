@@ -18,6 +18,15 @@ paths:
   - type: local
     level: archive
     path: /g3/COMMONDATA/OPER/CEMC/GEPS/Prod-grib/{{.Year}}{{.Month}}{{.Day}}{{.Hour}}/grib2
+
+  # datatrans reads secondary storage directly; login nodes fall back to cmafs.
+  - type: local
+    level: storage
+    path: /sstorage/COMMONDATA/OPER/CEMC/GEPS/Prod-grib/{{.Year}}{{.Month}}{{.Day}}{{.Hour}}/grib2.0p25
+
+  - type: cmafs
+    level: storage
+    path: /sstorage/COMMONDATA/OPER/CEMC/GEPS/Prod-grib/{{.Year}}{{.Month}}{{.Day}}{{.Hour}}/grib2.0p25
 `},
 	{`local/cma_gfs_gda/current/bin/modelvar`, `# cma-gfs
 #   modelvar
@@ -87,6 +96,15 @@ paths:
   - type: local
     level: archive
     path: /g3/COMMONDATA/OPER/CEMC/GFS_GDA/Prod-grib/{{.Year}}{{.Month}}{{.Day}}{{.Hour}}/MODELVAR
+
+  # datatrans reads secondary storage directly; login nodes fall back to cmafs.
+  - type: local
+    level: storage
+    path: /sstorage/COMMONDATA/OPER/CEMC/GFS_GDA/Prod-grib/{{.Year}}{{.Month}}{{.Day}}{{.Hour}}/MODELVAR
+
+  - type: cmafs
+    level: storage
+    path: /sstorage/COMMONDATA/OPER/CEMC/GFS_GDA/Prod-grib/{{.Year}}{{.Month}}{{.Day}}{{.Hour}}/MODELVAR
 `},
 	{`local/cma_gfs_gda/current/grib2/orig`, `# CMA-GFS gda
 #   grib2 orig
@@ -108,6 +126,15 @@ paths:
   - type: local
     level: archive
     path: /g3/COMMONDATA/OPER/CEMC/GFS_GDA/Prod-grib/{{.Year}}{{.Month}}{{.Day}}{{.Hour}}/ORIG
+
+  # datatrans reads secondary storage directly; login nodes fall back to cmafs.
+  - type: local
+    level: storage
+    path: /sstorage/COMMONDATA/OPER/CEMC/GFS_GDA/Prod-grib/{{.Year}}{{.Month}}{{.Day}}{{.Hour}}/ORIG
+
+  - type: cmafs
+    level: storage
+    path: /sstorage/COMMONDATA/OPER/CEMC/GFS_GDA/Prod-grib/{{.Year}}{{.Month}}{{.Day}}{{.Hour}}/ORIG
 `},
 	{`local/cma_gfs_gmf/current/bin/modelvar`, `# cma-gfs
 #   modelvar
@@ -179,6 +206,15 @@ paths:
   - type: local
     level: archive
     path: /g3/COMMONDATA/OPER/CEMC/GFS_GMF/Prod-grib/{{.Year}}{{.Month}}{{.Day}}{{.Hour}}/MODELVAR
+
+  # datatrans reads secondary storage directly; login nodes fall back to cmafs.
+  - type: local
+    level: storage
+    path: /sstorage/COMMONDATA/OPER/CEMC/GFS_GMF/Prod-grib/{{.Year}}{{.Month}}{{.Day}}{{.Hour}}/MODELVAR
+
+  - type: cmafs
+    level: storage
+    path: /sstorage/COMMONDATA/OPER/CEMC/GFS_GMF/Prod-grib/{{.Year}}{{.Month}}{{.Day}}{{.Hour}}/MODELVAR
 `},
 	{`local/cma_gfs_gmf/current/grib2/ne`, `# cma-gfs gmf
 #   grib2 ne
@@ -200,6 +236,15 @@ paths:
   - type: local
     level: archive
     path: /g3/COMMONDATA/OPER/CEMC/GFS_GMF/Prod-grib/{{.Year}}{{.Month}}{{.Day}}{{.Hour}}/CMACAST
+
+  # datatrans reads secondary storage directly; login nodes fall back to cmafs.
+  - type: local
+    level: storage
+    path: /sstorage/COMMONDATA/OPER/CEMC/GFS_GMF/Prod-grib/{{.Year}}{{.Month}}{{.Day}}{{.Hour}}/CMACAST
+
+  - type: cmafs
+    level: storage
+    path: /sstorage/COMMONDATA/OPER/CEMC/GFS_GMF/Prod-grib/{{.Year}}{{.Month}}{{.Day}}{{.Hour}}/CMACAST
 `},
 	{`local/cma_gfs_gmf/current/grib2/orig`, `# cma-gfs
 #   grib2 orig
@@ -221,6 +266,15 @@ paths:
   - type: local
     level: archive
     path: /g3/COMMONDATA/OPER/CEMC/GFS_GMF/Prod-grib/{{.Year}}{{.Month}}{{.Day}}{{.Hour}}/ORIG
+
+  # datatrans reads secondary storage directly; login nodes fall back to cmafs.
+  - type: local
+    level: storage
+    path: /sstorage/COMMONDATA/OPER/CEMC/GFS_GMF/Prod-grib/{{.Year}}{{.Month}}{{.Day}}{{.Hour}}/ORIG
+
+  - type: cmafs
+    level: storage
+    path: /sstorage/COMMONDATA/OPER/CEMC/GFS_GMF/Prod-grib/{{.Year}}{{.Month}}{{.Day}}{{.Hour}}/ORIG
 `},
 	{`local/cma_meso_1km/current/bin/modelvar.cold`, `# CMA-MESO 1KM
 #   modelvar cold
@@ -314,6 +368,15 @@ paths:
   - type: local
     level: archive
     path: /g3/COMMONDATA/OPER/CEMC/MESO_1KM/Prod-grib/{{.Year}}{{.Month}}{{.Day}}{{.Hour}}/ORIG
+
+  # datatrans reads secondary storage directly; login nodes fall back to cmafs.
+  - type: local
+    level: storage
+    path: /sstorage/COMMONDATA/OPER/CEMC/MESO_1KM/Prod-grib/{{.Year}}{{.Month}}{{.Day}}{{.Hour}}/ORIG
+
+  - type: cmafs
+    level: storage
+    path: /sstorage/COMMONDATA/OPER/CEMC/MESO_1KM/Prod-grib/{{.Year}}{{.Month}}{{.Day}}{{.Hour}}/ORIG
 `},
 	{`local/cma_meso_1km/current/grib2/orig`, `# CMA-MESO 1KM
 #   grib2_orig warm
@@ -335,6 +398,15 @@ paths:
   - type: local
     level: archive
     path: /g3/COMMONDATA/OPER/CEMC/MESO_1KM/Prod-grib/{{.Year}}{{.Month}}{{.Day}}{{.Hour}}/ORIG
+
+  # datatrans reads secondary storage directly; login nodes fall back to cmafs.
+  - type: local
+    level: storage
+    path: /sstorage/COMMONDATA/OPER/CEMC/MESO_1KM/Prod-grib/{{.Year}}{{.Month}}{{.Day}}{{.Hour}}/ORIG
+
+  - type: cmafs
+    level: storage
+    path: /sstorage/COMMONDATA/OPER/CEMC/MESO_1KM/Prod-grib/{{.Year}}{{.Month}}{{.Day}}{{.Hour}}/ORIG
 `},
 	{`local/cma_meso_3km/current/bin/modelvar.cold`, `# CMA-MESO 3KM
 #   modelvar cold
@@ -410,6 +482,15 @@ paths:
   - type: local
     level: archive
     path: /g3/COMMONDATA/OPER/CEMC/MESO_3KM/Fcst-main/{{.Year}}{{.Month}}{{.Day}}{{.Hour}}
+
+  # datatrans reads secondary storage directly; login nodes fall back to cmafs.
+  - type: local
+    level: storage
+    path: /sstorage/COMMONDATA/OPER/CEMC/MESO_3KM/Fcst-main/{{.Year}}{{.Month}}{{.Day}}{{.Hour}}
+
+  - type: cmafs
+    level: storage
+    path: /sstorage/COMMONDATA/OPER/CEMC/MESO_3KM/Fcst-main/{{.Year}}{{.Month}}{{.Day}}{{.Hour}}
 `},
 	{`local/cma_meso_3km/current/bin/modelvar_ctl`, `# CMA-MESO 3KM
 #   modelvar_ctl warm
@@ -435,6 +516,15 @@ paths:
   - type: local
     level: archive
     path: /g3/COMMONDATA/OPER/CEMC/MESO_3KM/Fcst-main/{{.Year}}{{.Month}}{{.Day}}{{.Hour}}
+
+  # datatrans reads secondary storage directly; login nodes fall back to cmafs.
+  - type: local
+    level: storage
+    path: /sstorage/COMMONDATA/OPER/CEMC/MESO_3KM/Fcst-main/{{.Year}}{{.Month}}{{.Day}}{{.Hour}}
+
+  - type: cmafs
+    level: storage
+    path: /sstorage/COMMONDATA/OPER/CEMC/MESO_3KM/Fcst-main/{{.Year}}{{.Month}}{{.Day}}{{.Hour}}
 `},
 	{`local/cma_meso_3km/current/bin/postvar.cold`, `# CMA-MESO 3KM
 #   postvar cold
@@ -510,6 +600,15 @@ paths:
   - type: local
     level: archive
     path: /g3/COMMONDATA/OPER/CEMC/MESO_3KM/Fcst-main/{{.Year}}{{.Month}}{{.Day}}{{.Hour}}
+
+  # datatrans reads secondary storage directly; login nodes fall back to cmafs.
+  - type: local
+    level: storage
+    path: /sstorage/COMMONDATA/OPER/CEMC/MESO_3KM/Fcst-main/{{.Year}}{{.Month}}{{.Day}}{{.Hour}}
+
+  - type: cmafs
+    level: storage
+    path: /sstorage/COMMONDATA/OPER/CEMC/MESO_3KM/Fcst-main/{{.Year}}{{.Month}}{{.Day}}{{.Hour}}
 `},
 	{`local/cma_meso_3km/current/bin/postvar_ctl`, `# CMA-MESO 3KM
 #   postvar
@@ -556,6 +655,15 @@ paths:
   - type: local
     level: archive
     path: /g3/COMMONDATA/OPER/CEMC/MESO_3KM/Prod-grib/{{.Year}}{{.Month}}{{.Day}}{{.Hour}}/ORIG
+
+  # datatrans reads secondary storage directly; login nodes fall back to cmafs.
+  - type: local
+    level: storage
+    path: /sstorage/COMMONDATA/OPER/CEMC/MESO_3KM/Prod-grib/{{.Year}}{{.Month}}{{.Day}}{{.Hour}}/ORIG
+
+  - type: cmafs
+    level: storage
+    path: /sstorage/COMMONDATA/OPER/CEMC/MESO_3KM/Prod-grib/{{.Year}}{{.Month}}{{.Day}}{{.Hour}}/ORIG
 `},
 	{`local/cma_meso_3km/current/grib2/orig`, `# CMA-MESO 3KM
 #   grib2 orig
@@ -577,6 +685,15 @@ paths:
   - type: local
     level: archive
     path: /g3/COMMONDATA/OPER/CEMC/MESO_3KM/Prod-grib/{{.Year}}{{.Month}}{{.Day}}{{.Hour}}/ORIG
+
+  # datatrans reads secondary storage directly; login nodes fall back to cmafs.
+  - type: local
+    level: storage
+    path: /sstorage/COMMONDATA/OPER/CEMC/MESO_3KM/Prod-grib/{{.Year}}{{.Month}}{{.Day}}{{.Hour}}/ORIG
+
+  - type: cmafs
+    level: storage
+    path: /sstorage/COMMONDATA/OPER/CEMC/MESO_3KM/Prod-grib/{{.Year}}{{.Month}}{{.Day}}{{.Hour}}/ORIG
 `},
 	{`local/cma_reps/current/grib2/orig`, `# cma-reps
 #   grib2 orig
@@ -594,6 +711,15 @@ paths:
   - type: local
     level: archive
     path: /g3/COMMONDATA/OPER/CEMC/REPS/Prod-grib/{{.Year}}{{.Month}}{{.Day}}{{.Hour}}/grib2
+
+  # datatrans reads secondary storage directly; login nodes fall back to cmafs.
+  - type: local
+    level: storage
+    path: /sstorage/COMMONDATA/OPER/CEMC/REPS/Prod-grib/{{.Year}}{{.Month}}{{.Day}}{{.Hour}}/grib2
+
+  - type: cmafs
+    level: storage
+    path: /sstorage/COMMONDATA/OPER/CEMC/REPS/Prod-grib/{{.Year}}{{.Month}}{{.Day}}{{.Hour}}/grib2
 `},
 	{`local/cma_tym/current/bin/modelvar`, `# CMA-TYM
 #   modelvar
@@ -699,5 +825,14 @@ paths:
   - type: local
     level: archive
     path: /g3/COMMONDATA/OPER/CEMC/TYM/Prod-grib/{{.Year}}{{.Month}}{{.Day}}{{.Hour}}/ORIG
+
+  # datatrans reads secondary storage directly; login nodes fall back to cmafs.
+  - type: local
+    level: storage
+    path: /sstorage/COMMONDATA/OPER/CEMC/TYM/Prod-grib/{{.Year}}{{.Month}}{{.Day}}{{.Hour}}/ORIG
+
+  - type: cmafs
+    level: storage
+    path: /sstorage/COMMONDATA/OPER/CEMC/TYM/Prod-grib/{{.Year}}{{.Month}}{{.Day}}{{.Hour}}/ORIG
 `},
 }
