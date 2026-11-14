@@ -15,7 +15,7 @@ file_name: Z_NAFP_C_BABJ_{{.Year}}{{.Month}}{{.Day}}{{.Hour}}0000_P_NWPC-GRAPES-
 paths:
   - type: local
     level: archive
-    path: /g3/COMMONDATA/OPER/CEMC/GEPS/Prod-grib/{{.Year}}{{.Month}}{{.Day}}{{.Hour}}/grib2
+    path: /g3/COMMONDATA/OPER/CEMC/GEPS/Prod-grib/{{.Year}}{{.Month}}{{.Day}}{{.Hour}}/grib2.0p25
 
   # datatrans reads secondary storage directly; login nodes fall back to cmafs.
   - type: local

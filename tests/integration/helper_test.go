@@ -25,7 +25,8 @@ type TestCase struct {
 	DataType      string
 	LocationLevel string
 	StartTime     string // YYYYMMDDHH
-	ForecastTime  string // e.g. "3h", "0h"
+	ForecastTime  string // Go duration，如 "3h"、"0h"
+	Member        string // 集合成员编号，如 "001"；空表示确定性预报
 	ConfigDir     string // "local" 或空字符串（空表示用 embedded config）
 	ExpectedPath  string
 	Fallbacks     []Fallback // 部分 runtime 测试先查昨天再查今天
@@ -73,6 +74,9 @@ func runTestCase(t *testing.T, tc TestCase) {
 		"--data-type=" + tc.DataType,
 		"--start-time=" + startTime,
 		"--forecast-time=" + tc.ForecastTime,
+	}
+	if tc.Member != "" {
+		args = append(args, "--member="+tc.Member)
 	}
 	if tc.ConfigDir != "" {
 		args = append(args, "--data-config-dir="+testutil.ConfigDir(t, tc.ConfigDir))
