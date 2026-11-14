@@ -8,6 +8,7 @@ import (
 	"syscall"
 	"time"
 
+	"github.com/cemc-oper/nwpc-data-client/internal/cmafs"
 	"github.com/cemc-oper/nwpc-data-client/internal/dataconfig"
 	"github.com/cemc-oper/nwpc-data-client/internal/fetcher"
 	log "github.com/sirupsen/logrus"
@@ -24,6 +25,8 @@ func init() {
 		"Data type used to locate the config (embedded as local/<data-type>, or <dir>/<data-type>.yaml).")
 	fetchCmd.Flags().StringVar(&fetchDataConfigFile, "data-config-file", "",
 		"Path to a single data config file. If set, --data-config-dir and --data-type are ignored.")
+	fetchCmd.Flags().StringVar(&fetchBackendConfig, "backend-config", "",
+		"Path to machine backend YAML. Required only when a cmafs source is needed.")
 	fetchCmd.Flags().StringVar(&fetchLocationLevels, "location-level", "",
 		"Location levels to search, split by ',', such as 'runtime,archive'. Empty searches all.")
 	fetchCmd.Flags().StringVar(&fetchStartTimeString, "start-time", "",
@@ -45,19 +48,23 @@ func init() {
 	_ = fetchCmd.MarkFlagRequired("target-dir")
 }
 
-const fetchCommandDocString = `Find one local data file and materialize it into a target directory.
+const fetchCommandDocString = `Find one data file and materialize it into a target directory.
 
 The data config is resolved with the same start time, forecast time, member,
 location levels, and candidate ordering as "nwpc_data_client local". The first
 existing regular file is selected; missing candidates are skipped, while other
-source errors stop the operation.
+source errors stop the operation. Local candidates are read directly. Cmafs
+candidates use the machine backend supplied by --backend-config and direct
+SSH/rsync transport.
 
 The source must be non-empty and have unchanged size and modification time
 across two observations separated by --stable-interval. The destination name
 is the source basename. Copy mode writes a unique temporary file in the target
 directory, verifies it, and publishes it without replacing an existing file.
 Symlink mode creates an absolute symbolic link to the selected local source.
-Auto uses symlink for runtime/archive sources and copy for storage sources.
+Auto uses symlink for runtime/archive local sources and copy for storage local
+sources and cmafs downloads. Cmafs downloads are verified against remote size
+and mtime before and after transfer.
 
 Existing destinations are never overwritten. An identical regular file or an
 allowed matching symlink is reused; a conflicting destination is an error.
@@ -82,7 +89,7 @@ const fetchCommandExample = `  # Copy a CMA-GFS file into a work directory.
 
 var fetchCmd = &cobra.Command{
 	Use:     "fetch",
-	Short:   "Find one local data file and copy or link it into a target directory.",
+	Short:   "Find one data file and copy or link it into a target directory.",
 	Long:    fetchCommandDocString,
 	Example: fetchCommandExample,
 	Args:    cobra.NoArgs,
@@ -106,6 +113,15 @@ var fetchCmd = &cobra.Command{
 		stableInterval, err := time.ParseDuration(fetchStableInterval)
 		if err != nil {
 			return fmt.Errorf("invalid --stable-interval %q: %w", fetchStableInterval, err)
+		}
+
+		var cmafsBackend fetcher.RemoteBackend
+		if fetchBackendConfig != "" {
+			backend, err := cmafs.Load(fetchBackendConfig)
+			if err != nil {
+				return fmt.Errorf("load backend config failed: %w", err)
+			}
+			cmafsBackend = backend
 		}
 
 		var configContent string
@@ -132,6 +148,7 @@ var fetchCmd = &cobra.Command{
 			TargetDir:      fetchTargetDir,
 			Method:         fetcher.Method(fetchMethod),
 			StableInterval: stableInterval,
+			CmafsBackend:   cmafsBackend,
 		}, dataConfig, strings.Split(fetchLocationLevels, ","))
 		if err != nil {
 			if ctx.Err() != nil {

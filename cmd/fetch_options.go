@@ -3,6 +3,7 @@ package cmd
 var (
 	fetchDataConfigDir      string
 	fetchDataConfigFile     string
+	fetchBackendConfig      string
 	fetchDataType           string
 	fetchLocationLevels     string
 	fetchStartTimeString    string

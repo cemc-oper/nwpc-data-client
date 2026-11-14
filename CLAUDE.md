@@ -23,10 +23,11 @@ goreleaser build --snapshot --clean --single-target   # fast local release-style
 - `--data-config-dir` is a **full replacement** of the embedded configs, not an overlay — a missing file is an error, never a fallback. `config export` exists to materialize the embedded baseline for merging.
 - Config format versions: v3 is current (whole-file `{{...}}` templates). Loaders reject detectable older versions at path-resolution time; `config lint`/`config migrate` accept all versions.
 - Data configs reserve `_`-prefixed top-level fields: `_config_version` (format version) and `_arrival_order` (sequential/unordered arrival, gates batched polling).
+- Data configs accept `paths[].type: local` and `cmafs` (absolute POSIX paths). `local`/`check local` skip cmafs; `fetch` handles it through `--backend-config` using direct SSH/rsync.
 - `check local` has two polling modes: `per_time` (default, one goroutine per forecast time) and `batched` (`--check-mode`, single readdir-based loop) with sequential arrival gating (`_arrival_order` in the data config, overridable via `--arrival-order`).
 
 ## Architecture pointers
 
-- `cmd/` is Cobra wiring only; implementation lives in `internal/` (`dataconfig`, `finder`, `fetcher`, `filecheck`, `checker`, `embedded`, `buildinfo`).
+- `cmd/` is Cobra wiring only; implementation lives in `internal/` (`dataconfig`, `finder`, `fetcher`, `filecheck`, `cmafs`, `checker`, `embedded`, `buildinfo`).
 - Resolution flow: `dataconfig.LoadConfigContent` → `ParseConfigContent` (template execution) → `finder.FindLocalFile`.
 - Full user/developer documentation sources are in `docs/source/` (e.g. `docs/source/reference/data-config-format.md`, `docs/source/guide/check-local/basic-usage.md`, `docs/source/reference/checker-config.md`); HTML builds go to `docs/build/` — prefer reading/pointing there over duplicating details here.

@@ -8,6 +8,7 @@
 
    cli/index
    data-config-format
+   backend-config
    checker-config
    template-variables
    embedded-data-types

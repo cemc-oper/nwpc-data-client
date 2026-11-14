@@ -13,7 +13,7 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-func inspectTarget(targetPath string, requested Method, source dataconfig.PathItem, sourceInfo os.FileInfo) (bool, Method, error) {
+func inspectTarget(targetPath string, requested Method, source dataconfig.PathItem, sourceMetadata fileMetadata) (bool, Method, error) {
 	targetInfo, err := os.Lstat(targetPath)
 	if os.IsNotExist(err) {
 		return false, "", nil
@@ -24,7 +24,7 @@ func inspectTarget(targetPath string, requested Method, source dataconfig.PathIt
 
 	if targetInfo.Mode()&os.ModeSymlink != 0 {
 		allowed := requested == MethodSymlink ||
-			(requested == MethodAuto && !hasStorageLevel(source.LevelType))
+			(requested == MethodAuto && source.PathType == "local" && !hasStorageLevel(source.LevelType))
 		if !allowed {
 			return false, "", targetConflict(targetPath, "a symlink does not satisfy the requested method")
 		}
@@ -47,8 +47,8 @@ func inspectTarget(targetPath string, requested Method, source dataconfig.PathIt
 	if requested != MethodCopy && requested != MethodAuto {
 		return false, "", targetConflict(targetPath, "a regular file does not satisfy explicit symlink mode")
 	}
-	if targetInfo.Size() == 0 || targetInfo.Size() != sourceInfo.Size() ||
-		targetInfo.ModTime().Unix() != sourceInfo.ModTime().Unix() {
+	if targetInfo.Size() == 0 || targetInfo.Size() != sourceMetadata.Size ||
+		targetInfo.ModTime().Unix() != sourceMetadata.ModTime.Unix() {
 		return false, "", targetConflict(targetPath, "existing file size or modification time differs from the source")
 	}
 	return true, MethodCopy, nil
@@ -71,7 +71,7 @@ func publishSymlink(source dataconfig.PathItem, sourceInfo os.FileInfo, targetPa
 		return false, fmt.Errorf("create target symlink %s: %w", targetPath, err)
 	}
 
-	reused, _, err := inspectTarget(targetPath, requested, source, sourceInfo)
+	reused, _, err := inspectTarget(targetPath, requested, source, metadataFromFileInfo(sourceInfo))
 	if err != nil {
 		return false, err
 	}
@@ -134,28 +134,32 @@ func copyAndPublish(ctx context.Context, sourceFile *os.File, sourceInfo os.File
 		return false, fmt.Errorf("temporary target %s failed size/type verification", tempPath)
 	}
 
+	reused, err := publishRegularFile(tempPath, targetPath, source, metadataFromFileInfo(sourceInfo), requested)
+	if err != nil {
+		return false, err
+	}
+	if err := os.Remove(tempPath); err != nil {
+		return false, fmt.Errorf("remove temporary target %s: %w", tempPath, err)
+	}
+	tempPath = ""
+	return reused, nil
+}
+
+func publishRegularFile(tempPath string, targetPath string, source dataconfig.PathItem, sourceMetadata fileMetadata, requested Method) (bool, error) {
 	if err := os.Link(tempPath, targetPath); err == nil {
 		log.Infof("fetch published regular file: %s", targetPath)
-		if err := os.Remove(tempPath); err != nil {
-			return false, fmt.Errorf("remove published temporary name %s: %w", tempPath, err)
-		}
-		tempPath = ""
 		return false, nil
 	} else if !os.IsExist(err) {
 		return false, fmt.Errorf("publish temporary target %s to %s without replacement: %w", tempPath, targetPath, err)
 	}
 
-	reused, _, err := inspectTarget(targetPath, requested, source, sourceInfo)
+	reused, _, err := inspectTarget(targetPath, requested, source, sourceMetadata)
 	if err != nil {
 		return false, err
 	}
 	if !reused {
 		return false, targetConflict(targetPath, "target disappeared during publication; retry the request")
 	}
-	if err := os.Remove(tempPath); err != nil {
-		return false, fmt.Errorf("remove superseded temporary target %s: %w", tempPath, err)
-	}
-	tempPath = ""
 	return true, nil
 }
 

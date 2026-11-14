@@ -19,15 +19,20 @@ const (
 )
 
 var (
-	ErrDataNotFound      = errors.New("data not found")
-	ErrTargetConflict    = errors.New("target conflict")
-	ErrUnsupportedSource = errors.New("unsupported source type")
+	ErrDataNotFound         = errors.New("data not found")
+	ErrTargetConflict       = errors.New("target conflict")
+	ErrUnsupportedSource    = errors.New("unsupported source type")
+	ErrSourceNotExist       = errors.New("source does not exist")
+	ErrBackendNotConfigured = errors.New("backend not configured")
+	ErrBackendOperation     = errors.New("backend operation failed")
+	ErrMethodUnavailable    = errors.New("method unavailable for source")
 )
 
 type Config struct {
 	TargetDir      string
 	Method         Method
 	StableInterval time.Duration
+	CmafsBackend   RemoteBackend
 }
 
 type Result struct {

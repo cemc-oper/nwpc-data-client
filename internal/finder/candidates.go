@@ -1,6 +1,7 @@
 package finder
 
 import (
+	"path"
 	"path/filepath"
 
 	"github.com/cemc-oper/nwpc-data-client/internal/dataconfig"
@@ -22,8 +23,12 @@ func CandidatePaths(config dataconfig.DataConfig, locationLevels []string) []dat
 			continue
 		}
 		for _, fileName := range fileNames {
+			candidatePath := filepath.Join(item.Path, fileName)
+			if item.PathType == "cmafs" {
+				candidatePath = path.Join(item.Path, fileName)
+			}
 			candidates = append(candidates, dataconfig.PathItem{
-				Path:      filepath.Join(item.Path, fileName),
+				Path:      candidatePath,
 				PathType:  item.PathType,
 				LevelType: item.LevelType,
 			})

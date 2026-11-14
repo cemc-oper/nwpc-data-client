@@ -28,14 +28,27 @@
         "required": ["type", "level", "path"],
         "additionalProperties": false,
         "properties": {
-          "type":  { "enum": ["local"] },
+          "type":  { "enum": ["local", "cmafs"] },
           "level": {
             "type": "string",
             "pattern": "^(runtime|archive|storage)(/(runtime|archive|storage))*$",
             "description": "Single level or a \"/\"-joined combination (e.g. \"runtime/archive\", used by existing configs)."
           },
           "path":  { "type": "string", "minLength": 1 }
-        }
+        },
+        "allOf": [
+          {
+            "if": {
+              "properties": { "type": { "const": "cmafs" } },
+              "required": ["type"]
+            },
+            "then": {
+              "properties": {
+                "path": { "pattern": "^/[^\\r\\n]*$" }
+              }
+            }
+          }
+        ]
       }
     }
   }

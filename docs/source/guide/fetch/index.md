@@ -1,8 +1,8 @@
-# fetch 命令：将本地数据落位到目标目录
+# fetch 命令：将本地或二级存储数据落位到目标目录
 
 `nwpc_data_client fetch` 使用与 `local` 相同的数据配置和候选顺序，选中第一个
-已经存在的本地普通文件，再将文件复制或链接到用户指定的目录。成功时 stdout
-只输出最终绝对路径，便于直接传给后续程序。
+已经存在的普通文件，再将本地或 cmafs 二级存储文件复制到用户指定的目录；本地源
+还可以使用符号链接。成功时 stdout 只输出最终绝对路径，便于直接传给后续程序。
 
 它是一次性操作，**不会等待尚未生成的文件**；需要轮询等待时仍使用
 `check local`。
@@ -44,15 +44,49 @@ input_file="$(
 |---|---|
 | `copy`（默认） | 复制为独立普通文件，保留基本权限和修改时间 |
 | `symlink` | 创建指向本地源绝对路径的符号链接 |
-| `auto` | runtime/archive 本地源使用 symlink；storage 本地源使用 copy |
+| `auto` | runtime/archive 本地源使用 symlink；storage 本地源和 cmafs 使用 copy |
 
 storage 使用 copy 是为了避免生成仅在特定存储节点可见的链接。显式
 `--method=symlink` 时，调用方需要自行确认下游能够访问源路径，并接受源文件被
 清理或修改的影响。第一版不提供硬链接模式。
 
+## 从 cmafs 二级存储获取
+
+数据配置可以同时声明直接挂载和 cmafs 后备路径，例如 GFS_GMF ORIG：
+
+```yaml
+paths:
+  - type: local
+    level: storage
+    path: /sstorage/COMMONDATA/OPER/CEMC/GFS_GMF/Prod-grib/{{.Year}}{{.Month}}{{.Day}}{{.Hour}}/ORIG
+  - type: cmafs
+    level: storage
+    path: /sstorage/COMMONDATA/OPER/CEMC/GFS_GMF/Prod-grib/{{.Year}}{{.Month}}{{.Day}}{{.Hour}}/ORIG
+```
+
+在 datatrans 上，第一个 local 候选直接命中 NFS 文件；在登录节点没有该挂载时，
+候选明确不存在才回退到 cmafs。此时提供机器 backend：
+
+```bash
+nwpc_data_client fetch \
+    --data-config-file=./my_config.yaml \
+    --backend-config=./backend.yaml \
+    --start-time=2026111300 \
+    --forecast-time=0h \
+    --target-dir=/work/input
+```
+
+backend 使用系统 SSH/rsync，不需要 `module load cmafs/cmafs`。只有远端明确不存在
+才继续其他候选；权限、认证、主机密钥、网络和传输错误都会直接失败。cmafs 不支持
+显式 symlink，auto 始终下载为普通文件。
+
+下载前后都会核对远端大小和 mtime，本地临时文件也要通过相同元数据校验，然后才
+无覆盖发布。字段、认证要求及 SC1 的 known_hosts 特殊配置见
+[机器后端配置](../../reference/backend-config.md)。
+
 ## 源文件就绪检查
 
-源文件必须：
+本地源文件必须：
 
 1. 是普通文件且大小非零；
 2. 在 `--stable-interval`（默认 `1s`）间隔的两次检查中，大小和修改时间不变；
@@ -80,7 +114,7 @@ storage 使用 copy 是为了避免生成仅在特定存储节点可见的链接
 
 - copy 可复用大小非零且大小、mtime（Unix 秒）与源一致的普通文件；
 - symlink 可复用指向完全相同源路径的符号链接；
-- auto 可以复用合法普通文件，非 storage 源还可以复用同向 symlink；
+- auto 可以复用合法普通文件；只有非 storage 的本地源可以复用同向 symlink，cmafs 不复用远端链接；
 - 方法与目标类型不符、内容元数据不符、空文件或目录均报目标冲突；
 - 任何情况下都不覆盖已有目标。
 
@@ -96,6 +130,7 @@ storage 使用 copy 是为了避免生成仅在特定存储节点可见的链接
 | 参数 | 默认值 | 说明 |
 |---|---|---|
 | `--target-dir` | 无，必选 | 最终文件所在目录 |
+| `--backend-config` | 空 | 机器后端 YAML；只有实际需要 cmafs 时必需 |
 | `--method` | `copy` | `copy`、`symlink` 或 `auto` |
 | `--stable-interval` | `1s` | 两次源稳定性检查的间隔 |
 | `--debug` | `false` | 输出调试日志到 stderr |

@@ -6,6 +6,7 @@ import (
 	"path/filepath"
 	"strings"
 
+	"github.com/cemc-oper/nwpc-data-client/internal/cmafs"
 	"github.com/cemc-oper/nwpc-data-client/internal/dataconfig"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
@@ -16,6 +17,8 @@ func init() {
 
 	configLintCmd.Flags().StringVar(&lintDataConfigFile, "data-config-file", "",
 		"Path to a single data config file. If set, the config directory argument is ignored.")
+	configLintCmd.Flags().StringVar(&lintBackendConfig, "backend-config", "",
+		"Validate one backend YAML file without networking; mutually exclusive with data config inputs.")
 }
 
 const configLintCommandName = "lint"
@@ -32,13 +35,19 @@ Each file is validated in two stages:
      structure (paths items require type/level/path, and so on).
 
 Pass a config directory to lint every *.yaml file under it recursively, or
-use --data-config-file to lint a single file.`
+use --data-config-file to lint a single file.
+
+With --backend-config, lint one machine backend YAML instead. Backend mode is
+mutually exclusive with data config inputs and never opens an SSH connection.`
 
 const configLintCommandExample = `  # Lint all configs under conf/local recursively.
   nwpc_data_client config lint conf/local
 
   # Lint a single config file.
-  nwpc_data_client config lint --data-config-file=./my_config.yaml`
+  nwpc_data_client config lint --data-config-file=./my_config.yaml
+
+  # Validate a backend file without connecting to the server.
+  nwpc_data_client config lint --backend-config=./backend.yaml`
 
 var configLintCmd = &cobra.Command{
 	Use:     configLintCommandName + " [config-dir]",
@@ -46,6 +55,12 @@ var configLintCmd = &cobra.Command{
 	Long:    configLintCommandDocString,
 	Example: configLintCommandExample,
 	Args: func(cmd *cobra.Command, args []string) error {
+		if lintBackendConfig != "" {
+			if lintDataConfigFile != "" || len(args) != 0 {
+				return fmt.Errorf("--backend-config is mutually exclusive with config-dir and --data-config-file")
+			}
+			return nil
+		}
 		if lintDataConfigFile != "" {
 			return nil
 		}
@@ -55,6 +70,14 @@ var configLintCmd = &cobra.Command{
 		return nil
 	},
 	Run: func(cmd *cobra.Command, args []string) {
+		if lintBackendConfig != "" {
+			if _, err := cmafs.Load(lintBackendConfig); err != nil {
+				log.Fatalf("backend config lint failed: %v", err)
+			}
+			fmt.Printf("backend config lint passed: %s\n", lintBackendConfig)
+			return
+		}
+
 		var configFilePaths []string
 		if lintDataConfigFile != "" {
 			configFilePaths = []string{lintDataConfigFile}

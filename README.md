@@ -14,7 +14,7 @@ Documentation (Chinese): <https://nwpc-data-client.readthedocs.io/>
 ## Features
 
 - Locate data files from operational numerical weather prediction systems across multiple directories
-- Copy or link a local data file into a target directory with stability, atomic-publication, and concurrency checks
+- Copy or link local files and download cmafs secondary-storage files through SSH/rsync, with stability, atomic-publication, and concurrency checks
 - Monitor batches of data files and execute commands once the files are ready
 
 ## Quick Start

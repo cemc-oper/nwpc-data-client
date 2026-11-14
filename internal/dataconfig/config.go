@@ -3,6 +3,7 @@ package dataconfig
 import (
 	"fmt"
 	"os"
+	"path"
 	"path/filepath"
 	"regexp"
 	"strings"
@@ -172,8 +173,17 @@ func ValidateDataConfigStruct(dataConfig DataConfig) error {
 		if item.PathType == "" {
 			return fmt.Errorf("paths[%d]: type is required", i)
 		}
-		if item.PathType != "local" {
-			return fmt.Errorf("paths[%d]: unsupported type %q (only \"local\" is supported)", i, item.PathType)
+		switch item.PathType {
+		case "local":
+		case "cmafs":
+			if !path.IsAbs(item.Path) {
+				return fmt.Errorf("paths[%d]: cmafs path must be absolute", i)
+			}
+			if strings.ContainsAny(item.Path, "\r\n") {
+				return fmt.Errorf("paths[%d]: cmafs path must not contain newlines", i)
+			}
+		default:
+			return fmt.Errorf("paths[%d]: unsupported type %q (supported: local, cmafs)", i, item.PathType)
 		}
 		if item.LevelType == "" {
 			return fmt.Errorf("paths[%d]: level is required", i)

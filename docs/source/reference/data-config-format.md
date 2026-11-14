@@ -23,7 +23,7 @@
 
 | 字段 | 类型 | 必选 | 说明 |
 |---|---|---|---|
-| `type` | string | **是** | 路径类型，当前仅支持 `local` |
+| `type` | string | **是** | 路径类型：`local` 为本地路径，`cmafs` 为通过机器 backend 访问的二级存储路径 |
 | `level` | string | **是** | 位置级别：`runtime`、`archive`、`storage`，或用 `/` 连接的组合（如 `runtime/archive`） |
 | `path` | string | **是** | 目录路径（模板），不含文件名 |
 
@@ -37,6 +37,17 @@
 3. 返回第一个实际存在的文件的完整路径。
 4. 全部未命中时返回 `default` 的值。
 
+`local` 和 `check local` 只检查 `type: local` 条目，并跳过 cmafs 条目。
+`fetch` 同时处理 local 与 cmafs：本地候选明确不存在时才继续；需要 cmafs 时通过
+`--backend-config` 指定的机器后端执行只读 Stat 和 rsync 下载。backend 的权限、
+认证、网络或传输错误不会伪装成候选未命中。含 cmafs 条目的配置只能部署给支持该
+类型的 client；必须先升级安装根的 client，再发布这些配置。fetch 未找到时返回错误，不输出
+`default` 作为成功路径。
+
+cmafs 的 `path` 必须是 POSIX 绝对路径且不能包含换行。同一业务路径可以先写
+`type: local, level: storage`，再写 `type: cmafs`：有直接 NFS 挂载的节点命中前者，
+没有挂载的登录节点回退到后者。机器连接参数见[后端配置](backend-config.md)。
+
 ## 校验规则
 
 `config lint` 与 `internal/dataconfig.ValidateDataConfig` 对渲染后的配置执行：
@@ -44,8 +55,9 @@
 - 严格 YAML 解码：出现以上未列出的字段直接报错；
 - `paths` 必须存在且非空；
 - 每个 `paths` 条目的 `type` / `level` / `path` 均必填；
-- `type` 只接受 `local`；`level` 必须匹配
+- `type` 接受 `local` 或 `cmafs`；`level` 必须匹配
   `runtime` / `archive` / `storage` 或其 `/` 组合；
+- cmafs 的 `path` 必须是绝对路径且不得包含换行；
 - `_arrival_order` 只接受 `sequential` / `unordered`。
 
 ## 到达顺序与顺序门控
@@ -79,4 +91,12 @@ paths:
   - type: local
     level: archive
     path: /archive/CMA_GFS_GMF/{{.Year}}/{{.Year}}{{.Month}}{{.Day}}{{.Hour}}
+  # datatrans 等节点直接挂载业务二级存储时使用。
+  - type: local
+    level: storage
+    path: /sstorage/COMMONDATA/OPER/CEMC/GFS_GMF/Prod-grib/{{.Year}}{{.Month}}{{.Day}}{{.Hour}}/ORIG
+  # 登录节点没有直接挂载时通过 backend 获取同一文件。
+  - type: cmafs
+    level: storage
+    path: /sstorage/COMMONDATA/OPER/CEMC/GFS_GMF/Prod-grib/{{.Year}}{{.Month}}{{.Day}}{{.Hour}}/ORIG
 ```

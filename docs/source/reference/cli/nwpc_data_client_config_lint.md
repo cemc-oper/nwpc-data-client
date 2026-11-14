@@ -18,6 +18,9 @@ Each file is validated in two stages:
 Pass a config directory to lint every *.yaml file under it recursively, or
 use --data-config-file to lint a single file.
 
+With --backend-config, lint one machine backend YAML instead. Backend mode is
+mutually exclusive with data config inputs and never opens an SSH connection.
+
 ```
 nwpc_data_client config lint [config-dir] [flags]
 ```
@@ -30,12 +33,16 @@ nwpc_data_client config lint [config-dir] [flags]
 
   # Lint a single config file.
   nwpc_data_client config lint --data-config-file=./my_config.yaml
+
+  # Validate a backend file without connecting to the server.
+  nwpc_data_client config lint --backend-config=./backend.yaml
 ```
 
 ## Options
 
 ```
       --data-config-file string   Path to a single data config file. If set, the config directory argument is ignored.
+      --backend-config string     Validate one backend YAML file without networking; mutually exclusive with data config inputs.
   -h, --help                      help for lint
 ```
 
