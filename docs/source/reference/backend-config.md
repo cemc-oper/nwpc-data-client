@@ -25,13 +25,17 @@ cmafs:
   ssh_path: ssh
   rsync_path: rsync
   identity_file: ""           # 默认使用已有 SSH 配置和密钥
-  known_hosts_file: /g1/u/wangdp/.ssh/known_hosts
+  known_hosts_file: ~/.ssh/known_hosts
   connect_timeout: 15s
   transfer_timeout: 2h
 ```
 
 `version` 是 backend 自身格式版本，当前必须为 1；它不是 data config 的
 `_config_version`。配置可以没有 `cmafs` 段，表示未配置远端后端。
+
+`known_hosts_file` 和 `identity_file` 非空时必须是绝对路径，或以 `~/` 开头、相对于当前
+运行用户 home 目录的路径；client 加载配置时会展开 `~`。不支持 `${HOME}` 环境变量插值或
+`~otheruser` 形式。例如 SC1 示例会对每个运行用户使用各自的 `~/.ssh/known_hosts`。
 
 ## 字段
 
@@ -42,8 +46,8 @@ cmafs:
 | `cmafs.user` | 空 | 远端用户；空为执行 client 的当前用户 |
 | `cmafs.ssh_path` | `ssh` | 本机 SSH 可执行文件 |
 | `cmafs.rsync_path` | `rsync` | 本机 rsync 可执行文件 |
-| `cmafs.identity_file` | 空 | 可选私钥路径，非空时必须为绝对路径 |
-| `cmafs.known_hosts_file` | 空 | 可选主机密钥文件，非空时必须为绝对路径 |
+| `cmafs.identity_file` | 空 | 可选私钥路径；非空时为绝对路径或当前用户的 `~/` 路径 |
+| `cmafs.known_hosts_file` | 空 | 可选主机密钥文件；非空时为绝对路径或当前用户的 `~/` 路径 |
 | `cmafs.connect_timeout` | `15s` | 单次 SSH Stat 的连接/执行上限 |
 | `cmafs.transfer_timeout` | `2h` | 单文件 rsync 传输总上限 |
 

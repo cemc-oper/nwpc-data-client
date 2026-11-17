@@ -52,13 +52,14 @@ cmafs:
   ssh_path: ssh
   rsync_path: rsync
   identity_file: ""           # 默认使用已有 SSH 配置和密钥
-  known_hosts_file: /absolute/path/to/known_hosts
+  known_hosts_file: ~/.ssh/known_hosts
   connect_timeout: 15s
   transfer_timeout: 2h
 ```
 
-`known_hosts_file` 非空时必须是绝对路径。部分系统的 SSH 配置可能把
-`UserKnownHostsFile` 设为 `/dev/null`，此时必须显式提供可信的主机密钥文件。
+`known_hosts_file` 和 `identity_file` 可以使用绝对路径，或以 `~/` 开头、按当前运行用户
+home 目录展开的路径。部分系统的 SSH 配置可能把 `UserKnownHostsFile` 设为 `/dev/null`，
+此时必须显式提供可信的主机密钥文件，例如上面的 `~/.ssh/known_hosts`。
 
 分发前可以离线校验 backend YAML：
 

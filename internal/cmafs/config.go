@@ -73,6 +73,9 @@ func Load(filePath string) (*Backend, error) {
 
 	settings := *config.Cmafs
 	setDefaults(&settings)
+	if err := expandUserPaths(&settings); err != nil {
+		return nil, fmt.Errorf("backend config %s: cmafs: %w", filePath, err)
+	}
 	if err := validateSettings(settings); err != nil {
 		return nil, fmt.Errorf("backend config %s: cmafs: %w", filePath, err)
 	}
@@ -107,6 +110,52 @@ func setDefaults(settings *Settings) {
 	if settings.TransferTimeout == "" {
 		settings.TransferTimeout = "2h"
 	}
+}
+
+// expandUserPaths resolves home-relative file settings for the current user.
+// Environment interpolation and other users' homes are deliberately unsupported.
+func expandUserPaths(settings *Settings) error {
+	fields := []struct {
+		name  string
+		value *string
+	}{
+		{name: "identity_file", value: &settings.IdentityFile},
+		{name: "known_hosts_file", value: &settings.KnownHostsFile},
+	}
+	for _, field := range fields {
+		expanded, err := expandHomePath(field.name, *field.value)
+		if err != nil {
+			return err
+		}
+		*field.value = expanded
+	}
+	return nil
+}
+
+func expandHomePath(name string, value string) (string, error) {
+	if value == "" || filepath.IsAbs(value) {
+		return value, nil
+	}
+
+	homeRelative := value == "~" || strings.HasPrefix(value, "~/")
+	if filepath.Separator == '\\' {
+		homeRelative = homeRelative || strings.HasPrefix(value, `~\`)
+	}
+	if !homeRelative {
+		if strings.HasPrefix(value, "~") {
+			return "", fmt.Errorf("%s must be absolute or start with ~/; other users' home directories are not supported", name)
+		}
+		return value, nil
+	}
+
+	home, err := os.UserHomeDir()
+	if err != nil {
+		return "", fmt.Errorf("resolve current user home for %s: %w", name, err)
+	}
+	if value == "~" {
+		return filepath.Clean(home), nil
+	}
+	return filepath.Join(home, value[2:]), nil
 }
 
 func validateSettings(settings Settings) error {

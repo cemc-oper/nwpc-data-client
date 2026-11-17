@@ -30,6 +30,49 @@ func TestLoadBackendConfigDefaults(t *testing.T) {
 	assert.Equal(t, "10.40.150.126", backend.destination())
 }
 
+func TestLoadBackendConfigExpandsHomePaths(t *testing.T) {
+	home, err := os.UserHomeDir()
+	require.NoError(t, err)
+	path := writeBackendConfig(t, `version: 1
+cmafs:
+  host: 10.40.150.126
+  identity_file: ~/.ssh/id_rsa
+  known_hosts_file: ~/.ssh/known_hosts
+`)
+
+	backend, err := Load(path)
+	require.NoError(t, err)
+	expectedIdentity := filepath.Join(home, ".ssh", "id_rsa")
+	expectedKnownHosts := filepath.Join(home, ".ssh", "known_hosts")
+	assert.Equal(t, expectedIdentity, backend.settings.IdentityFile)
+	assert.Equal(t, expectedKnownHosts, backend.settings.KnownHostsFile)
+	assert.Contains(t, backend.sshOptions(), expectedIdentity)
+	assert.Contains(t, backend.sshOptions(), "UserKnownHostsFile="+expectedKnownHosts)
+}
+
+func TestExpandHomePathPreservesAbsoluteAndEmptyPaths(t *testing.T) {
+	home, err := os.UserHomeDir()
+	require.NoError(t, err)
+	absolute := filepath.Join(home, "absolute-known-hosts")
+
+	for _, testCase := range []struct {
+		name     string
+		value    string
+		expected string
+	}{
+		{name: "empty", value: "", expected: ""},
+		{name: "absolute", value: absolute, expected: absolute},
+		{name: "home", value: "~", expected: filepath.Clean(home)},
+		{name: "relative left for validation", value: "relative", expected: "relative"},
+	} {
+		t.Run(testCase.name, func(t *testing.T) {
+			actual, err := expandHomePath("known_hosts_file", testCase.value)
+			require.NoError(t, err)
+			assert.Equal(t, testCase.expected, actual)
+		})
+	}
+}
+
 func TestLoadBackendConfigWithoutCmafs(t *testing.T) {
 	backend, err := Load(writeBackendConfig(t, "version: 1\n"))
 	require.NoError(t, err)
@@ -44,6 +87,7 @@ func TestLoadBackendConfigRejectsInvalidValues(t *testing.T) {
 		"unknown field":       "version: 1\ncmafs:\n  host: host\n  password: secret\n",
 		"invalid port":        "version: 1\ncmafs:\n  host: host\n  port: -1\n",
 		"relative identity":   "version: 1\ncmafs:\n  host: host\n  identity_file: key\n",
+		"other user home":     "version: 1\ncmafs:\n  host: host\n  known_hosts_file: ~other/.ssh/known_hosts\n",
 		"invalid connect":     "version: 1\ncmafs:\n  host: host\n  connect_timeout: 0s\n",
 		"invalid transfer":    "version: 1\ncmafs:\n  host: host\n  transfer_timeout: nope\n",
 		"option host":         "version: 1\ncmafs:\n  host: -oProxyCommand=x\n",
